@@ -15,7 +15,7 @@ from tools_rag.rag_get_mechanics_details import rag_get_mechanics_details
 from tools_rag.rag_get_gameplay_details import rag_get_gameplay_details
 from tools_rag.rag_get_general_knowledge import rag_get_general_knowledge
 from tools.db_get_screen_context_help import db_get_screen_context_help
-from tools_rag.rag_get_smalltalk_context import rag_get_smalltalk_context
+from tools.db_get_smalltalk import db_get_smalltalk
 
 
 # Import GCS database tool functions
@@ -107,12 +107,12 @@ available_llm_functions = {
         'category': 'context',
         'description': 'Get contextual help for current screen/UI state'
     },
-    'rag_get_smalltalk_context': {
-        'function': rag_get_smalltalk_context,
-        'is_rag': True,
+    'db_get_smalltalk': {
+        'function': db_get_smalltalk,
+        'is_rag': False,
         'is_gcs': False,
-        'category': 'rag_smalltalk',
-        'description': 'Get information about something funny or interesting'
+        'category': 'database',
+        'description': 'Get smalltalk context for casual conversation using PostgreSQL embedding similarity'
     },
     'db_get_champion_details': {
         'function': db_get_champion_details,
@@ -311,13 +311,13 @@ def get_tools_info() -> str:
     tools_info.append("Casual conversation tool available only in smalltalk mode:")
     tools_info.append("")
     
-    tools_info.append("🔸 **rag_get_smalltalk_context**")
-    tools_info.append("   📝 Description: Search smalltalk knowledge base for casual conversation topics")
+    tools_info.append("🔸 **db_get_smalltalk**")
+    tools_info.append("   📝 Description: Search smalltalk knowledge base for casual conversation topics using PostgreSQL")
     tools_info.append("   ❓ Answers: 'Tell me about Tatooine weather', 'What's life like in cantinas?'")
-    tools_info.append("   📋 Parameters: query (search terms for casual topics)")
-    tools_info.append("   🗄️ Data Source: RAG search (SMLTK section only)")
+    tools_info.append("   📋 Parameters: query (search terms for casual topics, optional)")
+    tools_info.append("   🗄️ Data Source: PostgreSQL embedding similarity search with Ollama (threshold 0.4)")
     tools_info.append("   📚 Includes: Daily life, culture, entertainment, planets, creatures, social life")
-    tools_info.append("   🎯 Chunks: 3 SMLTK chunks for focused casual conversation")
+    tools_info.append("   🎯 Variety: Random selection from top 10 similar results for conversation diversity")
     tools_info.append("")
     
     # Screen Context Tool

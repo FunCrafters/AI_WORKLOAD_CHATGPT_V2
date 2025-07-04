@@ -141,13 +141,13 @@ AVAILABLE TOOLS:
     • "What can I do here?" → use db_get_screen_context_help("what to do in the game")
     • "Where am I?" → use db_get_screen_context_help("where am I")
 
-- db_get_champion_details: Get detailed champion information including stats, abilities, traits, power ranking, and battle recommendations from PostgreSQL database
+- db_get_champion_details: Get detailed champion information including stats, abilities, traits, power ranking
   Examples: 
     • "Tell me everything about Han Solo" → use db_get_champion_details("Han Solo")
     • "Get full details for Luke Skywalker" → use db_get_champion_details("Luke Skywalker")
     • "Show me complete info about Chewbacca" → use db_get_champion_details("Chewbacca")
 
-- db_get_champion_details_byid: Get detailed champion information by exact ID from PostgreSQL database
+- db_get_champion_details_byid: Get detailed champion information
   Examples: 
     • "Get champion.sw1.hansolo details" → use db_get_champion_details_byid("champion.sw1.hansolo")
     • "Show me champion.owk1.taladurith info" → use db_get_champion_details_byid("champion.owk1.taladurith")
@@ -158,7 +158,7 @@ AVAILABLE TOOLS:
 
 
 
-- db_find_strongest_champions: Find the strongest champions based on total power with optional trait filtering from PostgreSQL database
+- db_find_strongest_champions: Find the strongest champions based on total power with optional trait filtering
   Available trait values:
     • rarity: legendary, epic, rare, uncommon, common
     • affinity: red, blue, green, yellow, purple
@@ -169,7 +169,7 @@ AVAILABLE TOOLS:
     • "Show strongest red champions" → use db_find_strongest_champions(limit=15, affinity="red")
     • "Give me 5 strongest epic defenders" → use db_find_strongest_champions(limit=5, rarity="epic", class_type="defender")
 
-- db_find_champions_stronger_than: Find champions stronger than reference champion with optional trait filtering from PostgreSQL database
+- db_find_champions_stronger_than: Find champions stronger than reference champion with optional trait filtering
   Available trait values:
     • rarity: legendary, epic, rare, uncommon, common
     • affinity: red, blue, green, yellow, purple
@@ -182,7 +182,7 @@ AVAILABLE TOOLS:
 
 
 
-- db_get_champions_by_traits: Find champions that match specified traits (rarity, affinity, class) with power rankings using PostgreSQL (uses AND logic - all specified traits must match)
+- db_get_champions_by_traits: Find champions that match specified traits (rarity, affinity, class) with power rankings (uses AND logic - all specified traits must match)
   Available trait values:
     • rarity: legendary, epic, rare, uncommon, common
     • affinity: red, blue, green, yellow, purple
@@ -193,14 +193,14 @@ AVAILABLE TOOLS:
     • "List all attackers" → use db_get_champions_by_traits(["attacker"])
     • "Find rare blue defenders" → use db_get_champions_by_traits(["rare", "blue", "defender"])
 
-- db_compare_champions: Compare two or more champions side by side with comprehensive analysis of stats, traits, roles, and recommendations using PostgreSQL
+- db_compare_champions: Compare two or more champions side by side with comprehensive analysis of stats, traits, roles, and recommendations
   Examples: 
     • "Compare Han Solo and Luke Skywalker" → use db_compare_champions(["Han Solo", "Luke Skywalker"])
     • "Compare Vader vs Luke vs Han" → use db_compare_champions(["Vader", "Luke", "Han"])
     • "Who will win, Darth Vader or Luke Skywalker?" → use db_compare_champions(["Darth Vader", "Luke Skywalker"])
     • "Analyze differences between Chewbacca and R2-D2" → use db_compare_champions(["Chewbacca", "R2-D2"])
 
-- db_find_champions: Search for champions by name with basic information from PostgreSQL database
+- db_find_champions: Search for champions by name with basic information
   Examples: 
     • "Find champions with Luke in name" → use db_find_champions("Luke")
     • "Search for Han Solo champions" → use db_find_champions("Han Solo")
@@ -217,13 +217,14 @@ AVAILABLE TOOLS:
 - db_get_ux_details: Get UX/interface information
   Examples: "Interface questions" → use db_get_ux_details
 
-- rag_get_smalltalk_context: Use when user asks about something funny, interesting, entertaining, about a story or wants casual conversation topics
+- db_get_smalltalk: Use when user asks about something funny, interesting, entertaining, about a story or wants casual conversation topics..
   Examples:
-    • "Tell me story about Tatooine" → rag_get_smalltalk_context("story about Tatooine")
-    • "Tell me something funny about banthas" → rag_get_smalltalk_context("something funny about banthas")
-    • "Do you know something interesting about Jedi robes" → rag_get_smalltalk_context("something interesting about Jedi robes")
-    • "What's fun to do at Mos Eisley" → rag_get_smalltalk_context("what to do at Mos Eisley")
-    • "Tell me a story about droids" → rag_get_smalltalk_context("story about droids")
+    • "Tell me story about Tatooine" → db_get_smalltalk("story about Tatooine")
+    • "Tell me something funny about banthas" → db_get_smalltalk("something funny about banthas")
+    • "Do you know something interesting about Jedi robes" → db_get_smalltalk("something interesting about Jedi robes")
+    • "What's fun to do at Mos Eisley" → db_get_smalltalk("what to do at Mos Eisley")
+    • "Tell me a story about droids" → db_get_smalltalk("story about droids")
+    • For variety: db_get_smalltalk() (empty query) returns random topic
   """
 
 

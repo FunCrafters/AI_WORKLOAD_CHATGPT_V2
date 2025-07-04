@@ -135,17 +135,17 @@ def get_function_schemas():
         {
             "type": "function",
             "function": {
-                "name": "rag_get_smalltalk_context",
-                "description": "Search for something funny or interesting.",
+                "name": "db_get_smalltalk",
+                "description": "Search smalltalk knowledge base for casual conversation topics using PostgreSQL embedding similarity.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "Search query for something funny or interesting"
+                            "description": "Search query for smalltalk topics and casual conversation content. If empty, returns a random smalltalk topic."
                         }
                     },
-                    "required": ["query"]
+                    "required": []
                 }
             }
         },
