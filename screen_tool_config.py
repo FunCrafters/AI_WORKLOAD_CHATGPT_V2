@@ -62,9 +62,9 @@ SCREEN_TOOL_RULES = {
         },
         "data_tools": [
             {
-                "tool": "gcs_get_character_details_by_id",
+                "tool": "db_get_champion_details_byid",
                 "json_field": "ChampionConfigId",
-                "parameter_name": "character_id"
+                "parameter_name": "champion_id"
             }
         ],
         "prompt_injection": {

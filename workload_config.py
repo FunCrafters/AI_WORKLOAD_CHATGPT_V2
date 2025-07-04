@@ -5,13 +5,13 @@ Configuration parameters for the LLM Workload
 """
 
 # Workload configuration constants
-WORKLOAD_HASH = "GPT_v0.2"  # 8-character fixed hash
+WORKLOAD_HASH = "GPTMW_v2"  # 8-character fixed hash
 SERVER_HOST = "localhost"    # Server address
 SERVER_PORT = 5009           # Server port (can be overridden from env)
 
 # Workload configuration
 WORKLOAD_CONFIG = {
-    "title": "Marek ChatGPT v0.2",
+    "title": "ChatGPT Marek v2",
     "hash_id": WORKLOAD_HASH,
     "description": "Multi-model workload with dynamic model selection, tools and structured output.",
     "channels": {

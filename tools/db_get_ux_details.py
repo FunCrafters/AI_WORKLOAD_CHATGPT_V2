@@ -5,10 +5,12 @@ Retrieves UX information from the ux database
 """
 
 import os
-import sqlite3
 import logging
 import json
 from typing import Optional
+
+# Import the global PostgreSQL connection
+from db_postgres import execute_query
 
 # Logger
 logger = logging.getLogger("Workload Tools")
@@ -39,31 +41,19 @@ def db_get_ux_details(query: str) -> str:
         Formatted string with UX details
     """
     try:
-        # Get database path from environment
-        db_base_path = os.getenv("WORKLOAD_DB_PATH", "/root/dev/WorkloadData/DB_V1")
-        db_path = os.path.join(db_base_path, "ux.db.sqlite")
-        
-        logger.info(f"Opening ux database connection: {db_path}")
-        
-        # Connect to database
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row  # Enable column access by name
-        cursor = conn.cursor()
+        logger.info(f"Querying PostgreSQL for UX details: {query}")
         
         # Search for UX information by name (case insensitive)
-        cursor.execute("""
+        results = execute_query("""
             SELECT ux_id, ux_name, ux_content 
             FROM ux_records 
-            WHERE LOWER(ux_id) LIKE LOWER(?)
+            WHERE LOWER(ux_id) LIKE LOWER(%s)
             ORDER BY ux_name
             LIMIT 10
         """, (f"%{query}%",))
         
-        results = cursor.fetchall()
-        conn.close()
-        
         if results:
-            # Format results
+            # Format results (results are already dictionaries from execute_query)
             ux_results = []
             for result in results:
                 ux_results.append({

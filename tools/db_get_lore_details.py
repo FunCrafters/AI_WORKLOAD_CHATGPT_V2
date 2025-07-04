@@ -5,10 +5,12 @@ Retrieves lore information from the lore database
 """
 
 import os
-import sqlite3
 import logging
 import json
 from typing import Optional
+
+# Import the global PostgreSQL connection
+from db_postgres import execute_query
 
 # Logger
 logger = logging.getLogger("Workload Tools")
@@ -39,29 +41,19 @@ def db_get_lore_details(champion_name: str) -> str:
         Formatted string with champion lore report
     """
     try:
-        # Get database path from environment
-        db_base_path = os.getenv("WORKLOAD_DB_PATH", "/mnt/raid/dev/WorkloadData/DB_V1")
-        db_path = os.path.join(db_base_path, "lore.db.sqlite")
-        
-        logger.info(f"Opening lore database connection: {db_path}")
-        
-        # Connect to database
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row  # Enable column access by name
-        cursor = conn.cursor()
+        logger.info(f"Querying PostgreSQL for lore details: {champion_name}")
         
         # Search for champion by name (case insensitive)
-        cursor.execute("""
+        results = execute_query("""
             SELECT champion_id, champion_name, lore_text 
             FROM lore_records 
-            WHERE LOWER(champion_name) LIKE LOWER(?)
+            WHERE LOWER(champion_name) LIKE LOWER(%s)
         """, (f"%{champion_name}%",))
         
-        result = cursor.fetchone()
-        conn.close()
+        result = results[0] if results else None
         
         if result:
-            # Format the lore report as a string
+            # Format the lore report as a string (result is already a dictionary)
             report = f"""# CHAMPION LORE REPORT
 
 **Champion:** {result["champion_name"]}

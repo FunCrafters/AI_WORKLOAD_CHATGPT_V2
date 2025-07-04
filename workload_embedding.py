@@ -101,16 +101,7 @@ def initialize_embeddings_and_vectorstore(config: dict, ollama_host: str, ollama
     
     embedding_log.append("Vectorstore initialized successfully")
     
-    # Initialize game data cache
-    try:
-        # Import here to avoid circular imports
-        from tools_functions import initialize_game_data_cache
-        initialize_game_data_cache(vectorstore_ollama)
-        embedding_log.append("✓ Game data cache initialized successfully")
-    except Exception as e:
-        embedding_log.append(f"⚠️  Warning: Failed to initialize game data cache: {str(e)}")
-        logger.warning(f"Failed to initialize game data cache: {str(e)}")
-    
+       
     # Initialize smalltalk cache
     try:
         from db_smalltalk import initialize_smalltalk_db
@@ -228,6 +219,21 @@ def initialize_embeddings_and_vectorstore(config: dict, ollama_host: str, ollama
     except Exception as e:
         embedding_log.append(f"\n⚠️  Error accessing lore database: {str(e)}")
         logger.error(f"Error accessing lore database: {str(e)}")
+    
+    # Add PostgreSQL database information
+    try:
+        from db_postgres import initialize_postgres_db, get_postgres_database_info
+        
+        # Initialize PostgreSQL database connection
+        if initialize_postgres_db():
+            # Get PostgreSQL database info
+            postgres_info = get_postgres_database_info()
+            embedding_log.extend(postgres_info)
+        else:
+            embedding_log.append("\n⚠️  Failed to initialize PostgreSQL database connection")
+    except Exception as e:
+        embedding_log.append(f"\n⚠️  Error accessing PostgreSQL database: {str(e)}")
+        logger.error(f"Error accessing PostgreSQL database: {str(e)}")
     
     # Store the log globally
     vectorstore_log = embedding_log

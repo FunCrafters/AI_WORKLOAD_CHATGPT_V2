@@ -6,8 +6,10 @@ Fetch a random greeting from the greetings database
 
 import json
 import os
-import sqlite3
 import logging
+
+# Import the global PostgreSQL connection
+from db_postgres import execute_query
 
 # Logger
 logger = logging.getLogger("DB Get Random Greetings")
@@ -21,56 +23,45 @@ def db_get_random_greetings() -> str:
         str: JSON formatted greeting response
     """
     try:
-        # Connect to greetings database from WORKLOAD_DB_PATH
-        db_base_path = os.getenv("WORKLOAD_DB_PATH", "/mnt/raid/dev/WorkloadData/DB_V1")
-        db_path = os.path.join(db_base_path, "greetings.db.sqlite")
+        logger.info("Querying PostgreSQL for random greeting")
         
-        logger.info(f"Connecting to greetings database at: {db_path}")
-        conn = sqlite3.connect(db_path)
+        # Get a random greeting from PostgreSQL
+        results = execute_query("""
+            SELECT greeting 
+            FROM greeting_records 
+            ORDER BY RANDOM() 
+            LIMIT 1
+        """)
         
-        try:
-            cursor = conn.cursor()
-            cursor.execute("""
-                SELECT greeting 
-                FROM greeting_records 
-                ORDER BY RANDOM() 
-                LIMIT 1
-            """)
-            
-            result = cursor.fetchone()
-            
-            if result:
-                greeting = result[0]
-                logger.info(f"Selected greeting: {greeting}")
+        if results:
+            greeting = results[0]["greeting"]
+            logger.info(f"Selected greeting: {greeting}")
                 
-                return json.dumps({
-                    "status": "success",
-                    "message": "Random greeting retrieved successfully",
-                    "content": {
-                        "greeting": greeting
-                    },
-                    "internal_info": {
-                        "function_name": "db_get_random_greetings",
-                        "parameters": {}
-                    }
-                })
-            else:
-                logger.warning("No greetings found in database")
-                return json.dumps({
-                    "status": "error",
-                    "message": "No greetings available in database",
-                    "content": {
-                        "greeting": "Greetings, cadet. T-3RN at your service."
-                    },
-                    "internal_info": {
-                        "function_name": "db_get_random_greetings",
-                        "parameters": {},
-                        "fallback": True
-                    }
-                })
-                
-        finally:
-            conn.close()
+            return json.dumps({
+                "status": "success",
+                "message": "Random greeting retrieved successfully",
+                "content": {
+                    "greeting": greeting
+                },
+                "internal_info": {
+                    "function_name": "db_get_random_greetings",
+                    "parameters": {}
+                }
+            })
+        else:
+            logger.warning("No greetings found in database")
+            return json.dumps({
+                "status": "error",
+                "message": "No greetings available in database",
+                "content": {
+                    "greeting": "Greetings, cadet. T-3RN at your service."
+                },
+                "internal_info": {
+                    "function_name": "db_get_random_greetings",
+                    "parameters": {},
+                    "fallback": True
+                }
+            })
             
     except Exception as e:
         logger.error(f"Error in db_get_random_greetings: {str(e)}")

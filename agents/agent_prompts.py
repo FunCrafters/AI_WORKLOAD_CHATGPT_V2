@@ -107,15 +107,11 @@ Examples:
 QUESTION_ANALYZER_TOOLS = """
 AVAILABLE TOOLS:
 
-- cache_get_champions_list: Get complete list of all champions
+- db_get_champions_list: Get complete list of all champions
   Examples: 
-    • "List all champions" → use cache_get_champions_list
-    • "What champions we have?" → use cache_get_champions_list
+    • "List all champions" → use db_get_champions_list
+    • "What champions we have?" → use db_get_champions_list
 
-- cache_get_bosses_list: Get complete list of all bosses
-  Examples: 
-    • "List all bosses" → use cache_get_bosses_list
-    • "What bosses we have?" → use cache_get_bosses_list
 
 - rag_get_champion_details: Get detailed info about specific champion
   Examples: 
@@ -145,65 +141,71 @@ AVAILABLE TOOLS:
     • "What can I do here?" → use db_get_screen_context_help("what to do in the game")
     • "Where am I?" → use db_get_screen_context_help("where am I")
 
-- gcs_get_champion_details: Get detailed champion information including stats, abilities, traits, power ranking, and battle recommendations from GCS database
+- db_get_champion_details: Get detailed champion information including stats, abilities, traits, power ranking, and battle recommendations from PostgreSQL database
   Examples: 
-    • "Tell me everything about Han Solo" → use gcs_get_champion_details("Han Solo")
-    • "Get full details for Luke Skywalker" → use gcs_get_champion_details("Luke Skywalker")
-    • "Show me complete info about Chewbacca" → use gcs_get_champion_details("Chewbacca")
+    • "Tell me everything about Han Solo" → use db_get_champion_details("Han Solo")
+    • "Get full details for Luke Skywalker" → use db_get_champion_details("Luke Skywalker")
+    • "Show me complete info about Chewbacca" → use db_get_champion_details("Chewbacca")
 
-- gcs_find_characters: Search for characters (champions and enemies) - list will contain only names, classes, rarities, affinities and internal ID of character, if champion appears in the game as enemy you can find it here
+- db_get_champion_details_byid: Get detailed champion information by exact ID from PostgreSQL database
   Examples: 
-    • "Find all Droid characters" → use gcs_find_characters("Droid")
-
-- gcs_find_champions: Search for champions only by name - returns only champions, no enemies, useful when you need champion internal ID that can be used by gcs_get_character_details_by_id
-  Examples: 
-    • "Find champion Han Solo" → use gcs_find_champions("Han Solo")
-    • "Who is Han Solo?" → use gcs_find_champions("Han Solo")
-
-- gcs_find_enemies: Search for enemies only by name with battle information - returns only enemies, no champions, useful when you need enemy internal ID that can be used by gcs_get_character_details_by_id
-  Examples: 
-    • "Find enemy Stormtrooper" → use gcs_find_enemies("Stormtrooper")
-    • "Do we have Chewbacca as enemy?" → use gcs_find_enemies("Chewbacca")
+    • "Get champion.sw1.hansolo details" → use db_get_champion_details_byid("champion.sw1.hansolo")
+    • "Show me champion.owk1.taladurith info" → use db_get_champion_details_byid("champion.owk1.taladurith")
 
 
-- gcs_get_champion_abilities: Get abilities information for a champion by name - returns human-readable ability descriptions
-  Examples: 
-    • "What abilities does Han Solo have?" → use gcs_get_champion_abilities("Han Solo")
-    • "Show me Luke's abilities" → use gcs_get_champion_abilities("Luke")
-    • "Tell me about Chewbacca's skills" → use gcs_get_champion_abilities("Chewbacca")
 
 
-- gcs_find_strongest_champions: Get the strongest champions based on total power (attack + defense + health) with statistical analysis
-  Examples: 
-    • "What are the strongest champions?" → use gcs_find_strongest_champions()
-    • "Give me a list of 5 strongest champions" → use gcs_find_strongest_champions(5)
-    who is most powerful champion? → use gcs_find_strongest_champions()
 
-- gcs_find_strongest_enemies: Get the strongest enemies based on total power (attack + defense + health) with battle appearance counts
-  Examples: 
-    • "What are the strongest enemies?" → use gcs_find_strongest_enemies()
-    • "Give me a list of 5 strongest enemies" → use gcs_find_strongest_enemies(5)
-    • "Who is the strongest enemy?" → use gcs_find_strongest_enemies()
-    
-- gcs_find_champions_stronger_than: Find champions who are stronger than a specified reference champion with power differences
-  Examples: 
-    • "Who is stronger than Han Solo?" → use gcs_find_champions_stronger_than("Han Solo")
-    • "Show me champions stronger than Luke" → use gcs_find_champions_stronger_than("Luke")
-    • "Who is better than Han Solo?" → use gcs_find_champions_stronger_than("Han Solo")
-    • "Which champion is more powerful than Han Solo?" → use gcs_find_champions_stronger_than("Han Solo")
 
-- gcs_compare_characters: Compare two or more characters side by side with comprehensive analysis of stats, abilities, roles, and recommendations
-  Examples: 
-    • "Compare Han Solo and Luke Skywalker" → use gcs_compare_characters(["Han Solo", "Luke Skywalker"])
-    • "Compare Vader vs Luke vs Han" → use gcs_compare_characters(["Vader", "Luke", "Han"])
-    • "Who will win, Darth Vader or Luke Skywalker?" → use gcs_compare_characters(["Darth Vader", "Luke Skywalker"])
 
-- gcs_get_champions_by_traits: Find champions that match specified traits (rarity, affinity, class, race, side_of_force, etc.) with power rankings
+- db_find_strongest_champions: Find the strongest champions based on total power with optional trait filtering from PostgreSQL database
+  Available trait values:
+    • rarity: legendary, epic, rare, uncommon, common
+    • affinity: red, blue, green, yellow, purple
+    • class_type: attacker, defender, support
   Examples: 
-    • "Show legendary red champions" → use gcs_get_champions_by_traits(["legendary", "red"])
-    • "Find epic support champions" → use gcs_get_champions_by_traits(["epic", "support"])
-    • "List all attackers" → use gcs_get_champions_by_traits(["attacker"])
-    • "Find all champions using melee attack" → use gcs_get_champions_by_traits(["melee"])
+    • "What are the strongest champions?" → use db_find_strongest_champions()
+    • "Find strongest legendary attackers" → use db_find_strongest_champions(limit=10, rarity="legendary", class_type="attacker")
+    • "Show strongest red champions" → use db_find_strongest_champions(limit=15, affinity="red")
+    • "Give me 5 strongest epic defenders" → use db_find_strongest_champions(limit=5, rarity="epic", class_type="defender")
+
+- db_find_champions_stronger_than: Find champions stronger than reference champion with optional trait filtering from PostgreSQL database
+  Available trait values:
+    • rarity: legendary, epic, rare, uncommon, common
+    • affinity: red, blue, green, yellow, purple
+    • class_type: attacker, defender, support
+  Examples: 
+    • "Who is stronger than Han Solo?" → use db_find_champions_stronger_than("Han Solo")
+    • "Find epic champions stronger than Luke" → use db_find_champions_stronger_than("Luke", rarity="epic")
+    • "Show legendary attackers stronger than Vader" → use db_find_champions_stronger_than("Vader", rarity="legendary", class_type="attacker")
+    • "Which red champions are stronger than Han Solo?" → use db_find_champions_stronger_than("Han Solo", affinity="red")
+
+
+
+- db_get_champions_by_traits: Find champions that match specified traits (rarity, affinity, class) with power rankings using PostgreSQL (uses AND logic - all specified traits must match)
+  Available trait values:
+    • rarity: legendary, epic, rare, uncommon, common
+    • affinity: red, blue, green, yellow, purple
+    • class_type: attacker, defender, support
+  Examples: 
+    • "Show legendary red champions" → use db_get_champions_by_traits(["legendary", "red"])
+    • "Find epic support champions" → use db_get_champions_by_traits(["epic", "support"])
+    • "List all attackers" → use db_get_champions_by_traits(["attacker"])
+    • "Find rare blue defenders" → use db_get_champions_by_traits(["rare", "blue", "defender"])
+
+- db_compare_champions: Compare two or more champions side by side with comprehensive analysis of stats, traits, roles, and recommendations using PostgreSQL
+  Examples: 
+    • "Compare Han Solo and Luke Skywalker" → use db_compare_champions(["Han Solo", "Luke Skywalker"])
+    • "Compare Vader vs Luke vs Han" → use db_compare_champions(["Vader", "Luke", "Han"])
+    • "Who will win, Darth Vader or Luke Skywalker?" → use db_compare_champions(["Darth Vader", "Luke Skywalker"])
+    • "Analyze differences between Chewbacca and R2-D2" → use db_compare_champions(["Chewbacca", "R2-D2"])
+
+- db_find_champions: Search for champions by name with basic information from PostgreSQL database
+  Examples: 
+    • "Find champions with Luke in name" → use db_find_champions("Luke")
+    • "Search for Han Solo champions" → use db_find_champions("Han Solo")
+    • "Find all Vader champions" → use db_find_champions("Vader")
+    • "List champions matching 'Jedi'" → use db_find_champions("Jedi")
   
 - db_get_lore_details: Get lore information from database. Use when user asks about character lore, background, or detailed information.
   Examples: 

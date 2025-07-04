@@ -44,27 +44,23 @@ class T3RNAgent(Agent):
         
         # Complementary tools mapping (copied from QuestionAnalyzer)
         self.COMPLEMENTARY_MAPPING = {
-            'rag_get_champion_details': 'gcs_get_champion_details',
-            'gcs_get_champion_details': 'rag_get_champion_details',
+            'rag_get_champion_details': 'db_get_champion_details',
+            'db_get_champion_details': 'rag_get_champion_details',
             # Add more mappings here as needed
         }
         
         # Get available tools info (copied from QuestionAnalyzer)
         try:
-            from tools_cache.cache_get_champions_list import cache_get_champions_list_text
-            from tools_cache.cache_get_bosses_list import cache_get_bosses_list_text
-            self.champions_list = cache_get_champions_list_text()
-            self.bosses_list = cache_get_bosses_list_text()
+            from tools.db_get_champions_list import db_get_champions_list_text
+            self.champions_list = db_get_champions_list_text()
         except Exception:
             self.champions_list = "Champions list not available"
-            self.bosses_list = "Bosses list not available"
     
     def get_system_prompt(self, context: AgentContext) -> str:
         """Get system prompt - randomly choose between T3RN and T4RN"""
         
         champions_and_bosses = f"""
-CHAMPIONS LIST: {self.champions_list}
-BOSSES LIST: {self.bosses_list}"""
+CHAMPIONS LIST: {self.champions_list}"""
         
         # Randomly choose between CHARACTER_BASE_T3RN and CHARACTER_BASE_T4RN
         character_prompt = random.choice(['CHARACTER_BASE_T3RN', 'CHARACTER_BASE_T4RN'])

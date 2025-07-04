@@ -6,14 +6,11 @@ Main module that imports and exposes all LLM tools
 
 import logging
 
-# Import cache-based tool functions
-from tools_cache.cache_get_champions_list import cache_get_champions_list
-from tools_cache.cache_get_bosses_list import cache_get_bosses_list
-
 # Import RAG-based tool functions
 from tools_rag.rag_get_champion_details import rag_get_champion_details
 from tools_rag.rag_get_boss_details import rag_get_boss_details
 from tools.db_get_ux_details import db_get_ux_details
+from tools.db_get_champions_list import db_get_champions_list
 from tools_rag.rag_get_mechanics_details import rag_get_mechanics_details
 from tools_rag.rag_get_gameplay_details import rag_get_gameplay_details
 from tools_rag.rag_get_general_knowledge import rag_get_general_knowledge
@@ -22,29 +19,22 @@ from tools_rag.rag_get_smalltalk_context import rag_get_smalltalk_context
 
 
 # Import GCS database tool functions
-from tools_gcs.gcs_get_champion_details import gcs_get_champion_details
-from tools_gcs.gcs_get_champion_abilities import gcs_get_champion_abilities
-from tools_gcs.gcs_get_character_abilities_by_id import gcs_get_character_abilities_by_id
-from tools_gcs.gcs_find_characters import gcs_find_characters
-from tools_gcs.gcs_find_champions import gcs_find_champions
-from tools_gcs.gcs_find_enemies import gcs_find_enemies
-from tools_gcs.gcs_get_character_details_by_id import gcs_get_character_details_by_id
-from tools_gcs.gcs_find_strongest_champions import gcs_find_strongest_champions
-from tools_gcs.gcs_find_strongest_enemies import gcs_find_strongest_enemies
-from tools_gcs.gcs_find_champions_stronger_than import gcs_find_champions_stronger_than
-from tools_gcs.gcs_compare_characters import gcs_compare_characters
-from tools_gcs.gcs_get_champions_by_traits import gcs_get_champions_by_traits
+from tools.db_get_champion_details import db_get_champion_details, db_get_champion_details_byid
 
 # Import lore report tool function
 from tools.db_get_lore_details import db_get_lore_details
 
+# Import new PostgreSQL functions with trait filtering
+from tools.db_find_strongest_champions import db_find_strongest_champions
+from tools.db_find_champions_stronger_than import db_find_champions_stronger_than
+from tools.db_get_champions_by_traits import db_get_champions_by_traits
+from tools.db_compare_champions import db_compare_champions
+from tools.db_find_champions import db_find_champions
+
 # Import supporting functions that remain in original modules
 from workload_game_cache import (
-    initialize_game_data_cache,
     get_cache_info,
-    get_name_from_alias,
     set_current_json_data,
-    get_alias_mapping_info,
     get_random_smalltalk_topic_and_knowledge
 )
 
@@ -61,19 +51,12 @@ logger = logging.getLogger("Workload LLM Tools")
 
 # Available LLM tools for function calling with metadata
 available_llm_functions = {
-    'cache_get_champions_list': {
-        'function': cache_get_champions_list,
+    'db_get_champions_list': {
+        'function': db_get_champions_list,
         'is_rag': False,
         'is_gcs': False,
         'category': 'static',
         'description': 'Get complete list of all available champions'
-    },
-    'cache_get_bosses_list': {
-        'function': cache_get_bosses_list,
-        'is_rag': False,
-        'is_gcs': False,
-        'category': 'static',
-        'description': 'Get complete list of all available bosses'
     },
     'rag_get_champion_details': {
         'function': rag_get_champion_details,
@@ -131,75 +114,19 @@ available_llm_functions = {
         'category': 'rag_smalltalk',
         'description': 'Get information about something funny or interesting'
     },
-    'gcs_get_champion_details': {
-        'function': gcs_get_champion_details,
+    'db_get_champion_details': {
+        'function': db_get_champion_details,
         'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database',
-        'description': 'Get detailed champion information from GCS database including stats, abilities, and battle recommendations'
+        'is_gcs': False,
+        'category': 'database',
+        'description': 'Get detailed champion information from PostgreSQL database including stats, abilities, and battle recommendations'
     },
-    'gcs_get_champion_abilities': {
-        'function': gcs_get_champion_abilities,
+    'db_get_champion_details_byid': {
+        'function': db_get_champion_details_byid,
         'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database',
-        'description': 'Get abilities information for a champion by name, returns formatted ability descriptions'
-    },
-    'gcs_find_characters': {
-        'function': gcs_find_characters,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database',
-        'description': 'Search for characters (champions and enemies) by name with battle information and comprehensive results'
-    },
-    'gcs_find_champions': {
-        'function': gcs_find_champions,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database',
-        'description': 'Search for champions only by name, returns champions without enemies'
-    },
-    'gcs_find_enemies': {
-        'function': gcs_find_enemies,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database',
-        'description': 'Search for enemies only by name with battle appearance information, returns enemies without champions'
-    },
-    'gcs_find_strongest_champions': {
-        'function': gcs_find_strongest_champions,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database',
-        'description': 'Find the strongest champions based on total power (attack + defense + health) with statistical analysis'
-    },
-    'gcs_find_strongest_enemies': {
-        'function': gcs_find_strongest_enemies,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database',
-        'description': 'Find the strongest enemies based on total power (attack + defense + health) with battle appearance counts'
-    },
-    'gcs_find_champions_stronger_than': {
-        'function': gcs_find_champions_stronger_than,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database',
-        'description': 'Find champions who are stronger than a specified reference champion based on total power comparison'
-    },
-    'gcs_compare_characters': {
-        'function': gcs_compare_characters,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database',
-        'description': 'Compare two or more characters side by side with comprehensive analysis of stats, abilities, roles, and recommendations'
-    },
-    'gcs_get_champions_by_traits': {
-        'function': gcs_get_champions_by_traits,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database',
-        'description': 'Find champions that match specified traits (rarity, affinity, class) with power rankings and statistics'
+        'is_gcs': False,
+        'category': 'database',
+        'description': 'Get detailed champion information by ID from PostgreSQL database'
     },
     'db_get_lore_details': {
         'function': db_get_lore_details,
@@ -207,25 +134,46 @@ available_llm_functions = {
         'is_gcs': False,
         'category': 'lore',
         'description': 'Get lore information from database'
+    },
+    'db_find_strongest_champions': {
+        'function': db_find_strongest_champions,
+        'is_rag': False,
+        'is_gcs': False,
+        'category': 'database',
+        'description': 'Find the strongest champions based on total power with optional trait filtering (rarity, affinity, class_type) using PostgreSQL'
+    },
+    'db_find_champions_stronger_than': {
+        'function': db_find_champions_stronger_than,
+        'is_rag': False,
+        'is_gcs': False,
+        'category': 'database',
+        'description': 'Find champions stronger than reference champion with optional trait filtering (rarity, affinity, class_type) using PostgreSQL'
+    },
+    'db_get_champions_by_traits': {
+        'function': db_get_champions_by_traits,
+        'is_rag': False,
+        'is_gcs': False,
+        'category': 'database',
+        'description': 'Find champions that match specified traits (rarity, affinity, class_type) with power rankings using PostgreSQL and AND logic'
+    },
+    'db_compare_champions': {
+        'function': db_compare_champions,
+        'is_rag': False,
+        'is_gcs': False,
+        'category': 'database',
+        'description': 'Compare two or more champions side by side with comprehensive analysis of stats, traits, roles, and recommendations using PostgreSQL'
+    },
+    'db_find_champions': {
+        'function': db_find_champions,
+        'is_rag': False,
+        'is_gcs': False,
+        'category': 'database',
+        'description': 'Search for champions by name with basic information (rarity, affinity, class, faction) using PostgreSQL'
     }
 }
 
 # Available LLM tools by ID (temporarily disabled - use internal IDs instead of names)
 available_llm_functions_by_id = {
-    'gcs_get_character_details_by_id': {
-        'function': gcs_get_character_details_by_id,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database_by_id',
-        'description': 'Get comprehensive details for any character (champion or enemy) by their internal database ID'
-    },
-    'gcs_get_character_abilities_by_id': {
-        'function': gcs_get_character_abilities_by_id,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_database_by_id',
-        'description': 'Get abilities information for any character (champion or enemy) by their internal database ID'
-    }
 }
 
 # Import internal/proactive tools that are not exposed to LLM
@@ -233,13 +181,6 @@ from tools.db_get_random_greetings import db_get_random_greetings
 
 # Available proactive/internal tools for system use (not exposed to LLM)
 available_proactive_tools = {
-    'gcs_get_character_details_by_id': {
-        'function': gcs_get_character_details_by_id,
-        'is_rag': False,
-        'is_gcs': True,
-        'category': 'gcs_internal',
-        'description': 'Get character details by internal database ID (internal use only)'
-    },
     'db_get_random_greetings': {
         'function': db_get_random_greetings,
         'is_rag': False,
@@ -258,8 +199,8 @@ def get_rag_functions():
     return [name for name, meta in available_llm_functions.items() if meta['is_rag']]
 
 def get_gcs_functions():
-    """Get list of GCS function names"""
-    return [name for name, meta in available_llm_functions.items() if meta['is_gcs']]
+    """Get list of GCS function names (deprecated - no GCS functions remain)"""
+    return []
 
 def get_static_functions():
     """Get list of static function names"""
@@ -274,8 +215,8 @@ def is_rag_function(name):
     return available_llm_functions.get(name, {}).get('is_rag', False)
 
 def is_gcs_function(name):
-    """Check if function is a GCS function"""
-    return available_llm_functions.get(name, {}).get('is_gcs', False)
+    """Check if function is a GCS function (deprecated - no GCS functions remain)"""
+    return False
 
 def get_tools_info() -> str:
     """
@@ -295,16 +236,10 @@ def get_tools_info() -> str:
     tools_info.append("These tools use cached data for instant responses:")
     tools_info.append("")
     
-    tools_info.append("🔸 **cache_get_champions_list**")
+    tools_info.append("🔸 **db_get_champions_list**")
     tools_info.append("   📝 Description: Get complete list of all available champions")
     tools_info.append("   ❓ Answers: 'List all champions', 'What champions are available?'")
-    tools_info.append("   ⚡ Data Source: Memory cache (instant)")
-    tools_info.append("")
-    
-    tools_info.append("🔸 **cache_get_bosses_list**")
-    tools_info.append("   📝 Description: Get complete list of all available bosses")
-    tools_info.append("   ❓ Answers: 'List all bosses', 'What bosses exist?'")
-    tools_info.append("   ⚡ Data Source: Memory cache (instant)")
+    tools_info.append("   ⚡ Data Source: PostgreSQL database")
     tools_info.append("")
     
     
@@ -399,91 +334,35 @@ def get_tools_info() -> str:
     tools_info.append("   ⚠️ Availability: Only when JSON contains screenData section")
     tools_info.append("")
     
-    # GCS Database Tools
-    tools_info.append("### 🗃️ GCS DATABASE TOOLS (Direct Database Access)")
-    tools_info.append("These tools provide direct access to the GCS game database:")
+    # PostgreSQL Database Tools
+    tools_info.append("### 🗃️ POSTGRESQL DATABASE TOOLS (Direct Database Access)")
+    tools_info.append("These tools provide direct access to the PostgreSQL game database:")
     tools_info.append("")
     
-    tools_info.append("🔸 **gcs_get_champion_details**")
-    tools_info.append("   📝 Description: Get comprehensive champion information from GCS database")
+    tools_info.append("🔸 **db_get_champion_details**")
+    tools_info.append("   📝 Description: Get comprehensive champion information from PostgreSQL database")
     tools_info.append("   ❓ Answers: 'Tell me about Luke Skywalker stats', 'Champion abilities details'")
     tools_info.append("   📋 Parameters: champion_name (exact or partial name)")
-    tools_info.append("   🗄️ Data Source: Direct SQL queries to GCS database")
-    tools_info.append("   📚 Includes: Stats, abilities with effects, traits, power ranking, battle recommendations")
     tools_info.append("")
     
-    tools_info.append("🔸 **gcs_find_characters**")
-    tools_info.append("   📝 Description: Search for both champions and enemies by name")
-    tools_info.append("   ❓ Answers: 'Find all Luke characters', 'Search Imperial enemies'")
-    tools_info.append("   📋 Parameters: name (character name or partial name)")
-    tools_info.append("   🗄️ Data Source: Direct SQL queries to GCS database")
-    tools_info.append("   📚 Includes: Champions list, enemies with battle appearances, comprehensive search results")
+    tools_info.append("🔸 **db_find_champions**")
+    tools_info.append("   📝 Description: Search for champions by name with basic information")
+    tools_info.append("   ❓ Answers: 'Find Luke champions', 'Search champions with Solo in name'")
+    tools_info.append("   📋 Parameters: name (champion name or partial name), limit")
     tools_info.append("")
     
-    tools_info.append("🔸 **gcs_find_champions**")
-    tools_info.append("   📝 Description: Search for champions only by name")
-    tools_info.append("   ❓ Answers: 'Find Luke champions', 'Search only champion versions'")
-    tools_info.append("   📋 Parameters: name (champion name or partial name)")
-    tools_info.append("   🗄️ Data Source: Direct SQL queries to GCS database")
-    tools_info.append("   📚 Includes: Champions list only, no enemies")
+    tools_info.append("🔸 **db_find_strongest_champions**")
+    tools_info.append("   📝 Description: Find strongest champions with optional trait filtering")
+    tools_info.append("   ❓ Answers: 'Show strongest legendary attackers', 'Top 10 red champions'")
+    tools_info.append("   📋 Parameters: limit, rarity, affinity, class_type")
     tools_info.append("")
     
-    tools_info.append("🔸 **gcs_find_enemies**")
-    tools_info.append("   📝 Description: Search for enemies only by name with battle information")
-    tools_info.append("   ❓ Answers: 'Find Stormtrooper enemies', 'Search Imperial enemies'")
-    tools_info.append("   📋 Parameters: name (enemy name or partial name)")
-    tools_info.append("   🗄️ Data Source: Direct SQL queries to GCS database")
-    tools_info.append("   📚 Includes: Enemies list with battle appearances, no champions")
+    tools_info.append("🔸 **db_compare_champions**")
+    tools_info.append("   📝 Description: Compare champions side by side with comprehensive analysis")
+    tools_info.append("   ❓ Answers: 'Compare Han Solo and Luke', 'Vader vs Luke analysis'")
+    tools_info.append("   📋 Parameters: champion_names (list of 2-5 names)")
     tools_info.append("")
     
-    tools_info.append("🔸 **gcs_get_character_details_by_id**")
-    tools_info.append("   📝 Description: Get comprehensive details for any character by their internal ID")
-    tools_info.append("   ❓ Answers: 'Details for character ID luke_jedi', 'Info about vader_empire'")
-    tools_info.append("   📋 Parameters: character_id (internal database ID)")
-    tools_info.append("   🗄️ Data Source: Direct SQL queries to GCS database")
-    tools_info.append("   📚 Includes: Full details including stats, abilities, traits, similar characters")
-    tools_info.append("")
-    
-    tools_info.append("🔸 **gcs_find_strongest_champions**")
-    tools_info.append("   📝 Description: Find the strongest champions by total power")
-    tools_info.append("   ❓ Answers: 'Show strongest champions', 'Top 20 most powerful champions'")
-    tools_info.append("   📋 Parameters: limit (number of champions, default: 10, max: 50)")
-    tools_info.append("   🗄️ Data Source: Direct SQL queries to GCS database")
-    tools_info.append("   📚 Includes: Power rankings, statistics, trait distribution analysis")
-    tools_info.append("")
-    
-    tools_info.append("🔸 **gcs_find_strongest_enemies**")
-    tools_info.append("   📝 Description: Find the strongest enemies by total power")
-    tools_info.append("   ❓ Answers: 'Show strongest enemies', 'Top 15 most powerful enemies'")
-    tools_info.append("   📋 Parameters: limit (number of enemies, default: 10, max: 50)")
-    tools_info.append("   🗄️ Data Source: Direct SQL queries to GCS database")
-    tools_info.append("   📚 Includes: Power rankings, battle appearances, faction distribution")
-    tools_info.append("")
-    
-    tools_info.append("🔸 **gcs_find_champions_stronger_than**")
-    tools_info.append("   📝 Description: Find champions stronger than a specified reference champion")
-    tools_info.append("   ❓ Answers: 'Who is stronger than Han Solo?', 'Champions stronger than Luke'")
-    tools_info.append("   📋 Parameters: character_name (reference champion), limit (default: 20, max: 50)")
-    tools_info.append("   🗄️ Data Source: Direct SQL queries to GCS database")
-    tools_info.append("   📚 Includes: Power comparisons, differences, reference character details")
-    tools_info.append("")
-    
-    tools_info.append("🔸 **gcs_compare_characters**")
-    tools_info.append("   📝 Description: Compare two or more characters side by side with comprehensive analysis")
-    tools_info.append("   ❓ Answers: 'Compare Han Solo and Luke', 'Vader vs Luke vs Han comparison'")
-    tools_info.append("   📋 Parameters: character_names (list of 2-5 names), detailed (default: true)")
-    tools_info.append("   🗄️ Data Source: Direct SQL queries to GCS database")
-    tools_info.append("   📚 Includes: Stats comparison, role analysis, ability comparison, intelligent recommendations")
-    tools_info.append("")
-    
-    tools_info.append("🔸 **gcs_get_champions_by_traits**")
-    tools_info.append("   📝 Description: Find champions matching specified traits using AND logic")
-    tools_info.append("   ❓ Answers: 'Show legendary red champions', 'Find epic support characters'")
-    tools_info.append("   📋 Parameters: traits (list of trait values), limit (default: 50, max: 100)")
-    tools_info.append("   🗄️ Data Source: Direct SQL queries to GCS database")
-    tools_info.append("   📚 Includes: Rarity, affinity, class filtering with power rankings")
-    tools_info.append("   🎯 Available Traits: legendary/epic/rare/uncommon/common, red/blue/green/yellow/purple, attacker/defender/support")
-    tools_info.append("")
     
     # Tool Usage Statistics
     tools_info.append("### 📊 TOOL CATEGORIES SUMMARY")
@@ -495,7 +374,7 @@ def get_tools_info() -> str:
     
     tools_info.append(f"⚡ Static Data Tools: {len(static_tools)} (instant cache-based)")
     tools_info.append(f"🗄️ RAG-based Tools: {len(rag_tools)} (knowledge base search)")
-    tools_info.append(f"🗃️ GCS Database Tools: {len(gcs_tools)} (direct database access)")
+    tools_info.append(f"🗃️ PostgreSQL Database Tools: {len([name for name, meta in available_llm_functions.items() if meta['category'] == 'database'])} (direct database access)")
     tools_info.append(f"🖥️ Context Tools: {len(context_tools)} (conditional availability)")
     tools_info.append(f"💬 Smalltalk Tools: {len(smalltalk_tools)} (smalltalk mode only)")
     tools_info.append(f"📈 Total Available: {len(available_llm_functions)} tools")
@@ -505,18 +384,18 @@ def get_tools_info() -> str:
     tools_info.append("### ⚡ PERFORMANCE CHARACTERISTICS")
     tools_info.append("🚀 **Static Tools**: Sub-millisecond response (memory cache)")
     tools_info.append("🔍 **RAG Tools**: ~100-500ms response (vectorstore search)")
-    tools_info.append("🗃️ **GCS Tools**: ~50-200ms response (direct database queries)")
+    tools_info.append("🗃️ **PostgreSQL Tools**: ~50-200ms response (direct database queries)")
     tools_info.append("📚 **Knowledge Base**: 7 similarity + 7 Q&A chunks per search")
     tools_info.append("🎯 **Precision**: Exact name matching + semantic similarity")
     tools_info.append("")
     
     # Usage Guidelines
     tools_info.append("### 📋 USAGE GUIDELINES")
-    tools_info.append("1. **Lists & Filtering**: Use static tools (cache_get_champions_list, cache_get_bosses_list) for basic lists")
-    tools_info.append("2. **Trait Filtering**: Use GCS tools (gcs_get_champions_by_traits) for filtering by rarity, affinity, class")
-    tools_info.append("3. **Detailed Champion Info**: Use GCS tools (gcs_get_champion_details) for comprehensive data")
-    tools_info.append("4. **Character Search**: Use GCS tools (gcs_find_characters) for champions and enemies")
-    tools_info.append("5. **Power Analysis**: Use GCS tools (gcs_find_strongest_champions, gcs_compare_characters)")
+    tools_info.append("1. **Lists & Filtering**: Use static tools (db_get_champions_list) for basic lists")
+    tools_info.append("2. **Trait Filtering**: Use PostgreSQL tools (db_get_champions_by_traits) for filtering by rarity, affinity, class")
+    tools_info.append("3. **Detailed Champion Info**: Use database tools (db_get_champion_details, db_get_champion_details_byid) for comprehensive data")
+    tools_info.append("4. **Character Search**: Use PostgreSQL tools (db_find_champions) for champion search")
+    tools_info.append("5. **Power Analysis**: Use PostgreSQL tools (db_find_strongest_champions, db_find_champions_stronger_than, db_compare_champions)")
     tools_info.append("6. **RAG Detailed Info**: Use RAG tools (rag_get_champion_details, rag_get_boss_details)")
     tools_info.append("7. **Category Search**: Use category tools (db_get_ux_details, rag_get_mechanics_details)")
     tools_info.append("8. **General Questions**: Use rag_get_general_knowledge")

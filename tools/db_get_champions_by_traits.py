@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-GCS Tool: Get Champions by Traits
+PostgreSQL Database Tool: Get Champions by Traits
 Find champions that match specified traits (rarity, affinity, class, etc.)
 """
 
 import json
 import logging
-from db_gcs import execute_query
+from db_postgres import execute_query
 
 # Logger
-logger = logging.getLogger("GCS Get Champions by Traits")
+logger = logging.getLogger("DB Get Champions by Traits")
 
 
-def gcs_get_champions_by_traits(traits: list, limit: int = 50) -> str:
+def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
     """
     Find champions that match all specified traits.
     
@@ -42,7 +42,7 @@ def gcs_get_champions_by_traits(traits: list, limit: int = 50) -> str:
                 "champions": [],
                 "available_traits": trait_categories,
                 "internal_info": {
-                    "function_name": "gcs_get_champions_by_traits",
+                    "function_name": "db_get_champions_by_traits",
                     "parameters": {"traits": traits, "limit": limit}
                 }
             })
@@ -57,14 +57,14 @@ def gcs_get_champions_by_traits(traits: list, limit: int = 50) -> str:
             
             for category, values in trait_categories.items():
                 if trait_lower in values:
-                    trait_filters[category] = trait_lower
+                    trait_filters[category] = trait_lower  # Keep lowercase for internal logic
                     found = True
                     break
             
             if not found:
                 unrecognized_traits.append(trait)
         
-        # If no recognized traits, return error
+        # If no recognized traits, return error (this is a real error - invalid input)
         if not trait_filters:
             return json.dumps({
                 "status": "error",
@@ -73,32 +73,37 @@ def gcs_get_champions_by_traits(traits: list, limit: int = 50) -> str:
                 "champions": [],
                 "available_traits": trait_categories,
                 "internal_info": {
-                    "function_name": "gcs_get_champions_by_traits",
+                    "function_name": "db_get_champions_by_traits",
                     "parameters": {"traits": traits, "limit": limit}
                 }
             })
         
         # Build dynamic query based on specified traits
-        query_conditions = ["ge.entity_type = 'champion'"]
+        query_conditions = ["ct.champion_name IS NOT NULL"]
         query_params = []
         
         for category, value in trait_filters.items():
-            query_conditions.append(f"ge.{category} = ?")
-            query_params.append(value)
+            if category == 'class_type':
+                query_conditions.append("ct.class = %s")
+            else:
+                query_conditions.append(f"ct.{category} = %s")
+            query_params.append(value.upper())
+        
+        # Add limit parameter
+        query_params.append(limit)
         
         query = f"""
-        SELECT ge.id, ge.name, ge.entity_type, ge.rarity, ge.affinity, ge.class_type, 
-               ge.faction, ge.series,
-               es.attack, es.defense, es.health, es.speed,
-               (es.attack + es.defense + es.health) as total_power
-        FROM game_entities ge
-        JOIN entity_stats es ON ge.id = es.entity_id
+        SELECT ct.id, ct.champion_name, ct.rarity, ct.affinity, ct.class, 
+               ct.faction,
+               cs.attack, cs.defense, cs.health, cs.speed,
+               (cs.attack + cs.defense + cs.health) as total_power
+        FROM champion_traits ct
+        JOIN champion_stats cs ON ct.champion_name = cs.champion_name
         WHERE {' AND '.join(query_conditions)}
         ORDER BY total_power DESC
-        LIMIT ?
+        LIMIT %s
         """
         
-        query_params.append(limit)
         champions = execute_query(query, query_params)
         
         if not champions:
@@ -125,7 +130,7 @@ def gcs_get_champions_by_traits(traits: list, limit: int = 50) -> str:
                 "llm_instruction": llm_no_results,
                 "available_traits": trait_categories,
                 "internal_info": {
-                    "function_name": "gcs_get_champions_by_traits",
+                    "function_name": "db_get_champions_by_traits",
                     "parameters": {"traits": traits, "limit": limit}
                 }
             })
@@ -148,9 +153,9 @@ def gcs_get_champions_by_traits(traits: list, limit: int = 50) -> str:
         champion_list = []
         for i, champion in enumerate(champions, 1):
             champion_list.append(
-                f"{i}. **{champion['name']}** - Power: {champion['total_power']} "
+                f"{i}. **{champion['champion_name']}** - Power: {champion['total_power']} "
                 f"({champion.get('rarity', 'N/A')} {champion.get('affinity', 'N/A')} "
-                f"{champion.get('class_type', 'N/A')})"
+                f"{champion.get('class', 'N/A')})"
             )
         
         formatted_list = "\n".join(champion_list)
@@ -160,7 +165,7 @@ def gcs_get_champions_by_traits(traits: list, limit: int = 50) -> str:
         trait_list = ', '.join(recognized_traits)
         summary = (
             f"Found {len(champions)} champions matching traits: {trait_list}. "
-            f"Strongest: {strongest_champion['name']} ({strongest_champion['total_power']} power)"
+            f"Strongest: {strongest_champion['champion_name']} ({strongest_champion['total_power']} power)"
         )
         
         # Add note about other traits if any
@@ -168,7 +173,7 @@ def gcs_get_champions_by_traits(traits: list, limit: int = 50) -> str:
             summary += f" For other traits like {', '.join(unrecognized_traits)}, use specialized functions."
         
         # Create LLM instruction
-        llm_instruction = f"Present the list of {len(champions)} champions matching traits ({trait_list}):\n\n{formatted_list}\n\nHighlight that {strongest_champion['name']} is the strongest with {strongest_champion['total_power']} power."
+        llm_instruction = f"Present the list of {len(champions)} champions matching traits ({trait_list}):\n\n{formatted_list}\n\nHighlight that {strongest_champion['champion_name']} is the strongest with {strongest_champion['total_power']} power."
         if unrecognized_traits:
             llm_instruction += f"\n\nFor additional traits like {', '.join(unrecognized_traits)}, recommend using other specialized search functions."
         
@@ -183,32 +188,32 @@ def gcs_get_champions_by_traits(traits: list, limit: int = 50) -> str:
             "requested_limit": limit,
             "power_stats": power_stats,
             "strongest": {
-                "name": strongest_champion['name'],
+                "name": strongest_champion['champion_name'],
                 "id": strongest_champion['id'],
                 "power": strongest_champion['total_power'],
                 "rarity": strongest_champion.get('rarity'),
                 "affinity": strongest_champion.get('affinity'),
-                "class_type": strongest_champion.get('class_type')
+                "class_type": strongest_champion.get('class')
             },
             "summary": summary,
             "formatted_list": formatted_list,
             "llm_instruction": llm_instruction,
             "available_traits": trait_categories,
             "internal_info": {
-                "function_name": "gcs_get_champions_by_traits",
+                "function_name": "db_get_champions_by_traits",
                 "parameters": {"traits": traits, "limit": limit}
             }
         })
         
     except Exception as e:
-        logger.error(f"Error in gcs_get_champions_by_traits: {str(e)}")
+        logger.error(f"Error in db_get_champions_by_traits: {str(e)}")
         return json.dumps({
             "status": "error",
             "message": f"Error searching champions by traits: {str(e)}",
             "traits": traits,
             "champions": [],
             "internal_info": {
-                "function_name": "gcs_get_champions_by_traits",
+                "function_name": "db_get_champions_by_traits",
                 "parameters": {"traits": traits, "limit": limit}
             }
         })
