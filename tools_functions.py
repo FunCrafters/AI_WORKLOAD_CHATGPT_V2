@@ -6,16 +6,18 @@ Main module that imports and exposes all LLM tools
 
 import logging
 
-# Import RAG-based tool functions
-from tools_rag.rag_get_champion_details import rag_get_champion_details
-from tools_rag.rag_get_boss_details import rag_get_boss_details
+# Import new PostgreSQL RAG-based tool functions
+from tools.db_rag_get_champion_details import db_rag_get_champion_details
+from tools.db_rag_get_boss_details import db_rag_get_boss_details
+from tools.db_rag_get_mechanic_details import db_rag_get_mechanic_details
+from tools.db_rag_get_gameplay_details import db_rag_get_gameplay_details
+from tools.db_rag_get_general_knowledge import db_rag_get_general_knowledge
+from tools.db_rag_get_location_details import db_rag_get_location_details
+from tools.db_rag_get_battles import db_rag_get_battles
 from tools.db_get_ux_details import db_get_ux_details
 from tools.db_get_champions_list import db_get_champions_list
-from tools_rag.rag_get_mechanics_details import rag_get_mechanics_details
-from tools_rag.rag_get_gameplay_details import rag_get_gameplay_details
-from tools_rag.rag_get_general_knowledge import rag_get_general_knowledge
 from tools.db_get_screen_context_help import db_get_screen_context_help
-from tools.db_get_smalltalk import db_get_smalltalk
+from tools.db_rag_get_smalltalk import db_rag_get_smalltalk
 
 
 # Import GCS database tool functions
@@ -58,19 +60,19 @@ available_llm_functions = {
         'category': 'static',
         'description': 'Get complete list of all available champions'
     },
-    'rag_get_champion_details': {
-        'function': rag_get_champion_details,
-        'is_rag': True,
+    'db_rag_get_champion_details': {
+        'function': db_rag_get_champion_details,
+        'is_rag': False,
         'is_gcs': False,
-        'category': 'rag_detail',
-        'description': 'Get detailed information about a specific champion'
+        'category': 'database',
+        'description': 'Get detailed information about a specific champion from PostgreSQL rag_vectors using Ollama embeddings'
     },
-    'rag_get_boss_details': {
-        'function': rag_get_boss_details,
-        'is_rag': True,
+    'db_rag_get_boss_details': {
+        'function': db_rag_get_boss_details,
+        'is_rag': False,
         'is_gcs': False,
-        'category': 'rag_detail',
-        'description': 'Get detailed information about a specific boss'
+        'category': 'database',
+        'description': 'Get detailed information about a specific boss from PostgreSQL rag_vectors using Ollama embeddings'
     },
     'db_get_ux_details': {
         'function': db_get_ux_details,
@@ -79,26 +81,40 @@ available_llm_functions = {
         'category': 'database',
         'description': 'Search UX and interface information from database'
     },
-    'rag_get_mechanics_details': {
-        'function': rag_get_mechanics_details,
-        'is_rag': True,
+    'db_rag_get_mechanic_details': {
+        'function': db_rag_get_mechanic_details,
+        'is_rag': False,
         'is_gcs': False,
-        'category': 'rag_category',
-        'description': 'Search game mechanics information'
+        'category': 'database',
+        'description': 'Search game mechanics information from PostgreSQL rag_vectors using Ollama embeddings'
     },
-    'rag_get_gameplay_details': {
-        'function': rag_get_gameplay_details,
-        'is_rag': True,
+    'db_rag_get_gameplay_details': {
+        'function': db_rag_get_gameplay_details,
+        'is_rag': False,
         'is_gcs': False,
-        'category': 'rag_category',
-        'description': 'Search gameplay strategies and tactics'
+        'category': 'database',
+        'description': 'Search gameplay strategies and tactics from PostgreSQL rag_vectors using Ollama embeddings'
     },
-    'rag_get_general_knowledge': {
-        'function': rag_get_general_knowledge,
-        'is_rag': True,
+    'db_rag_get_general_knowledge': {
+        'function': db_rag_get_general_knowledge,
+        'is_rag': False,
         'is_gcs': False,
-        'category': 'rag_general',
-        'description': 'Search entire knowledge base'
+        'category': 'database',
+        'description': 'Search entire knowledge base from PostgreSQL rag_vectors using Ollama embeddings'
+    },
+    'db_rag_get_location_details': {
+        'function': db_rag_get_location_details,
+        'is_rag': False,
+        'is_gcs': False,
+        'category': 'database',
+        'description': 'Search location information from PostgreSQL rag_vectors using Ollama embeddings'
+    },
+    'db_rag_get_battles': {
+        'function': db_rag_get_battles,
+        'is_rag': False,
+        'is_gcs': False,
+        'category': 'database',
+        'description': 'Search battle information from PostgreSQL rag_vectors using Ollama embeddings'
     },
     'db_get_screen_context_help': {
         'function': db_get_screen_context_help,
@@ -107,8 +123,8 @@ available_llm_functions = {
         'category': 'context',
         'description': 'Get contextual help for current screen/UI state'
     },
-    'db_get_smalltalk': {
-        'function': db_get_smalltalk,
+    'db_rag_get_smalltalk': {
+        'function': db_rag_get_smalltalk,
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
@@ -243,30 +259,30 @@ def get_tools_info() -> str:
     tools_info.append("")
     
     
-    # RAG-based Detail Tools
-    tools_info.append("### 🔍 RAG-BASED DETAIL TOOLS (Knowledge Base)")
-    tools_info.append("These tools search the knowledge base for detailed information:")
+    # PostgreSQL RAG-based Detail Tools
+    tools_info.append("### 🔍 POSTGRESQL RAG-BASED DETAIL TOOLS (Knowledge Base)")
+    tools_info.append("These tools search the PostgreSQL rag_vectors knowledge base using Ollama embeddings:")
     tools_info.append("")
     
-    tools_info.append("🔸 **rag_get_champion_details**")
+    tools_info.append("🔸 **db_rag_get_champion_details**")
     tools_info.append("   📝 Description: Get detailed information about a specific champion")
     tools_info.append("   ❓ Answers: 'Tell me about Han Solo', 'Champion details for Luke'")
     tools_info.append("   📋 Parameters: champion_name (exact name)")
-    tools_info.append("   🗄️ Data Source: RAG search (vectorstore)")
+    tools_info.append("   🗄️ Data Source: PostgreSQL rag_vectors (chunk_section=CHAMPIONS)")
     tools_info.append("   📚 Includes: Core info, gameplay info, abilities, stats")
     tools_info.append("")
     
-    tools_info.append("🔸 **rag_get_boss_details**")
+    tools_info.append("🔸 **db_rag_get_boss_details**")
     tools_info.append("   📝 Description: Get detailed information about a specific boss")
     tools_info.append("   ❓ Answers: 'Tell me about Darth Vader boss', 'Boss mechanics'")
     tools_info.append("   📋 Parameters: boss_name (exact name)")
-    tools_info.append("   🗄️ Data Source: RAG search (vectorstore)")
+    tools_info.append("   🗄️ Data Source: PostgreSQL rag_vectors (chunk_section=BOSSES)")
     tools_info.append("   📚 Includes: Core info, gameplay info, strategies")
     tools_info.append("")
     
-    # Category-based RAG Tools
-    tools_info.append("### 📂 CATEGORY-BASED RAG TOOLS (Knowledge Base)")
-    tools_info.append("These tools search specific categories in the knowledge base:")
+    # Category-based PostgreSQL RAG Tools
+    tools_info.append("### 📂 CATEGORY-BASED POSTGRESQL RAG TOOLS (Knowledge Base)")
+    tools_info.append("These tools search specific categories in the PostgreSQL rag_vectors knowledge base:")
     tools_info.append("")
     
     tools_info.append("🔸 **db_get_ux_details**")
@@ -277,20 +293,36 @@ def get_tools_info() -> str:
     tools_info.append("   📚 Includes: Interface, menus, navigation, user experience")
     tools_info.append("")
     
-    tools_info.append("🔸 **rag_get_mechanics_details**")
+    tools_info.append("🔸 **db_rag_get_mechanic_details**")
     tools_info.append("   📝 Description: Search game mechanics information")
     tools_info.append("   ❓ Answers: 'How does combat work?', 'Ability mechanics'")
     tools_info.append("   📋 Parameters: query (search terms)")
-    tools_info.append("   🗄️ Data Source: RAG search (category: mechanics)")
+    tools_info.append("   🗄️ Data Source: PostgreSQL rag_vectors (chunk_section=MECHANICS)")
     tools_info.append("   📚 Includes: Rules, systems, combat, abilities")
     tools_info.append("")
     
-    tools_info.append("🔸 **rag_get_gameplay_details**")
+    tools_info.append("🔸 **db_rag_get_gameplay_details**")
     tools_info.append("   📝 Description: Search gameplay strategies and tactics")
     tools_info.append("   ❓ Answers: 'Best strategies?', 'How to progress?'")
     tools_info.append("   📋 Parameters: query (search terms)")
-    tools_info.append("   🗄️ Data Source: RAG search (category: gameplay)")
+    tools_info.append("   🗄️ Data Source: PostgreSQL rag_vectors (chunk_section=GAMEPLAY)")
     tools_info.append("   📚 Includes: Strategies, tactics, progression, tips")
+    tools_info.append("")
+    
+    tools_info.append("🔸 **db_rag_get_locations**")
+    tools_info.append("   📝 Description: Search location information")
+    tools_info.append("   ❓ Answers: 'Tell me about Tatooine', 'Planet descriptions'")
+    tools_info.append("   📋 Parameters: query (search terms)")
+    tools_info.append("   🗄️ Data Source: PostgreSQL rag_vectors (chunk_section=LOCATIONS)")
+    tools_info.append("   📚 Includes: Planets, places, environments, descriptions")
+    tools_info.append("")
+    
+    tools_info.append("🔸 **db_rag_get_battles**")
+    tools_info.append("   📝 Description: Search battle information")
+    tools_info.append("   ❓ Answers: 'Tell me about famous battles', 'War strategies'")
+    tools_info.append("   📋 Parameters: query (search terms)")
+    tools_info.append("   🗄️ Data Source: PostgreSQL rag_vectors (chunk_section=BATTLES)")
+    tools_info.append("   📚 Includes: Battles, wars, conflicts, military history")
     tools_info.append("")
     
     # General Knowledge Tool
@@ -298,11 +330,11 @@ def get_tools_info() -> str:
     tools_info.append("Universal search tool for any information:")
     tools_info.append("")
     
-    tools_info.append("🔸 **rag_get_general_knowledge**")
+    tools_info.append("🔸 **db_rag_get_general_knowledge**")
     tools_info.append("   📝 Description: Search entire knowledge base - both general documents and Q&A")
     tools_info.append("   ❓ Answers: Any question about the game or characters")
     tools_info.append("   📋 Parameters: query (search terms)")
-    tools_info.append("   🗄️ Data Source: RAG search (entire vectorstore)")
+    tools_info.append("   🗄️ Data Source: PostgreSQL rag_vectors (all chunk_sections)")
     tools_info.append("   📚 Includes: All categories, documents, Q&A sections")
     tools_info.append("")
     
@@ -311,7 +343,7 @@ def get_tools_info() -> str:
     tools_info.append("Casual conversation tool available only in smalltalk mode:")
     tools_info.append("")
     
-    tools_info.append("🔸 **db_get_smalltalk**")
+    tools_info.append("🔸 **db_rag_get_smalltalk**")
     tools_info.append("   📝 Description: Search smalltalk knowledge base for casual conversation topics using PostgreSQL")
     tools_info.append("   ❓ Answers: 'Tell me about Tatooine weather', 'What's life like in cantinas?'")
     tools_info.append("   📋 Parameters: query (search terms for casual topics, optional)")
@@ -396,9 +428,9 @@ def get_tools_info() -> str:
     tools_info.append("3. **Detailed Champion Info**: Use database tools (db_get_champion_details, db_get_champion_details_byid) for comprehensive data")
     tools_info.append("4. **Character Search**: Use PostgreSQL tools (db_find_champions) for champion search")
     tools_info.append("5. **Power Analysis**: Use PostgreSQL tools (db_find_strongest_champions, db_find_champions_stronger_than, db_compare_champions)")
-    tools_info.append("6. **RAG Detailed Info**: Use RAG tools (rag_get_champion_details, rag_get_boss_details)")
-    tools_info.append("7. **Category Search**: Use category tools (db_get_ux_details, rag_get_mechanics_details)")
-    tools_info.append("8. **General Questions**: Use rag_get_general_knowledge")
+    tools_info.append("6. **RAG Detailed Info**: Use PostgreSQL RAG tools (db_rag_get_champion_details, db_rag_get_boss_details)")
+    tools_info.append("7. **Category Search**: Use PostgreSQL category tools (db_rag_get_mechanic_details, db_rag_get_gameplay_details, db_rag_get_locations, db_rag_get_battles)")
+    tools_info.append("8. **General Questions**: Use db_rag_get_general_knowledge")
     tools_info.append("9. **Unknown Queries**: Model automatically selects best tool")
     
     return "\n".join(tools_info)

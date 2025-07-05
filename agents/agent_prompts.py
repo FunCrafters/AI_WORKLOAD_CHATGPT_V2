@@ -113,28 +113,38 @@ AVAILABLE TOOLS:
     • "What champions we have?" → use db_get_champions_list
 
 
-- rag_get_champion_details: Get detailed info about specific champion
+- db_rag_get_champion_details: Get detailed info about specific champion from PostgreSQL rag_vectors
   Examples: 
-    • "Tell me about Luke Skywalker" → use rag_get_champion_details("Luke Skywalker")
-    • "Give me Han Solo details" → use rag_get_champion_details("Han Solo")
+    • "Tell me about Luke Skywalker" → use db_rag_get_champion_details("Luke Skywalker")
+    • "Give me Han Solo details" → use db_rag_get_champion_details("Han Solo")
 
-- rag_get_boss_details: Get detailed info about specific boss
+- db_rag_get_boss_details: Get detailed info about specific boss from PostgreSQL rag_vectors
   Examples: 
-    • "Tell me about Darth Vader boss" → use rag_get_boss_details("Darth Vader")
-    • "Give me Nexu details" → use rag_get_boss_details("Nexu")
+    • "Tell me about Darth Vader boss" → use db_rag_get_boss_details("Darth Vader")
+    • "Give me Nexu details" → use db_rag_get_boss_details("Nexu")
 
-- rag_get_mechanics_details: Get game mechanics information
+- db_rag_get_mechanic_details: Get game mechanics information from PostgreSQL rag_vectors
   Examples: 
-    • "How does combat work?" → use rag_get_mechanics_details("combat mechanics ")
-    • "What is the relation between colors?" → use rag_get_mechanics_details("color relations")
+    • "How does combat work?" → use db_rag_get_mechanic_details("combat mechanics")
+    • "What is the relation between colors?" → use db_rag_get_mechanic_details("color relations")
 
-- rag_get_gameplay_details: Get gameplay strategies information
+- db_rag_get_gameplay_details: Get gameplay strategies information from PostgreSQL rag_vectors
   Examples: 
-    • "Strategy questions" → use rag_get_gameplay_details("what to do in the game")
+    • "Strategy questions" → use db_rag_get_gameplay_details("what to do in the game")
 
-- rag_get_general_knowledge: Get general knowledge about game mechanics, rules, game systems and champions/bosses from the list.
+- db_rag_get_location_details: Get location information from PostgreSQL rag_vectors
   Examples: 
-    • "General questions" → use rag_get_general_knowledge("what is that game about")
+    • "Tell me about Tatooine" → use db_rag_get_location_details("Tatooine")
+    • "Planet descriptions" → use db_rag_get_location_details("planet descriptions")
+
+- db_rag_get_battles: Get battle information from PostgreSQL rag_vectors
+  Examples: 
+    • "Tell me about famous battles" → use db_rag_get_battles("famous battles")
+    • "War strategies" → use db_rag_get_battles("war strategies")
+
+- db_rag_get_general_knowledge: Get general knowledge from PostgreSQL rag_vectors about game mechanics, rules, game systems and champions/bosses from the list.
+  Examples: 
+    • "General questions" → use db_rag_get_general_knowledge("what is that game about")
 
 - db_get_screen_context_help: Get information about current screen state and what user can see and do
   Examples: 
@@ -217,14 +227,14 @@ AVAILABLE TOOLS:
 - db_get_ux_details: Get UX/interface information
   Examples: "Interface questions" → use db_get_ux_details
 
-- db_get_smalltalk: Use when user asks about something funny, interesting, entertaining, about a story or wants casual conversation topics..
+- db_rag_get_smalltalk: Use when user asks about something funny, interesting, entertaining, about a story or wants casual conversation topics..
   Examples:
-    • "Tell me story about Tatooine" → db_get_smalltalk("story about Tatooine")
-    • "Tell me something funny about banthas" → db_get_smalltalk("something funny about banthas")
-    • "Do you know something interesting about Jedi robes" → db_get_smalltalk("something interesting about Jedi robes")
-    • "What's fun to do at Mos Eisley" → db_get_smalltalk("what to do at Mos Eisley")
-    • "Tell me a story about droids" → db_get_smalltalk("story about droids")
-    • For variety: db_get_smalltalk() (empty query) returns random topic
+    • "Tell me story about Tatooine" → db_rag_get_smalltalk("story about Tatooine")
+    • "Tell me something funny about banthas" → db_rag_get_smalltalk("something funny about banthas")
+    • "Do you know something interesting about Jedi robes" → db_rag_get_smalltalk("something interesting about Jedi robes")
+    • "What's fun to do at Mos Eisley" → db_rag_get_smalltalk("what to do at Mos Eisley")
+    • "Tell me a story about droids" → db_rag_get_smalltalk("story about droids")
+    • For variety: db_rag_get_smalltalk() (empty query) returns random topic
   """
 
 

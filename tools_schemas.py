@@ -23,12 +23,11 @@ def get_function_schemas():
             }
         },
         
-        # RAG-based detail tools
         {
             "type": "function",
             "function": {
-                "name": "rag_get_champion_details",
-                "description": "Get detailed information about a specific champion including core and gameplay information",
+                "name": "db_rag_get_champion_details",
+                "description": "Get detailed information about a specific champion",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -44,8 +43,8 @@ def get_function_schemas():
         {
             "type": "function",
             "function": {
-                "name": "rag_get_boss_details",
-                "description": "Get detailed information about a specific boss including core and gameplay information",
+                "name": "db_rag_get_boss_details",
+                "description": "Get detailed information about a specific boss",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -59,7 +58,6 @@ def get_function_schemas():
             }
         },
         
-        # Category-based RAG search tools
         {
             "type": "function",
             "function": {
@@ -80,8 +78,8 @@ def get_function_schemas():
         {
             "type": "function",
             "function": {
-                "name": "rag_get_mechanics_details",
-                "description": "Search for game mechanics information including rules, systems, and gameplay mechanics",
+                "name": "db_rag_get_mechanic_details",
+                "description": "Search for game mechanics information",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -97,8 +95,8 @@ def get_function_schemas():
         {
             "type": "function",
             "function": {
-                "name": "rag_get_gameplay_details",
-                "description": "Search for gameplay information including strategies, tactics, and game flow",
+                "name": "db_rag_get_gameplay_details",
+                "description": "Search for gameplay information",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -111,13 +109,46 @@ def get_function_schemas():
                 }
             }
         },
-        
-        # General knowledge base - REMOVED search_type parameter
         {
             "type": "function",
             "function": {
-                "name": "rag_get_general_knowledge",
-                "description": "Search general knowledge base - searches both general documents and Q&A sections",
+                "name": "db_rag_get_location_details",
+                "description": "Search for location information",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Search query for location information (e.g., 'Tatooine', 'planet descriptions', 'environments')"
+                        }
+                    },
+                    "required": ["query"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "db_rag_get_battles",
+                "description": "Search for battle information",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Search query for battle information (e.g., 'famous battles', 'war strategies', 'conflicts')"
+                        }
+                    },
+                    "required": ["query"]
+                }
+            }
+        },
+        
+        {
+            "type": "function",
+            "function": {
+                "name": "db_rag_get_general_knowledge",
+                "description": "Search general knowledge - searches both general documents and Q&A sections across all chunk_sections",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -135,8 +166,8 @@ def get_function_schemas():
         {
             "type": "function",
             "function": {
-                "name": "db_get_smalltalk",
-                "description": "Search smalltalk knowledge base for casual conversation topics using PostgreSQL embedding similarity.",
+                "name": "db_rag_get_smalltalk",
+                "description": "Search smalltalk knowledge base for casual conversation topics",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -356,7 +387,7 @@ def get_function_schemas():
             "type": "function",
             "function": {
                 "name": "db_find_champions",
-                "description": "Search for champions by name with basic information from PostgreSQL database. Returns champion names with rarity, affinity, class, and faction information.",
+                "description": "Search for champions by name with basic information Returns champion names with rarity, affinity, class, and faction information.",
                 "parameters": {
                     "type": "object",
                     "properties": {

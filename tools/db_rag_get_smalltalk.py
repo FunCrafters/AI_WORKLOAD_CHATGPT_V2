@@ -42,7 +42,7 @@ def _generate_query_embedding(query_text: str) -> list:
         return None
 
 
-def db_get_smalltalk(query: str = "") -> str:
+def db_rag_get_smalltalk(query: str = "") -> str:
     """
     Search smalltalk knowledge base for casual conversation topics using PostgreSQL embedding similarity.
     
@@ -85,7 +85,7 @@ def db_get_smalltalk(query: str = "") -> str:
                     },
                     "llm_instruction": SMALLTALK_SPECIALIST_EMBEDDING,
                     "internal_info": {
-                        "function_name": "db_get_smalltalk",
+                        "function_name": "db_rag_get_smalltalk",
                         "parameters": {"query": query},
                         "method": "random_selection"
                     }
@@ -97,7 +97,7 @@ def db_get_smalltalk(query: str = "") -> str:
                     "search_query": search_query,
                     "content": {"smltk_results": ""},
                     "internal_info": {
-                        "function_name": "db_get_smalltalk",
+                        "function_name": "db_rag_get_smalltalk",
                         "parameters": {"query": query}
                     }
                 })
@@ -150,7 +150,7 @@ def db_get_smalltalk(query: str = "") -> str:
                         },
                         "llm_instruction": SMALLTALK_SPECIALIST_EMBEDDING,
                         "internal_info": {
-                            "function_name": "db_get_smalltalk",
+                            "function_name": "db_rag_get_smalltalk",
                             "parameters": {"query": query},
                             "method": "ollama_embedding_similarity_search",
                             "similarity_score": similarity,
@@ -193,7 +193,7 @@ def db_get_smalltalk(query: str = "") -> str:
                     },
                     "llm_instruction": SMALLTALK_SPECIALIST_EMBEDDING,
                     "internal_info": {
-                        "function_name": "db_get_smalltalk",
+                        "function_name": "db_rag_get_smalltalk",
                         "parameters": {"query": query},
                         "method": "random_fallback"
                     }
@@ -205,7 +205,7 @@ def db_get_smalltalk(query: str = "") -> str:
                     "search_query": search_query,
                     "content": {"smltk_results": ""},
                     "internal_info": {
-                        "function_name": "db_get_smalltalk",
+                        "function_name": "db_rag_get_smalltalk",
                         "parameters": {"query": query}
                     }
                 })
@@ -218,7 +218,7 @@ def db_get_smalltalk(query: str = "") -> str:
             "search_query": query if query else "random topic",
             "content": {"smltk_results": ""},
             "internal_info": {
-                "function_name": "db_get_smalltalk",
+                "function_name": "db_rag_get_smalltalk",
                 "parameters": {"query": query},
                 "error": str(e)
             }
