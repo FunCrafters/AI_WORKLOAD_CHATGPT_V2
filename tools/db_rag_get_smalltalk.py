@@ -9,7 +9,7 @@ import logging
 import random
 from db_postgres import execute_query
 from agents.agent_prompts import SMALLTALK_SPECIALIST_EMBEDDING
-from workload_embedding import get_vectorstore
+from workload_embedding import get_embedding_function
 
 # Logger
 logger = logging.getLogger("DB Get Smalltalk")
@@ -22,13 +22,7 @@ SEARCH_LIMIT = 10  # Get top 10 similar results, then pick random one
 def _generate_query_embedding(query_text: str) -> list:
     """Generate embedding for query text using Ollama"""
     try:
-        vectorstore = get_vectorstore()
-        if not vectorstore:
-            logger.error("Vectorstore not available")
-            return None
-        
-        # Get embedding function from vectorstore
-        embedding_function = vectorstore._embedding_function
+        embedding_function = get_embedding_function()
         if not embedding_function:
             logger.error("Embedding function not available")
             return None

@@ -257,8 +257,8 @@ class Agent(ABC):
     def _add_complementary_tools(self, tool_calls: List, channel_logger) -> List:
         """Add complementary tools to the tool calls list based on existing calls"""
         complementary_mapping = {
-            'rag_get_champion_details': 'db_get_champion_details',
-            'db_get_champion_details': 'rag_get_champion_details',
+            'db_rag_get_champion_details': 'db_get_champion_details',
+            'db_get_champion_details': 'db_rag_get_champion_details',
             # Add more mappings here as needed
         }
         

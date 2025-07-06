@@ -44,8 +44,8 @@ class T3RNAgent(Agent):
         
         # Complementary tools mapping (copied from QuestionAnalyzer)
         self.COMPLEMENTARY_MAPPING = {
-            'rag_get_champion_details': 'db_get_champion_details',
-            'db_get_champion_details': 'rag_get_champion_details',
+            'db_rag_get_champion_details': 'db_get_champion_details',
+            'db_get_champion_details': 'db_rag_get_champion_details',
             # Add more mappings here as needed
         }
         

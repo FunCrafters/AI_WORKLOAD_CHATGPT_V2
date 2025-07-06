@@ -6,7 +6,7 @@ Game data cache and static data functions
 
 import logging
 from typing import Dict, List, Optional
-from db_smalltalk import initialize_smalltalk_db, get_random_smalltalk_topic_and_knowledge
+from tools.db_rag_get_smalltalk import db_get_smalltalk_text
 
 # Logger
 logger = logging.getLogger("Workload Game Cache")

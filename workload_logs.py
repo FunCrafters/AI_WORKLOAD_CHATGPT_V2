@@ -14,7 +14,7 @@ from workload_tools import (
 
 # Import embedding functions
 from workload_embedding import (
-    get_vectorstore_log
+    get_embedding_log
 )
 
 # Import LLM tools
@@ -32,7 +32,7 @@ logger = logging.getLogger("Workload Logs")
 
 def build_vectorstore_log(client, session_id, message_id):
     """Display database logs in the Database channel (1)"""
-    vectorstore_log = get_vectorstore_log()
+    vectorstore_log = get_embedding_log()
     
     if not vectorstore_log:
         return

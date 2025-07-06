@@ -5,53 +5,41 @@ Defines rules for proactive tool calling based on current screen context
 """
 
 import logging
-import sqlite3
 import os
+from db_postgres import execute_query
 
 logger = logging.getLogger("Workload Screen Tools")
 
 
-def tools_translate(text_by_id: str) -> str:
+def get_champion_name_by_id(champion_id: str) -> str:
     """
-    Translate text ID to human readable text from translations table
+    Get champion name from PostgreSQL champions table by champion_id
     
     Args:
-        text_by_id (str): ID to translate (e.g. "champion.sw1.droideka")
+        champion_id (str): Champion ID to lookup (e.g. "champion.sw1.droideka")
         
     Returns:
-        str: Translated text or original ID if not found
+        str: Champion name or original ID if not found
     """
     try:
-        db_base_path = os.getenv("WORKLOAD_DB_PATH", "/mnt/raid/dev/WorkloadData/DB_V1")
-        db_path = os.path.join(db_base_path, "gcs_data.db.sqlite")
+        # Query PostgreSQL for champion name
+        results = execute_query("""
+            SELECT champion_name 
+            FROM champion_details 
+            WHERE champion_id = %s
+        """, (champion_id,))
         
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        
-        # Look for direct match first
-        cursor.execute("SELECT english_text FROM translations WHERE key_name = ?", (text_by_id,))
-        result = cursor.fetchone()
-        
-        if result:
-            conn.close()
-            return result[0]
-        
-        # If no direct match, try with .name suffix
-        name_key = f"{text_by_id}.name"
-        cursor.execute("SELECT english_text FROM translations WHERE key_name = ?", (name_key,))
-        result = cursor.fetchone()
-        
-        conn.close()
-        
-        if result:
-            return result[0]
+        if results and len(results) > 0:
+            champion_name = results[0]["champion_name"]
+            logger.info(f"✅ Found champion name for {champion_id}: {champion_name}")
+            return champion_name
         else:
-            logger.warning(f"⚠️ No translation found for: {text_by_id}")
-            return text_by_id
+            logger.warning(f"⚠️ No champion found for ID: {champion_id}")
+            return champion_id
             
     except Exception as e:
-        logger.error(f"❌ Error translating {text_by_id}: {str(e)}")
-        return text_by_id
+        logger.error(f"❌ Error getting champion name for {champion_id}: {str(e)}")
+        return champion_id
 
 # Screen-to-tool mapping configuration
 SCREEN_TOOL_RULES = {
@@ -68,12 +56,28 @@ SCREEN_TOOL_RULES = {
             }
         ],
         "prompt_injection": {
-            "template": "You are currently on the Champion Details screen. The user is viewing champion '{ChampionConfigId_translated}'. If user doesn't ask specific question focus your responses on this specific champion and the champion management interface they are currently using.",
+            "template": "You are currently on the Champion Details screen. The user is viewing champion '{champion_name}'. If user doesn't ask specific question focus your responses on this specific champion and the champion management interface they are currently using.",
             "required_fields": ["ChampionConfigId"],
-            "translate_fields": {"ChampionConfigId_translated": "ChampionConfigId"}
+            "lookup_fields": {"champion_name": "ChampionConfigId"}
         }
     },
-    
+    "CampaignTeamSelectUIPresenter": {
+        "context_tool": {
+            "tool": "db_get_ux_details",
+            "parameters": {"query": "CampaignTeamSelectUIPresenter"}
+        },
+        "data_tools": [
+            {
+                "tool": "db_rag_get_battle_details",
+                "json_field": "BattleId",
+                "parameter_name": "query"
+            }
+        ],
+        "prompt_injection": {
+            "template": "You are currently on the Campaign Team Select screen just before the battle. User goal is to select best team that can defeat opponents. Assist him to select best team and choose best strategy.",            
+            "required_fields": []
+        }
+    },
     # Add more screen configurations here
     "MainMenuScreen": {
         "context_tool": {
@@ -173,7 +177,7 @@ def build_prompt_injection(screen_name: str, data_fields: dict) -> str:
     
     template = prompt_config.get("template", "")
     required_fields = prompt_config.get("required_fields", [])
-    translate_fields = prompt_config.get("translate_fields", {})
+    lookup_fields = prompt_config.get("lookup_fields", {})
     
     # Check if all required fields are available
     missing_fields = [field for field in required_fields if field not in data_fields]
@@ -185,12 +189,13 @@ def build_prompt_injection(screen_name: str, data_fields: dict) -> str:
     substitutions = {"screen_name": screen_name}
     substitutions.update(data_fields)
     
-    # Add translated fields
-    for translated_key, source_key in translate_fields.items():
+    # Add lookup fields (champion name from PostgreSQL)
+    for lookup_key, source_key in lookup_fields.items():
         if source_key in data_fields:
-            translated_value = tools_translate(data_fields[source_key])
-            substitutions[translated_key] = translated_value
-            logger.info(f"🔄 Translated {source_key}='{data_fields[source_key]}' → {translated_key}='{translated_value}'")
+            if lookup_key == "champion_name":
+                champion_name = get_champion_name_by_id(data_fields[source_key])
+                substitutions[lookup_key] = champion_name
+                logger.info(f"🔄 Looked up {source_key}='{data_fields[source_key]}' → {lookup_key}='{champion_name}'")
     
     try:
         # Perform template substitution

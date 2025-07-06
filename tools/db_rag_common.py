@@ -8,7 +8,7 @@ import json
 import logging
 import random
 from typing import List, Dict, Any, Optional
-from workload_embedding import get_vectorstore
+from workload_embedding import get_embedding_function
 from db_postgres import execute_query
 
 # Constants
@@ -29,12 +29,12 @@ def generate_query_embedding(query: str) -> Optional[List[float]]:
         List of floats representing the embedding, or None if failed
     """
     try:
-        vectorstore = get_vectorstore()
-        if not vectorstore:
-            logger.error("Failed to get vectorstore")
+        embedding_function = get_embedding_function()
+        if not embedding_function:
+            logger.error("Failed to get embedding function")
             return None
         
-        embedding = vectorstore._embedding_function.embed_query(query)
+        embedding = embedding_function.embed_query(query)
         return embedding
     except Exception as e:
         logger.error(f"Error generating embedding: {str(e)}")
@@ -42,7 +42,7 @@ def generate_query_embedding(query: str) -> Optional[List[float]]:
 
 def execute_rag_search(
     query_embedding: List[float], 
-    chunk_section: str, 
+    chunk_section: str = None, 
     search_qa: bool = False,
     threshold: float = SIMILARITY_THRESHOLD,
     limit: int = SIMILARITY_LIMIT
@@ -52,7 +52,7 @@ def execute_rag_search(
     
     Args:
         query_embedding: Vector embedding for the query
-        chunk_section: The chunk_section to filter by (e.g., 'LOCATIONS', 'CHAMPIONS')
+        chunk_section: The chunk_section to filter by (e.g., 'LOCATIONS', 'CHAMPIONS'). If None, search all sections.
         search_qa: If True, search for QA content in rag_qa_vectors; if False, search for non-QA content in rag_vectors
         threshold: Minimum similarity threshold
         limit: Maximum number of results
@@ -62,33 +62,56 @@ def execute_rag_search(
     """
     try:
         if search_qa:
-            # Search for QA results in separate rag_qa_vectors table
-            # Use entity_names from the corresponding chunk_section in main table
-            query = """
-                SELECT qa.chunk_text, qa.metadata, 1 - (qa.embedding <=> %s::vector) as similarity
-                FROM rag_qa_vectors qa
-                WHERE qa.metadata->>'entity_name' IN (
-                    SELECT DISTINCT metadata->>'entity_name' 
+            if chunk_section:
+                # Search for QA results in separate rag_qa_vectors table
+                # Use entity_names from the corresponding chunk_section in main table
+                query = """
+                    SELECT qa.chunk_text, qa.metadata, 1 - (qa.embedding <=> %s::vector) as similarity
+                    FROM rag_qa_vectors qa
+                    WHERE qa.metadata->>'entity_name' IN (
+                        SELECT DISTINCT metadata->>'entity_name' 
+                        FROM rag_vectors 
+                        WHERE metadata->>'chunk_section' = %s
+                    )
+                    AND 1 - (qa.embedding <=> %s::vector) >= %s
+                    ORDER BY similarity DESC
+                    LIMIT %s
+                """
+                params = (query_embedding, chunk_section, query_embedding, threshold, limit)
+            else:
+                # Search all QA results without chunk_section filter
+                query = """
+                    SELECT chunk_text, metadata, 1 - (embedding <=> %s::vector) as similarity
+                    FROM rag_qa_vectors
+                    WHERE 1 - (embedding <=> %s::vector) >= %s
+                    ORDER BY similarity DESC
+                    LIMIT %s
+                """
+                params = (query_embedding, query_embedding, threshold, limit)
+        else:
+            if chunk_section:
+                # Search for similarity results (non-QA) in main rag_vectors table with chunk_section filter
+                query = """
+                    SELECT chunk_text, metadata, 1 - (embedding <=> %s::vector) as similarity
                     FROM rag_vectors 
                     WHERE metadata->>'chunk_section' = %s
-                )
-                AND 1 - (qa.embedding <=> %s::vector) >= %s
-                ORDER BY similarity DESC
-                LIMIT %s
-            """
-            params = (query_embedding, chunk_section, query_embedding, threshold, limit)
-        else:
-            # Search for similarity results (non-QA) in main rag_vectors table
-            query = """
-                SELECT chunk_text, metadata, 1 - (embedding <=> %s::vector) as similarity
-                FROM rag_vectors 
-                WHERE metadata->>'chunk_section' = %s
-                AND NOT (metadata->>'chunk_name' LIKE '%%QA%%')
-                AND 1 - (embedding <=> %s::vector) >= %s
-                ORDER BY similarity DESC
-                LIMIT %s
-            """
-            params = (query_embedding, chunk_section, query_embedding, threshold, limit)
+                    AND NOT (metadata->>'chunk_name' LIKE '%%QA%%')
+                    AND 1 - (embedding <=> %s::vector) >= %s
+                    ORDER BY similarity DESC
+                    LIMIT %s
+                """
+                params = (query_embedding, chunk_section, query_embedding, threshold, limit)
+            else:
+                # Search all similarity results without chunk_section filter
+                query = """
+                    SELECT chunk_text, metadata, 1 - (embedding <=> %s::vector) as similarity
+                    FROM rag_vectors 
+                    WHERE NOT (metadata->>'chunk_name' LIKE '%%QA%%')
+                    AND 1 - (embedding <=> %s::vector) >= %s
+                    ORDER BY similarity DESC
+                    LIMIT %s
+                """
+                params = (query_embedding, query_embedding, threshold, limit)
         
         return execute_query(query, params)
         
@@ -99,7 +122,7 @@ def execute_rag_search(
 def process_rag_results(
     results: List[Dict[str, Any]], 
     is_qa: bool = False,
-    random_selection: bool = True
+    random_selection: bool = False
 ) -> str:
     """
     Process RAG search results into formatted content
@@ -107,7 +130,7 @@ def process_rag_results(
     Args:
         results: List of dictionaries from execute_rag_search
         is_qa: If True, format as Q&A results
-        random_selection: If True, randomly select from results; if False, use first result
+        random_selection: If True, randomly select single result; if False, return all results as text
         
     Returns:
         Formatted string content or empty string if no results
@@ -130,20 +153,23 @@ def process_rag_results(
     if not processed_results:
         return ""
     
-    # Select result (random or first)
+    # Handle random selection (for smalltalk) vs all results (for RAG)
     if random_selection:
+        # Single random result (for smalltalk)
         selected_result = random.choice(processed_results)
+        name = selected_result['metadata'].get('entity_name', 'unknown') if selected_result['metadata'] else 'unknown'
+        
+        if is_qa:
+            return f"### Q&A: {name}\n{selected_result['content']}"
+        else:
+            return f"### {name}\n{selected_result['content']}"
     else:
-        selected_result = processed_results[0]
-    
-    # Extract entity name
-    name = selected_result['metadata'].get('entity_name', 'unknown') if selected_result['metadata'] else 'unknown'
-    
-    # Format content
-    if is_qa:
-        return f"### Q&A: {name}\n{selected_result['content']}"
-    else:
-        return f"### {name}\n{selected_result['content']}"
+        # All results as text (for RAG)
+        content_parts = []
+        for result in processed_results:
+            content_parts.append(result['content'])
+        
+        return '\n\n'.join(content_parts)
 
 def create_rag_response(
     query: str,
@@ -207,9 +233,9 @@ def create_rag_response(
 
 def execute_universal_rag(
     query: str,
-    chunk_section: str,
-    category: str,
-    function_name: str,
+    chunk_section: str = None,
+    category: str = "general",
+    function_name: str = "execute_universal_rag",
     threshold: float = SIMILARITY_THRESHOLD,
     limit: int = SIMILARITY_LIMIT,
     include_qa: bool = True
@@ -249,7 +275,7 @@ def execute_universal_rag(
             limit=limit
         )
         
-        similarity_content = process_rag_results(similarity_results, is_qa=False)
+        similarity_content = process_rag_results(similarity_results, is_qa=False, random_selection=False)
         
         # Search for QA results if requested
         qa_content = ""
@@ -261,7 +287,7 @@ def execute_universal_rag(
                 threshold=threshold,
                 limit=limit
             )
-            qa_content = process_rag_results(qa_results, is_qa=True)
+            qa_content = process_rag_results(qa_results, is_qa=True, random_selection=False)
         
         # Create and return response
         return create_rag_response(

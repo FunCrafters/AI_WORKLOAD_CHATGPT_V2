@@ -371,6 +371,54 @@ def process_text_message(client, data, session_id, message_id):
         response = create_response(channel, f"Received on channel {channel}: {text}", session_id, message_id)
         send_response(client, response, session_id, channel, message_id)
 
+def receive_full_message(client, delimiter=b'\n'):
+    """
+    Receive a complete message from socket until delimiter is found
+    
+    Args:
+        client: Socket client
+        delimiter: Message delimiter (default: newline)
+        
+    Returns:
+        Complete message as bytes or None if connection closed
+    """
+    buffer = b''
+    chunk_size = 4096
+    
+    try:
+        while True:
+            chunk = client.recv(chunk_size)
+            if not chunk:
+                # Connection closed
+                return None
+                
+            buffer += chunk
+            
+            # Check if we have a complete message
+            if delimiter in buffer:
+                # Split at first delimiter
+                message, remainder = buffer.split(delimiter, 1)
+                
+                # For now, we'll assume one message per receive cycle
+                # If remainder is not empty, it would need to be handled
+                # but current protocol seems to send one message at a time
+                if remainder:
+                    logger.warning(f"RECEIVE_REMAINDER: {len(remainder)} bytes remaining after delimiter")
+                
+                return message
+                
+            # Prevent infinite buffer growth
+            if len(buffer) > 1024 * 1024:  # 1MB limit
+                logger.error(f"RECEIVE_BUFFER_OVERFLOW: buffer size {len(buffer)} bytes")
+                return None
+                
+    except socket.timeout:
+        logger.warning("RECEIVE_TIMEOUT: no complete message received")
+        return None
+    except Exception as e:
+        logger.error(f"RECEIVE_ERROR: {str(e)}")
+        return None
+
 def reconnect_loop():
     """Main reconnection loop with retry logic"""
     max_retry_interval = 30  # Maximum retry interval in seconds
@@ -401,13 +449,18 @@ def reconnect_loop():
             # Main processing loop
             while True:
                 try:
-                    # Wait for messages
-                    message = client.recv(64000)  #Todo - to jest za male i nie dynamiczne, trzeba to zmienic
+                    # Wait for complete messages using delimiter-based protocol
+                    message = receive_full_message(client, delimiter=b'\n')
                     if not message:
-                        logger.warning("CONNECTION_CLOSED: by server")
+                        logger.warning("CONNECTION_CLOSED: by server or receive error")
                         break
                         
-                    # Process message
+                    # Log message size for debugging
+                    message_size = len(message)
+                    if message_size > 50000:  # Log large messages
+                        logger.info(f"LARGE_MESSAGE: size={message_size} bytes ({message_size/1024:.1f}KB)")
+                        
+                    # Process complete message
                     process_message(client, message)
                     
                 except socket.timeout:

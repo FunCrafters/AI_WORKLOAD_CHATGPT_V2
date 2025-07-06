@@ -13,7 +13,7 @@ from tools.db_rag_get_mechanic_details import db_rag_get_mechanic_details
 from tools.db_rag_get_gameplay_details import db_rag_get_gameplay_details
 from tools.db_rag_get_general_knowledge import db_rag_get_general_knowledge
 from tools.db_rag_get_location_details import db_rag_get_location_details
-from tools.db_rag_get_battles import db_rag_get_battles
+from tools.db_rag_get_battle_details import db_rag_get_battle_details
 from tools.db_get_ux_details import db_get_ux_details
 from tools.db_get_champions_list import db_get_champions_list
 from tools.db_get_screen_context_help import db_get_screen_context_help
@@ -21,7 +21,8 @@ from tools.db_rag_get_smalltalk import db_rag_get_smalltalk
 
 
 # Import GCS database tool functions
-from tools.db_get_champion_details import db_get_champion_details, db_get_champion_details_byid
+from tools.db_get_champion_details import db_get_champion_details
+from tools.db_get_champion_details_byid import db_get_champion_details_byid
 
 # Import lore report tool function
 from tools.db_get_lore_details import db_get_lore_details
@@ -36,11 +37,10 @@ from tools.db_find_champions import db_find_champions
 # Import supporting functions that remain in original modules
 from workload_game_cache import (
     get_cache_info,
-    set_current_json_data,
-    get_random_smalltalk_topic_and_knowledge
+    set_current_json_data
 )
 
-from workload_rag_search import rag_search
+# RAG search functionality moved to PostgreSQL db_rag_* functions
 
 from tools_schemas import get_function_schemas
 
@@ -65,14 +65,14 @@ available_llm_functions = {
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Get detailed information about a specific champion from PostgreSQL rag_vectors using Ollama embeddings'
+        'description': 'Get detailed information about a specific champion'
     },
     'db_rag_get_boss_details': {
         'function': db_rag_get_boss_details,
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Get detailed information about a specific boss from PostgreSQL rag_vectors using Ollama embeddings'
+        'description': 'Get detailed information about a specific boss'
     },
     'db_get_ux_details': {
         'function': db_get_ux_details,
@@ -100,21 +100,21 @@ available_llm_functions = {
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Search entire knowledge base from PostgreSQL rag_vectors using Ollama embeddings'
+        'description': 'Search entire knowledge base'
     },
     'db_rag_get_location_details': {
         'function': db_rag_get_location_details,
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Search location information from PostgreSQL rag_vectors using Ollama embeddings'
+        'description': 'Search location information'
     },
-    'db_rag_get_battles': {
-        'function': db_rag_get_battles,
+    'db_rag_get_battle_details': {
+        'function': db_rag_get_battle_details,
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Search battle information from PostgreSQL rag_vectors using Ollama embeddings'
+        'description': 'Search battle information'
     },
     'db_get_screen_context_help': {
         'function': db_get_screen_context_help,
@@ -128,21 +128,21 @@ available_llm_functions = {
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Get smalltalk context for casual conversation using PostgreSQL embedding similarity'
+        'description': 'Get smalltalk context for casual conversation'
     },
     'db_get_champion_details': {
         'function': db_get_champion_details,
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Get detailed champion information from PostgreSQL database including stats, abilities, and battle recommendations'
+        'description': 'Get detailed champion information including stats, abilities, and battle recommendations'
     },
     'db_get_champion_details_byid': {
         'function': db_get_champion_details_byid,
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Get detailed champion information by ID from PostgreSQL database'
+        'description': 'Get detailed champion information by ID'
     },
     'db_get_lore_details': {
         'function': db_get_lore_details,
@@ -156,35 +156,35 @@ available_llm_functions = {
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Find the strongest champions based on total power with optional trait filtering (rarity, affinity, class_type) using PostgreSQL'
+        'description': 'Find the strongest champions based on total power with optional trait filtering (rarity, affinity, class_type)'
     },
     'db_find_champions_stronger_than': {
         'function': db_find_champions_stronger_than,
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Find champions stronger than reference champion with optional trait filtering (rarity, affinity, class_type) using PostgreSQL'
+        'description': 'Find champions stronger than reference champion with optional trait filtering (rarity, affinity, class_type)'
     },
     'db_get_champions_by_traits': {
         'function': db_get_champions_by_traits,
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Find champions that match specified traits (rarity, affinity, class_type) with power rankings using PostgreSQL and AND logic'
+        'description': 'Find champions that match specified traits (rarity, affinity, class_type) with power rankings and AND logic'
     },
     'db_compare_champions': {
         'function': db_compare_champions,
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Compare two or more champions side by side with comprehensive analysis of stats, traits, roles, and recommendations using PostgreSQL'
+        'description': 'Compare two or more champions side by side with comprehensive analysis of stats, traits, roles, and recommendations'
     },
     'db_find_champions': {
         'function': db_find_champions,
         'is_rag': False,
         'is_gcs': False,
         'category': 'database',
-        'description': 'Search for champions by name with basic information (rarity, affinity, class, faction) using PostgreSQL'
+        'description': 'Search for champions by name with basic information (rarity, affinity, class, faction)'
     }
 }
 
@@ -317,7 +317,7 @@ def get_tools_info() -> str:
     tools_info.append("   📚 Includes: Planets, places, environments, descriptions")
     tools_info.append("")
     
-    tools_info.append("🔸 **db_rag_get_battles**")
+    tools_info.append("🔸 **db_rag_get_battle_details**")
     tools_info.append("   📝 Description: Search battle information")
     tools_info.append("   ❓ Answers: 'Tell me about famous battles', 'War strategies'")
     tools_info.append("   📋 Parameters: query (search terms)")
@@ -429,7 +429,7 @@ def get_tools_info() -> str:
     tools_info.append("4. **Character Search**: Use PostgreSQL tools (db_find_champions) for champion search")
     tools_info.append("5. **Power Analysis**: Use PostgreSQL tools (db_find_strongest_champions, db_find_champions_stronger_than, db_compare_champions)")
     tools_info.append("6. **RAG Detailed Info**: Use PostgreSQL RAG tools (db_rag_get_champion_details, db_rag_get_boss_details)")
-    tools_info.append("7. **Category Search**: Use PostgreSQL category tools (db_rag_get_mechanic_details, db_rag_get_gameplay_details, db_rag_get_locations, db_rag_get_battles)")
+    tools_info.append("7. **Category Search**: Use PostgreSQL category tools (db_rag_get_mechanic_details, db_rag_get_gameplay_details, db_rag_get_locations, db_rag_get_battle_details)")
     tools_info.append("8. **General Questions**: Use db_rag_get_general_knowledge")
     tools_info.append("9. **Unknown Queries**: Model automatically selects best tool")
     

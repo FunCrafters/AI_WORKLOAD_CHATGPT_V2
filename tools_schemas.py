@@ -129,7 +129,7 @@ def get_function_schemas():
         {
             "type": "function",
             "function": {
-                "name": "db_rag_get_battles",
+                "name": "db_rag_get_battle_details",
                 "description": "Search for battle information",
                 "parameters": {
                     "type": "object",
