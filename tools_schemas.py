@@ -239,6 +239,40 @@ def get_function_schemas():
         {
             "type": "function",
             "function": {
+                "name": "db_get_battle_details",
+                "description": "Get detailed battle information including battle summary, participants, objectives, and strategic analysis.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "battle_name": {
+                            "type": "string",
+                            "description": "Battle name or partial name to search for (e.g., 'Endor', 'Death Star', 'Hoth')"
+                        }
+                    },
+                    "required": ["battle_name"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "db_get_battle_details_byid",
+                "description": "Get detailed battle information by exact battle ID including battle summary, participants, objectives, and strategic analysis.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "battle_id": {
+                            "type": "string",
+                            "description": "Exact battle ID to search for (e.g., 'D1_M1_B1', 'D2_M3_B7')"
+                        }
+                    },
+                    "required": ["battle_id"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
                 "name": "db_get_champions_by_traits",
                 "description": "Find champions that match specified traits (rarity, affinity, class). Uses AND logic - all traits must match. Available traits: legendary/epic/rare/uncommon/common, red/blue/green/yellow/purple, attacker/defender/support.",
                 "parameters": {

@@ -127,6 +127,18 @@ AVAILABLE TOOLS:
     • "Get full details for Luke Skywalker" → use db_get_champion_details("Luke Skywalker")
     • "Show me complete info about Chewbacca" → use db_get_champion_details("Chewbacca")
 
+- db_get_battle_details: Get detailed battle information including battle summary, participants, objectives, and strategic analysis
+  Examples: 
+    • "Tell me about the Battle of Endor" → use db_get_battle_details("Battle of Endor")
+    • "Get details about Death Star battle" → use db_get_battle_details("Death Star")
+    • "Show me info about Hoth battle" → use db_get_battle_details("Hoth")
+
+- db_get_battle_details_byid: Get detailed battle information by exact battle ID
+  Examples: 
+    • "Get battle with ID D1_M1_B1" → use db_get_battle_details_byid("D1_M1_B1")
+    • "Show battle details for D2_M3_B7" → use db_get_battle_details_byid("D2_M3_B7")
+
+
 - db_find_strongest_champions: Find the strongest champions based on total power with optional trait filtering
   Available trait values:
     • rarity: legendary, epic, rare, uncommon, common

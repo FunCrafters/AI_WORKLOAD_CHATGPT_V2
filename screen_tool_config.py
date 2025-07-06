@@ -41,6 +41,37 @@ def get_champion_name_by_id(champion_id: str) -> str:
         logger.error(f"❌ Error getting champion name for {champion_id}: {str(e)}")
         return champion_id
 
+
+def get_battle_name_by_id(battle_id: str) -> str:
+    """
+    Get battle name from PostgreSQL battles table by battle_id
+    
+    Args:
+        battle_id (str): Battle ID to lookup (e.g. "d1_m1_b1")
+        
+    Returns:
+        str: Battle name or original ID if not found
+    """
+    try:
+        # Query PostgreSQL for champion name
+        results = execute_query("""
+            SELECT battle_name 
+            FROM battle_details 
+            WHERE battle_id = %s
+        """, (battle_id,))
+        
+        if results and len(results) > 0:
+            battle_name = results[0]["battle_name"]
+            logger.info(f"✅ Found battle name for {battle_id}: {battle_name}")
+            return battle_name
+        else:
+            logger.warning(f"⚠️ No battle found for ID: {battle_id}")
+            return battle_id
+            
+    except Exception as e:
+        logger.error(f"❌ Error getting battle name for {battle_id}: {str(e)}")
+        return battle_id
+    
 # Screen-to-tool mapping configuration
 SCREEN_TOOL_RULES = {
     "ChampionEquipmentPanelPresenter": {
@@ -68,14 +99,15 @@ SCREEN_TOOL_RULES = {
         },
         "data_tools": [
             {
-                "tool": "db_rag_get_battle_details",
+                "tool": "db_get_battle_details_byid",
                 "json_field": "BattleId",
-                "parameter_name": "query"
+                "parameter_name": "battle_id"
             }
         ],
         "prompt_injection": {
-            "template": "You are currently on the Campaign Team Select screen just before the battle. User goal is to select best team that can defeat opponents. Assist him to select best team and choose best strategy.",            
-            "required_fields": []
+            "template": "You are currently on the Campaign Team Select screen just before the battle'{battle_name}'. User goal is to select best team that can defeat opponents. Assist him to select best team and choose best strategy.",            
+            "required_fields": ["BattleId"],
+            "lookup_fields": {"battle_name": "BattleId"}
         }
     },
     # Add more screen configurations here
@@ -196,6 +228,10 @@ def build_prompt_injection(screen_name: str, data_fields: dict) -> str:
                 champion_name = get_champion_name_by_id(data_fields[source_key])
                 substitutions[lookup_key] = champion_name
                 logger.info(f"🔄 Looked up {source_key}='{data_fields[source_key]}' → {lookup_key}='{champion_name}'")
+            elif lookup_key == "battle_name":
+                battle_name = get_battle_name_by_id(data_fields[source_key])
+                substitutions[lookup_key] = battle_name
+                logger.info(f"🔄 Looked up {source_key}='{data_fields[source_key]}' → {lookup_key}='{battle_name}'")
     
     try:
         # Perform template substitution
