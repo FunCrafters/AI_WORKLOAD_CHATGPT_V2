@@ -57,21 +57,6 @@ WORKLOAD_CONFIG = {
         }
     },
     "settings": {
-        "conversation_history_length": {
-            "type": "number",
-            "label": "Conversation History Length",
-            "description": "Number of conversation steps to include in context (default: 3)",
-            "default": 3,
-            "min": 1,
-            "max": 20
-        },
-        "llm_max_iterations": {
-            "type": "number",
-            "label": "LLM Max Iterations",
-            "description": "Maximum number of tool calling iterations",
-            "default": 5,
-            "min": 1,
-            "max": 10
-        }
+
     }
 }

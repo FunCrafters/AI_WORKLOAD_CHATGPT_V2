@@ -195,25 +195,5 @@ def get_tools_info() -> str:
     tools_info.append("🗃️ All tools use PostgreSQL database for data access")
     tools_info.append("")
     
-    # Performance Information
-    tools_info.append("### ⚡ PERFORMANCE CHARACTERISTICS")
-    tools_info.append("🚀 **Static Tools**: Sub-millisecond response (memory cache)")
-    tools_info.append("🔍 **RAG Tools**: ~100-500ms response (vectorstore search)")
-    tools_info.append("🗃️ **PostgreSQL Tools**: ~50-200ms response (direct database queries)")
-    tools_info.append("📚 **Knowledge Base**: 7 similarity + 7 Q&A chunks per search")
-    tools_info.append("🎯 **Precision**: Exact name matching + semantic similarity")
-    tools_info.append("")
-    
-    # Usage Guidelines
-    tools_info.append("### 📋 USAGE GUIDELINES")
-    tools_info.append("1. **Lists & Filtering**: Use static tools (db_get_champions_list) for basic lists")
-    tools_info.append("2. **Trait Filtering**: Use PostgreSQL tools (db_get_champions_by_traits) for filtering by rarity, affinity, class")
-    tools_info.append("3. **Detailed Champion Info**: Use database tools (db_get_champion_details, db_get_champion_details_byid) for comprehensive data")
-    tools_info.append("4. **Character Search**: Use PostgreSQL tools (db_find_champions) for champion search")
-    tools_info.append("5. **Power Analysis**: Use PostgreSQL tools (db_find_strongest_champions, db_find_champions_stronger_than, db_compare_champions)")
-    tools_info.append("6. **RAG Detailed Info**: Use PostgreSQL RAG tools (db_rag_get_champion_details, db_rag_get_boss_details)")
-    tools_info.append("7. **Category Search**: Use PostgreSQL category tools (db_rag_get_mechanic_details, db_rag_get_gameplay_details, db_rag_get_location_details, db_rag_get_battle_details)")
-    tools_info.append("8. **General Questions**: Use db_rag_get_general_knowledge")
-    tools_info.append("9. **Unknown Queries**: Model automatically selects best tool")
     
     return "\n".join(tools_info)

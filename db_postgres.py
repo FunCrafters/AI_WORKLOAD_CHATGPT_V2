@@ -109,7 +109,7 @@ def execute_query(query: str, params: tuple = None) -> List[Dict[str, Any]]:
 
 def get_postgres_database_info() -> List[str]:
     """
-    Get PostgreSQL database information for logging
+    Get comprehensive PostgreSQL database information for logging
     
     Returns:
         List of info strings
@@ -133,17 +133,44 @@ def get_postgres_database_info() -> List[str]:
         db_name = cursor.fetchone()[0]
         info.append(f"🗄️  Database: {db_name}")
         
-        # Get table count
-        cursor.execute("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public'")
-        table_count = cursor.fetchone()[0]
-        info.append(f"📋 Tables: {table_count}")
-        
-        # Get some table names
-        cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' LIMIT 5")
+        # Get all tables with record counts
+        cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name")
         tables = cursor.fetchall()
+        
         if tables:
-            table_names = [table[0] for table in tables]
-            info.append(f"📄 Sample tables: {', '.join(table_names)}")
+            info.append(f"📋 Total Tables: {len(tables)}")
+            info.append("")
+            info.append("### 📊 TABLE RECORD COUNTS")
+            info.append("")
+            
+            total_records = 0
+            table_info = []
+            
+            for table in tables:
+                table_name = table[0]
+                try:
+                    cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+                    count = cursor.fetchone()[0]
+                    table_info.append((table_name, count))
+                    total_records += count
+                except Exception as e:
+                    table_info.append((table_name, f"Error: {str(e)}"))
+            
+            # Sort tables by record count (descending)
+            table_info.sort(key=lambda x: x[1] if isinstance(x[1], int) else 0, reverse=True)
+            
+            # Display tables with counts
+            for table_name, count in table_info:
+                if isinstance(count, int):
+                    percentage = (count / total_records * 100) if total_records > 0 else 0
+                    info.append(f"📄 {table_name:<25} | {count:>8,} records ({percentage:>5.1f}%)")
+                else:
+                    info.append(f"📄 {table_name:<25} | {count}")
+            
+            info.append("")
+            info.append(f"🔢 **Total Records**: {total_records:,}")
+        else:
+            info.append("📋 No tables found in database")
         
         cursor.close()
         
