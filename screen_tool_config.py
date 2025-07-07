@@ -77,7 +77,7 @@ SCREEN_TOOL_RULES = {
     "ChampionEquipmentPanelPresenter": {
         "context_tool": {
             "tool": "db_get_ux_details",
-            "parameters": {"query": "ChampionFeatureModelsPresenter"}
+            "parameters": {"query": "ChampionEquipmentPanelPresenter"}
         },
         "data_tools": [
             {
