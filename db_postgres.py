@@ -11,7 +11,7 @@ import psycopg2.extras
 from typing import Dict, List, Any, Optional
 
 # Logger
-logger = logging.getLogger("Workload PostgreSQL DB")
+logger = logging.getLogger("PGSQLHandler")
 
 # Global database connection
 POSTGRES_CONNECTION: Optional[psycopg2.extensions.connection] = None
@@ -23,12 +23,12 @@ def initialize_postgres_db():
     
     try:
         # Get database configuration from environment
-        host = os.getenv('POSTGRES_HOST', 'localhost')
-        port = int(os.getenv('POSTGRES_PORT', '5432'))
-        user = os.getenv('POSTGRES_USER', 'tools')
-        password = os.getenv('POSTGRES_PASSWORD')
-        database = os.getenv('POSTGRES_DB', 'llm_tools')
-        
+        host = os.environ['POSTGRES_HOST']
+        port = int(os.environ['POSTGRES_PORT']) 
+        user = os.environ['POSTGRES_USER']
+        password = os.environ['POSTGRES_PASSWORD']
+        database = os.environ['POSTGRES_DB']
+                
         logger.info(f"Opening PostgreSQL database connection: {host}:{port}/{database}")
         
         # Connect to database
@@ -58,7 +58,7 @@ def initialize_postgres_db():
         return False
 
 
-def execute_query(query: str, params: tuple = None) -> List[Dict[str, Any]]:
+def execute_query(query: str, params: tuple|None = None) -> List[Dict[str, Any]]:
     """
     Execute a raw SQL query on the PostgreSQL database
     
