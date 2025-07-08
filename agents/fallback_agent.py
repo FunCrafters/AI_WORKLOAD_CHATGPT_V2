@@ -41,7 +41,7 @@ class FallbackAgent(Agent):
         return self.build_prompt(
             'CHARACTER_BASE_T3RN',
             'GAME_CONTEXT', 
-            'CONTENT_RESTRICTIONS'
+            'CONTENT_RESTRICTIONS',
         )
 
     
