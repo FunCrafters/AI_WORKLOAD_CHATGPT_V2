@@ -17,6 +17,8 @@ try:
 except ImportError:
     OPENAI_AVAILABLE = False
 
+
+# TODO test diffrent summarization heuristics
 class MemoryManager:
     """Simple memory manager with straightforward rules"""
     

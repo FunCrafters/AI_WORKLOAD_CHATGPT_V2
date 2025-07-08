@@ -393,6 +393,7 @@ CHAMPIONS LIST: {self.champions_list}"""
         
         channel_logger.log_to_logs(f"🧠 Memory: {len(memory_messages)} context messages loaded")
         
+        # TODO Nie potrzebne z Chatem GPT.
         max_iterations = 10
         iteration = 0
         
