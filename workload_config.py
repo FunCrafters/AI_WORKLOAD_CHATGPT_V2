@@ -3,17 +3,20 @@
 
 # Workload configuration constants
 import os
+import dotenv
 
-WORKLOAD_TITLE = os.getenv('WORKLOAD_TITLE', "ChatGPT Marek v2")
+dotenv.load_dotenv()
+
+WORKLOAD_TITLE = os.getenv('WORKLOAD_TITLE', "DEFAULT AI WORKLOAD GPTMW_v2")
 WORKLOAD_HASH = os.getenv('WORKLOAD_HASH', "GPTMW_v2")
 WORKLOAD_DESC = os.getenv('WORKLOAD_DESC', "Multi-model workload with dynamic model selection, tools and structured output.")  
-SERVER_HOST = "localhost"    # Server address
-SERVER_PORT = 5009           # Server port (can be overridden from env)
+SERVER_HOST = "localhost"
+SERVER_PORT = 5009
 
 # Workload configuration
 WORKLOAD_CONFIG = {
     "title": WORKLOAD_TITLE,
-    "hash_id": WORKLOAD_HASH,
+    "hash_id": WORKLOAD_HASH,   
     "description": WORKLOAD_DESC,
     "channels": {
         "0": {
