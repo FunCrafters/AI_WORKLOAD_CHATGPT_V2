@@ -5,9 +5,70 @@ Unified logging system for multi-channel output
 """
 
 import time
-from typing import Optional, Dict, Any, List
+import logging
+import logging.handlers
+import os
+from typing import Optional, Dict, Any, List, Union
+
 from workload_tools import create_response, send_response
 
+class ChannelLogFormatter(logging.Formatter):
+    """Custom log formatter to include channel and session information"""
+    
+    CHANNEL_NAMES = {
+        0: "CHAT",
+        1: "DATABASES", 
+        2: "CACHES", 
+        3: "TOOLS", 
+        4: "PROMPTS", 
+        5: "MEMORY", 
+        6: "TOOL_CALLS", 
+        8: "LOGS"
+    }
+    
+    def format(self, record):
+        """
+        Format the log record with additional context
+        
+        Adds:
+        - Channel name
+        - Session ID (if available)
+        - Message ID (if available)
+        """
+        # Get channel from extra, defaulting to 'UNKNOWN'
+        channel_id = getattr(record, 'channel', 'UNKNOWN')
+        
+        # Safely get channel name
+        if isinstance(channel_id, int):
+            channel_name = self.CHANNEL_NAMES.get(channel_id, f"CHANNEL_{channel_id}")
+        else:
+            channel_name = str(channel_id)
+        
+        # Prepare base format
+        record.channel_name = channel_name
+        
+        # Get additional context from extra
+        session_id = getattr(record, 'session_id', '-')
+        message_id = getattr(record, 'message_id', '-')
+        
+        # Customize format
+        log_format = (
+            f"[{channel_name}] "
+            f"[Session: {session_id}] "
+            f"[Message: {message_id}] "
+            f"- {record.getMessage()}"
+        )
+        
+        return log_format
+
+logger = logging.getLogger("ChannelLogger")
+logger.setLevel(logging.INFO)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(ChannelLogFormatter())
+logger.addHandler(console_handler)
+
+# TODO - Replace with logging module across app
 class ChannelLogger:
     """Handles logging to multiple channels in a structured way"""
     
@@ -53,34 +114,41 @@ class ChannelLogger:
     def log_to_chat(self, content: str):
         """Log to Chat channel (0)"""
         self._send_to_channel(self.CHAT, content)
+        logger.info(content, extra={"channel": "CHAT", "session_id": self.session_id, "message_id": self.message_id})
     
     def log_to_databases(self, content: str):
         """Log to Databases channel (1)"""
         self._send_to_channel(self.DATABASES, content)
-    
+        logger.info(content, extra={"channel": "DATABASES", "session_id": self.session_id, "message_id": self.message_id})
+
     def log_to_caches(self, content: str):
         """Log to Caches channel (2)"""
         self._send_to_channel(self.CACHES, content)
-    
+        logger.info(content, extra={"channel": "CACHES", "session_id": self.session_id, "message_id": self.message_id})
+
     def log_to_tools(self, content: str):
         """Log to Tools channel (3)"""
         self._send_to_channel(self.TOOLS, content)
+        logger.info(content, extra={"channel": "TOOLS", "session_id": self.session_id, "message_id": self.message_id})
     
     def log_to_prompts(self, content: str):
         """Log to Prompts channel (4)"""
         if self.action_id:
             content = f"[Action {self.action_id}] {content}"
         self._send_to_channel(self.PROMPTS, content)
+        logger.info(content, extra={"channel": "PROMPTS", "session_id": self.session_id, "message_id": self.message_id})
     
     def log_to_memory(self, content: str):
         """Log to Memory channel (5)"""
         self._send_to_channel(self.MEMORY, content)
+        logger.info(content, extra={"channel": "MEMORY", "session_id": self.session_id, "message_id": self.message_id})
     
     def log_to_tool_calls(self, content: str):
         """Log to Tool Calls channel (6, previously LLM Tools)"""
         if self.action_id:
             content = f"[Action {self.action_id}] {content}"
         self._send_to_channel(self.TOOL_CALLS, content)
+        logger.info(content, extra={"channel": "TOOL_CALLS", "session_id": self.session_id, "message_id": self.message_id})
     
     def log_to_logs(self, content: str):
         """Log to Logs channel (8) - buffered for better organization"""
@@ -98,6 +166,7 @@ class ChannelLogger:
         if traceback:
             error_content += f"\n\n=== TRACEBACK ===\n{traceback}"
         self.log_to_logs(error_content)
+        logging.error(f"Logged error: {error}")
     
     def log_exception(self, exception: Exception, traceback_str: str):
         """Log exception details to Logs channel"""
