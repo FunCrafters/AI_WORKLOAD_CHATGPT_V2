@@ -14,16 +14,18 @@ from workload_agent_system import (
 
 # Import channel logger
 from channel_logger import ChannelLogger
+from workload_tools import ContextAdapter
 
 # Logger
 logger = logging.getLogger("Workload Chat")
+logger = ContextAdapter(logger)
 
 #######################
 # Main Processing Function
 #######################
 
 def process_main_channel(client, session, text, channel, session_id, message_id, 
-                         active_sessions, create_response, send_response, log_message):
+                         active_sessions, create_response, send_response):
     """Process text on the main channel (0) with agent-based function calling"""
     if not text:
         response = create_response(channel, "", session_id, message_id)
@@ -45,7 +47,7 @@ def process_main_channel(client, session, text, channel, session_id, message_id,
     channel_logger.log_to_logs(f"💬 Session ID: {session_id}")
     channel_logger.log_to_logs(f"🔧 Available tools: {len(available_llm_functions)} tools")
         
-    log_message(f"   AGENT-BASED PROCESSING", session_id=session_id)
+    logger.info(f"   AGENT-BASED PROCESSING", extra=dict(session_id=session_id))
     
     try:
         # Process with agent-based function calling
@@ -60,7 +62,7 @@ def process_main_channel(client, session, text, channel, session_id, message_id,
         send_response(client, chat_response, session_id, channel, message_id)
       
     except Exception as e:
-        log_message("!! AGENT PROCESSING ERROR", session_id=session_id, error=str(e))
+        logger.info("!! AGENT PROCESSING ERROR", extra=dict(session_id=session_id, error=str(e)))
         
         import traceback
         error_traceback = traceback.format_exc()

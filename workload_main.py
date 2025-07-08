@@ -34,7 +34,6 @@ from workload_logs import (
 
 # Import utility functions
 from workload_tools import (
-    log_message,
     create_response,
     send_response,
     send_message
@@ -53,6 +52,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger("LLM Workload")
+logger = logging.LoggerAdapter(logger)
 
 # Dictionary to store session data for multiple users
 active_sessions = {}
@@ -91,7 +91,6 @@ def register_workload(client):
         reg_data = json.dumps(registration).encode('utf-8')
         client.sendall(reg_data)
         
-        # Wait for confirmation
         response = client.recv(4096)
         
         if not response:
@@ -148,8 +147,8 @@ def process_message(client, message):
         
         # Log standardized message receipt info
         preview = raw_message[:250] + "..." if len(raw_message) > 250 else raw_message
-        log_message(f">> RECV -{message_type.upper()}-", session_id=session_id, message_id=message_id)
-        log_message("   PREVIEW", preview=preview)
+        logger.info(f">> RECV -{message_type.upper()}-", extra=dict(session_id=session_id, message_id=message_id))
+        logger.info("   PREVIEW", extra=dict(preview=preview))
 
         # Handle message based on its type
         if message_type == 'initialization':
@@ -169,17 +168,17 @@ def process_message(client, message):
             process_json_data_message(client, data, session_id, message_id)
                 
         else:
-            log_message("-- RECV UNKNOWN: {message_type.upper()}")
+            logger.info(f"-- RECV UNKNOWN: {message_type.upper()}")
             
     except Exception as e:
-        log_message("!! ERROR_PROCESSING", error=str(e))
+        logger.error("!! ERROR_PROCESSING", extra=dict(error=str(e)))
         import traceback
         logger.error(traceback.format_exc())
 
 def process_initialization_message(client, data, session_id, message_id):
     """Process an initialization message"""
     channel = data.get('channel', 0)
-    log_message("   PROCESSING", session_id=session_id, channel=channel)
+    logger.info("   PROCESSING", extra=dict(session_id=session_id, channel=channel))
     
     # Create a new session
     create_or_update_session(session_id, is_initialization=True)
@@ -195,13 +194,13 @@ def process_initialization_message(client, data, session_id, message_id):
 
 def process_settings_message(client, data, session_id, message_id):
     """Process a settings message (all settings at once)"""
-    log_message("-- PROCESS_SETTINGS", session_id=session_id)
+    logger.info("-- PROCESS_SETTINGS", extra=dict(session_id=session_id))
     
     # Get or create session
     session = create_or_update_session(session_id, is_initialization=True)
     
     if not session:
-        log_message("!! PROCESS_SETTINGS_NO_SESSION", session_id=session_id)
+        logger.info("!! PROCESS_SETTINGS_NO_SESSION", extra=dict(session_id=session_id))
         return
     
     # Extract settings
@@ -210,9 +209,9 @@ def process_settings_message(client, data, session_id, message_id):
         # Store settings directly in session
         for key, value in settings_data.items():
             session[key] = value
-        log_message("   PROCESS_SETTINGS_STORED", session_id=session_id, keys=list(settings_data.keys()))
+        logger.info("   PROCESS_SETTINGS_STORED", extra=dict(session_id= session_id, keys=list(settings_data.keys())))
 
-        log_message("   SETTINGS_CONFIRMATION", session_id=session_id)        
+        logger.info("   SETTINGS_CONFIRMATION", extra=dict(session_id=session_id))        
         response = {
             'type': 'settings_response',
             'success': True,
@@ -223,11 +222,11 @@ def process_settings_message(client, data, session_id, message_id):
         # Send settings response confirmation
         send_message(client, response)
     else:
-        log_message("!! PROCESS_SETTINGS_EMPTY", session_id=session_id)
+        logger.info("!! PROCESS_SETTINGS_EMPTY", extra=dict(session_id= session_id))
 
 def request_json_data(client, session_id):
     """Send request for JSON data"""
-    log_message("   REQUEST JSON DATA", session_id=session_id)
+    logger.info("   REQUEST JSON DATA", extra=dict(session_id=session_id))
     
     # Create JSON request message
     json_request = {
@@ -246,7 +245,7 @@ def process_json_data_message(client, data, session_id, message_id):
     session = create_or_update_session(session_id, is_initialization=True)
     
     if not session:
-        log_message("!! PROCESS_JSON_DATA_NO_SESSION", session_id=session_id)
+        logger.info("!! PROCESS_JSON_DATA_NO_SESSION", extra=dict(session_id=session_id))
         return
     
     # Store JSON data in session
@@ -257,18 +256,18 @@ def process_json_data_message(client, data, session_id, message_id):
         data_size_kb = data_size_bytes / 1024
         
         # Log detailed information about received JSON
-        log_message("   JSON DATA", session_id=session_id, size_bytes=data_size_bytes, size_kb=f"{data_size_kb:.2f}")
+        logger.info("   JSON DATA", extra=dict(session_id=session_id, size_bytes=data_size_bytes, size_kb=f"{data_size_kb:.2f}"))
         
         # Log top-level keys in the JSON
         if isinstance(json_data, dict):
             top_keys = list(json_data.keys())
-            log_message("   JSON STRUCTURE", session_id=session_id, top_keys=top_keys)
+            logger.info("   JSON STRUCTURE", extra=dict(session_id=session_id, top_keys=top_keys))
             
         elif isinstance(json_data, list):
-            log_message("   JSON STRUCTURE", session_id=session_id, type="list", length=len(json_data))
+            logger.info("   JSON STRUCTURE", extra=dict(session_id=session_id, type="list", length=len(json_data)))
             if len(json_data) > 0:
                 sample_type = type(json_data[0]).__name__
-                log_message("   JSON LIST SAMPLE", session_id=session_id, sample_type=sample_type)
+                logger.info("   JSON LIST SAMPLE", extra=dict(session_id=session_id, sample_type=sample_type))
         
         # IMPORTANT: Set current JSON data in game cache for screen context tool
         try:
@@ -276,11 +275,11 @@ def process_json_data_message(client, data, session_id, message_id):
             # Only set if json_data is a dictionary (required for screen context)
             if isinstance(json_data, dict):
                 set_current_json_data(json_data)
-                log_message("   JSON DATA SET IN CACHE", session_id=session_id, success=True)
+                logger.info("   JSON DATA SET IN CACHE", extra=dict(session_id=session_id, success=True))
             else:
-                log_message("   JSON DATA SKIP CACHE", session_id=session_id, reason="not_dict", type=type(json_data).__name__)
+                logger.info("   JSON DATA SKIP CACHE", extra=dict(session_id=session_id, reason="not_dict", type=type(json_data).__name__))
         except Exception as e:
-            log_message("   JSON DATA CACHE ERROR", session_id=session_id, error=str(e))
+            logger.info("   JSON DATA CACHE ERROR", extra=dict(session_id=session_id, error=str(e)))
         
         # Store a summary of the data structure
         def get_data_summary(data):
@@ -308,7 +307,8 @@ def process_json_data_message(client, data, session_id, message_id):
             'message_id': message_id
         }
         
-        log_message("   DATA RECEIVED CONFIRMATION", session_id=session_id, channel=2, message_id=message_id)
+        logger.info("   DATA RECEIVED CONFIRMATION", extra=dict(session_id=session_id, channel=2, message_id=message_id))
+        
         time.sleep(0.1)        
         # Send the response
         send_message(client, response)
@@ -327,16 +327,17 @@ def process_json_data_message(client, data, session_id, message_id):
         time.sleep(0.1)
         
         # Send model preload log to Logs channel (8) if available
+        # TODO what is model_preload_log?
         global model_preload_log
         if 'model_preload_log' in globals() and model_preload_log:
             preload_text = "\n".join(model_preload_log)
             preload_response = create_response(8, preload_text, session_id, f"init_{int(time.time())}_preload")
             send_response(client, preload_response, session_id, 8, f"init_{int(time.time())}_preload")
             time.sleep(0.1)
-            log_message("   MODEL PRELOAD LOG SENT", session_id=session_id, channel=8)
+            logger.info("   MODEL PRELOAD LOG SENT", extra=dict(session_id=session_id, channel=8))
     else:
         # Log error and send error response
-        log_message("ERROR_JSON_DATA_MISSING", session_id=session_id)
+        logger.info("ERROR_JSON_DATA_MISSING", extra=dict(session_id=session_id))
         
         # Create error response
         response = {
@@ -364,7 +365,7 @@ def process_text_message(client, data, session_id, message_id):
     if channel == 0:  # Main channel
         process_main_channel(
             client, session, text, channel, session_id, message_id,
-            active_sessions, create_response, send_response, log_message
+            active_sessions, create_response, send_response
         )
     else:
         # For other channels, just echo back the text
@@ -508,7 +509,7 @@ def main():
         
         logger.info(f"Initializing agent system with Ollama at {ollama_host}:{ollama_port}")
         
-        vectorstore_ollama, vectorstore_log = initialize_embeddings_and_vectorstore(
+        vectorstore_ollama = initialize_embeddings_and_vectorstore(
             config, ollama_host, ollama_port
         )
         
