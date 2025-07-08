@@ -90,6 +90,7 @@ def process_llm_agents(user_message: str, session: Dict[str, Any],
     t3rn_agent = T3RNAgent(memory_manager)
     
     # TODO CHeck if still required
+    # TODO Simplify this code
     agent_stack = AgentStack()
     agent_stack.push(t3rn_agent, context)
     
