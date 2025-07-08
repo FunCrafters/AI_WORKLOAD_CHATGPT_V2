@@ -4,16 +4,14 @@ Get Battle Details
 Retrieves detailed battle information from PostgreSQL database
 """
 
-import os
 import logging
 import json
-from typing import Optional
 
 # Import the global PostgreSQL connection
 from db_postgres import execute_query
 
 # Logger
-logger = logging.getLogger("Workload Tools")
+logger = logging.getLogger("BattleDetails")
 
 
 def db_get_battle_details(battle_name: str) -> str:

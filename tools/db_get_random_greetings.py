@@ -12,7 +12,7 @@ import logging
 from db_postgres import execute_query
 
 # Logger
-logger = logging.getLogger("DB Get Random Greetings")
+logger = logging.getLogger("RndGreetings")
 
 
 def db_get_random_greetings() -> str:

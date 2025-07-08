@@ -10,7 +10,7 @@ from typing import Optional
 from .db_get_ux_details import db_get_ux_details
 
 # Logger
-logger = logging.getLogger("Workload Tools")
+logger = logging.getLogger("ScreenContext")
 
 
 def db_get_screen_context_help(user_question: str) -> str:

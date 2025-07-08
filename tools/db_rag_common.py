@@ -12,8 +12,8 @@ from workload_embedding import get_embedding_function
 from db_postgres import execute_query
 
 # Constants
-SIMILARITY_THRESHOLD = 0.4
-SIMILARITY_LIMIT = 10
+DEFAULT_RAG_SIMILARITY_THRESHOLD = 0.4
+DEFAULT_RAG_SIMILARITY_LIMIT = 10
 
 # Logger
 logger = logging.getLogger("DB RAG Common")
@@ -42,10 +42,10 @@ def generate_query_embedding(query: str) -> Optional[List[float]]:
 
 def execute_rag_search(
     query_embedding: List[float], 
-    chunk_section: str = None, 
+    chunk_section: str|None = None, 
     search_qa: bool = False,
-    threshold: float = SIMILARITY_THRESHOLD,
-    limit: int = SIMILARITY_LIMIT
+    threshold: float = DEFAULT_RAG_SIMILARITY_THRESHOLD,
+    limit: int = DEFAULT_RAG_SIMILARITY_LIMIT
 ) -> List[Dict[str, Any]]:
     """
     Execute RAG similarity search in PostgreSQL
@@ -233,11 +233,11 @@ def create_rag_response(
 
 def execute_universal_rag(
     query: str,
-    chunk_section: str = None,
+    chunk_section: str|None = None,
     category: str = "general",
     function_name: str = "execute_universal_rag",
-    threshold: float = SIMILARITY_THRESHOLD,
-    limit: int = SIMILARITY_LIMIT,
+    threshold: float = DEFAULT_RAG_SIMILARITY_THRESHOLD,
+    limit: int = DEFAULT_RAG_SIMILARITY_LIMIT,
     include_qa: bool = True
 ) -> str:
     """

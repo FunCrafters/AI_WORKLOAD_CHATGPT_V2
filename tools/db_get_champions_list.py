@@ -13,7 +13,7 @@ from typing import Optional
 from db_postgres import execute_query
 
 # Logger
-logger = logging.getLogger("Workload Tools")
+logger = logging.getLogger("ChampionsList")
 
 
 def db_get_champions_list() -> str:

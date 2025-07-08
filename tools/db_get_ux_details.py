@@ -13,7 +13,7 @@ from typing import Optional
 from db_postgres import execute_query
 
 # Logger
-logger = logging.getLogger("Workload Tools")
+logger = logging.getLogger("UXDetails")
 
 
 def _create_error_response(action: str, message: str, error_details: str, query: str) -> str:

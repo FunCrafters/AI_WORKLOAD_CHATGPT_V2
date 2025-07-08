@@ -9,7 +9,7 @@ import logging
 from db_postgres import execute_query
 
 # Logger
-logger = logging.getLogger("DB Compare Champions")
+logger = logging.getLogger("ChampionsComparator")
 
 
 def db_compare_champions(champion_names: list, detailed: bool = True) -> str:

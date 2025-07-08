@@ -9,7 +9,7 @@ import logging
 from db_postgres import execute_query
 
 # Logger
-logger = logging.getLogger("DB Find Champions Stronger Than")
+logger = logging.getLogger("ChampionsStrongerThan")
 
 
 def db_find_champions_stronger_than(character_name: str, limit: int = 20, rarity: str = None, affinity: str = None, class_type: str = None) -> str:
