@@ -6,14 +6,11 @@ Unified logging system for multi-channel output
 
 import time
 import logging
-import logging.handlers
-import os
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List
 
 from workload_tools import create_response, send_response
 
 class ChannelLogFormatter(logging.Formatter):
-    """Custom log formatter to include channel and session information"""
     
     CHANNEL_NAMES = {
         0: "CHAT",
@@ -35,19 +32,15 @@ class ChannelLogFormatter(logging.Formatter):
         - Session ID (if available)
         - Message ID (if available)
         """
-        # Get channel from extra, defaulting to 'UNKNOWN'
         channel_id = getattr(record, 'channel', 'UNKNOWN')
         
-        # Safely get channel name
         if isinstance(channel_id, int):
             channel_name = self.CHANNEL_NAMES.get(channel_id, f"CHANNEL_{channel_id}")
         else:
             channel_name = str(channel_id)
         
-        # Prepare base format
         record.channel_name = channel_name
         
-        # Get additional context from extra
         session_id = getattr(record, 'session_id', '-')
         message_id = getattr(record, 'message_id', '-')
         

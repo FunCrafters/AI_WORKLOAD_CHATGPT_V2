@@ -109,6 +109,7 @@ def register_workload(client):
         logger.error(f"!! ERROR: error={e}")
         return None
 
+#TODO Session handling?
 def create_or_update_session(session_id, text="", channel=0, is_initialization=False):
     """Create a new session or update an existing one"""
     if not session_id:
@@ -147,8 +148,8 @@ def process_message(client, message):
         
         # Log standardized message receipt info
         preview = raw_message[:250] + "..." if len(raw_message) > 250 else raw_message
-        logger.info(f">> RECV -{message_type.upper()}-", extra=dict(session_id=session_id, message_id=message_id))
-        logger.info("   PREVIEW", extra=dict(preview=preview))
+        logger.info(f"Recived Message {message_type}", extra=dict(session_id=session_id, message_id=message_id))
+        logger.info("PREVIEW", extra=dict(preview=preview))
 
         # Handle message based on its type
         if message_type == 'initialization':
@@ -168,7 +169,7 @@ def process_message(client, message):
             process_json_data_message(client, data, session_id, message_id)
                 
         else:
-            logger.info(f"-- RECV UNKNOWN: {message_type.upper()}")
+            logger.error(f"Recive unknown message type: {message_type}")
             
     except Exception as e:
         logger.error("!! ERROR_PROCESSING", extra=dict(error=str(e)))
@@ -309,6 +310,7 @@ def process_json_data_message(client, data, session_id, message_id):
         
         logger.info("   DATA RECEIVED CONFIRMATION", extra=dict(session_id=session_id, channel=2, message_id=message_id))
         
+        #TODO Why sleep?
         time.sleep(0.1)        
         # Send the response
         send_message(client, response)
@@ -351,7 +353,6 @@ def process_json_data_message(client, data, session_id, message_id):
         # Send the response
         send_message(client, response)
 
-# Process main channel message by redirecting to the imported function
 def process_text_message(client, data, session_id, message_id):
     """Process a text message on a specific channel"""
     text = data.get('text', '')

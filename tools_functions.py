@@ -164,6 +164,8 @@ def get_function_by_name(name):
     """Get function object by name"""
     return available_llm_functions.get(name, {}).get('function')
 
+# TODO Validate if this is correct way of defining tool for ChatGPT
+
 def get_tools_info() -> str:
     """
     Get detailed information about all available LLM tools

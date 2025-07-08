@@ -6,7 +6,6 @@ Utility functions for the workload
 
 import logging
 import socket
-import time
 import json
 
 logger = logging.getLogger("WorkloadTools")
