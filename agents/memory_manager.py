@@ -60,6 +60,7 @@ class MemoryManager:
     
     def initialize_session_memory(self,) -> Dict[str, Any]:
         """Initialize simple conversation memory structure"""
+        # TODO REPLACE WITH MEMORY STATE / STH LIKE THIS.
         return {
             'exchanges': [],           # List of Q&A exchanges (max 10)
             'summary': '',            # Text summary of old conversations

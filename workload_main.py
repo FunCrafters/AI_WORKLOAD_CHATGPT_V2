@@ -333,13 +333,13 @@ def process_json_data_message(client, session: Session, data: dict):
         
         # Send model preload log to Logs channel (8) if available
         # TODO what is model_preload_log?
-        global model_preload_log
-        if 'model_preload_log' in globals() and model_preload_log:
-            preload_text = "\n".join(model_preload_log)
-            preload_response = create_response(8, preload_text, session.session_id, f"init_{int(time.time())}_preload")
-            send_response(client, preload_response, session.session_id, 8, f"init_{int(time.time())}_preload")
-            time.sleep(0.1)
-            logger.info("   MODEL PRELOAD LOG SENT", extra=dict(session_id=session.session_id, channel=8))
+        # global model_preload_log
+        # if 'model_preload_log' in globals() and model_preload_log:
+        #     preload_text = "\n".join(model_preload_log)
+        #     preload_response = create_response(8, preload_text, session.session_id, f"init_{int(time.time())}_preload")
+        #     send_response(client, preload_response, session.session_id, 8, f"init_{int(time.time())}_preload")
+        #     time.sleep(0.1)
+        #     logger.info("   MODEL PRELOAD LOG SENT", extra=dict(session_id=session.session_id, channel=8))
     else:
         # Log error and send error response
         logger.info("ERROR_JSON_DATA_MISSING", extra=dict(session_id=session.session_id))

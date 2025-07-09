@@ -11,6 +11,7 @@ import json
 import textwrap
 from typing import Dict, List, Any, Optional, Tuple
 from abc import ABC, abstractmethod
+from openai.types.chat import ChatCompletionMessageParam
 from channel_logger import ChannelLogger
 from session import Session
 
@@ -63,16 +64,12 @@ class Agent(ABC):
         pass
     
     @abstractmethod
-    def execute(self, context: AgentContext, channel_logger) -> AgentResult:
+    def execute(self, context: AgentContext) -> AgentResult:
         """Execute the agent with given context"""
         pass
     
     def prepare_messages(self, context: AgentContext) -> List[Dict[str, str]]:
-        """Prepare messages for LLM call"""
-        
-        # Get agent type
-        agent_type = self.__class__.__name__
-        
+        """Prepare messages for LLM call"""        
         # Get base prompt
         base_prompt = self.get_system_prompt(context)
         
@@ -85,13 +82,14 @@ class Agent(ABC):
             {"role": "user", "content": current_user_message}
         ]
     
-    def call_llm(self, messages: List[Dict[str, str]], tools: Optional[List] = None, 
+    def call_llm(self, 
+                 messages: List['ChatCompletionMessageParam'], 
+                 tools: Optional[List] = None, 
                  use_json: bool = False) -> Any:
         """Make LLM call with error handling"""
         
         # Log LLM call to Prompts channel BEFORE making the call
-        if self.channel_logger:
-            self._log_llm_call_to_prompts_channel(messages, tools, use_json)
+        self._log_llm_call_to_prompts_channel(messages, tools, use_json)
             
         try:
             start_time = time.time()
@@ -308,7 +306,7 @@ class Agent(ABC):
         
         return enhanced_tool_calls
 
-    def _log_llm_call_to_prompts_channel(self, messages: List[Dict], tools: Optional[List] = None, 
+    def _log_llm_call_to_prompts_channel(self, messages: List['ChatCompletionMessageParam'], tools: Optional[List] = None, 
                                        use_json: bool = False):
         """Log complete LLM call information to Prompts channel"""
         try:            

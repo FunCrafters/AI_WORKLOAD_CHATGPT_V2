@@ -43,7 +43,7 @@ def initialize_postgres_db():
         # Test connection
         cursor = POSTGRES_CONNECTION.cursor()
         cursor.execute("SELECT version()")
-        version = cursor.fetchone()[0]
+        version, = cursor.fetchone() or ["Unknown version"]
         cursor.close()
         
         logger.info(f"PostgreSQL database connected successfully")
@@ -70,6 +70,9 @@ def execute_query(query: str, params: tuple|None = None) -> List[Dict[str, Any]]
         List of dictionaries representing rows
     """
     global POSTGRES_CONNECTION
+    if POSTGRES_CONNECTION is None:
+        raise ValueError("PostgreSQL connection not initialized. Call initialize_postgres_db() first.")
+
     
     # Make sure connection is established
     if not POSTGRES_CONNECTION or POSTGRES_CONNECTION.closed:
@@ -108,12 +111,6 @@ def execute_query(query: str, params: tuple|None = None) -> List[Dict[str, Any]]
 
 
 def get_postgres_database_info() -> List[str]:
-    """
-    Get comprehensive PostgreSQL database information for logging
-    
-    Returns:
-        List of info strings
-    """
     info = []
     
     if not POSTGRES_CONNECTION or POSTGRES_CONNECTION.closed:
@@ -125,12 +122,12 @@ def get_postgres_database_info() -> List[str]:
         
         # Get database version
         cursor.execute("SELECT version()")
-        version = cursor.fetchone()[0]
+        version, = cursor.fetchone() or ["Unknown version"]
         info.append(f"📊 PostgreSQL Version: {version}")
         
         # Get database name
         cursor.execute("SELECT current_database()")
-        db_name = cursor.fetchone()[0]
+        db_name, = cursor.fetchone() or ["Unknown database"]
         info.append(f"🗄️  Database: {db_name}")
         
         # Get all tables with record counts
@@ -150,7 +147,7 @@ def get_postgres_database_info() -> List[str]:
                 table_name = table[0]
                 try:
                     cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
-                    count = cursor.fetchone()[0]
+                    count, = cursor.fetchone() or [0]
                     table_info.append((table_name, count))
                     total_records += count
                 except Exception as e:

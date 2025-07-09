@@ -8,7 +8,8 @@ import json
 import os
 import time
 from typing import List, Dict, Any, Optional
-
+from openai.types.chat import ChatCompletionMessageParam
+from channel_logger import ChannelLogger
 from session import Session
 from tools.db_rag_get_general_knowledge import db_rag_get_general_knowledge
 
@@ -23,21 +24,15 @@ from agents.base_agent import Agent, AgentContext, AgentResult
 class FallbackAgent(Agent):
     """Simplified fallback agent using only RAG knowledge"""
     
-    def __init__(self, session: 'Session'):
-        super().__init__(session)
+    def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
+        super().__init__(session, channel_logger)
         
-        # Initialize OpenAI client if available
+        self.openai_client: Optional[openai.OpenAI] = None
+
         if OPENAI_AVAILABLE:
             api_key = os.getenv('OPENAI_API_KEY')
-            if api_key and api_key != 'your_openai_api_key_here':
+            if api_key:
                 self.openai_client = openai.OpenAI(api_key=api_key)
-                self.openai_enabled = True
-            else:
-                self.openai_client = None
-                self.openai_enabled = False
-        else:
-            self.openai_client = None
-            self.openai_enabled = False
     
     def get_system_prompt(self, context: AgentContext) -> str:
         """Simple system prompt for fallback"""
@@ -48,10 +43,10 @@ class FallbackAgent(Agent):
         )
 
     
-    def call_llm(self, messages: List[Dict[str, Any]], channel_logger) -> Any:
+    def call_llm(self, messages: List['ChatCompletionMessageParam']) -> Any:
         """Simple LLM call without tools"""
         
-        if not self.openai_enabled:
+        if self.openai_client is None:
             raise Exception("OpenAI not available for FallbackAgent")
         
         try:
@@ -71,18 +66,18 @@ class FallbackAgent(Agent):
             completion_tokens = response.usage.completion_tokens if response.usage else 0
             total_tokens = response.usage.total_tokens if response.usage else 0
             
-            channel_logger.log_to_logs(f"⚡ FallbackAgent completed in {elapsed_time:.3f}s ({prompt_tokens}+{completion_tokens}={total_tokens} tokens)")
+            self.channel_logger.log_to_logs(f"⚡ FallbackAgent completed in {elapsed_time:.3f}s ({prompt_tokens}+{completion_tokens}={total_tokens} tokens)")
             
             return response
             
         except Exception as e:
-            channel_logger.log_to_logs(f"❌ FallbackAgent LLM error: {str(e)}")
+            self.channel_logger.log_to_logs(f"❌ FallbackAgent LLM error: {str(e)}")
             raise
     
     def execute(self, context: AgentContext, channel_logger) -> AgentResult:
         """Execute FallbackAgent with RAG knowledge only"""
         
-        channel_logger.log_to_logs("🛡️ FallbackAgent starting with RAG knowledge")
+        self.channel_logger.log_to_logs("🛡️ FallbackAgent starting with RAG knowledge")
         
         try:
             # Get original query
@@ -90,7 +85,7 @@ class FallbackAgent(Agent):
             
             # Pre-load RAG data
             general_knowledge = db_rag_get_general_knowledge(original_query)
-            channel_logger.log_to_logs(f"🔍 FallbackAgent pre-loaded RAG data for: {original_query}")
+            self.channel_logger.log_to_logs(f"🔍 FallbackAgent pre-loaded RAG data for: {original_query}")
             
             # Prepare simple messages
             messages = [{
@@ -112,13 +107,13 @@ class FallbackAgent(Agent):
             })
             
             # Call LLM (no tools)
-            channel_logger.log_to_logs("🤖 FallbackAgent calling ChatGPT-4o-mini without tools")
-            response = self.call_llm(messages, channel_logger)
+            self.channel_logger.log_to_logs("🤖 FallbackAgent calling ChatGPT-4o-mini without tools")
+            response = self.call_llm(messages)
             
             # Get response
             response_content = response.choices[0].message.content or "No response generated"
             
-            channel_logger.log_to_logs("✅ FallbackAgent completed successfully")
+            self.channel_logger.log_to_logs("✅ FallbackAgent completed successfully")
             
             result = AgentResult()
             result.final_answer = response_content
@@ -127,8 +122,8 @@ class FallbackAgent(Agent):
             return result
             
         except Exception as e:
-            channel_logger.log_to_logs(f"❌ FallbackAgent error: {str(e)}")
-            channel_logger.log_to_logs("🛡️ FallbackAgent using emergency T3RN malfunction response")
+            self.channel_logger.log_to_logs(f"❌ FallbackAgent error: {str(e)}")
+            self.channel_logger.log_to_logs("🛡️ FallbackAgent using emergency T3RN malfunction response")
             
             # Use emergency T3RN malfunction messages instead of failing
             import random

@@ -13,6 +13,7 @@ from agents.base_agent import Agent, AgentContext, AgentResult
 from agents.t3rn_agent import T3RNAgent
 from agents.fallback_agent import FallbackAgent
 from agents.memory_manager import MemoryManager
+from channel_logger import ChannelLogger
 from session import Session
 
 
@@ -61,8 +62,9 @@ def create_initial_context(user_message: str, session: Session) -> AgentContext:
       
     return context
 
-def process_llm_agents(user_message: str, session: Session, 
-                      channel_logger) -> str:
+def process_llm_agents(user_message: str, 
+                       session: Session, 
+                       channel_logger: ChannelLogger) -> str:
     """
     New agent-based function calling system
     
@@ -81,7 +83,7 @@ def process_llm_agents(user_message: str, session: Session,
     channel_logger.log_to_logs("🆕 Starting new processing with T3RNAgent")
     
     context = create_initial_context(user_message, session)
-    t3rn_agent = T3RNAgent(session)
+    t3rn_agent = T3RNAgent(session, channel_logger)
     
     # TODO CHeck if still required
     # TODO Simplify this code
@@ -114,7 +116,7 @@ def process_llm_agents(user_message: str, session: Session,
         
         try:
             # Execute agent
-            result = current_agent.execute(current_context, channel_logger)
+            result = current_agent.execute(current_context)
             
             # Check if agent provided final answer
             if result.final_answer:
@@ -123,6 +125,8 @@ def process_llm_agents(user_message: str, session: Session,
                     
                 # Finalize memory manager with final answer
                 # TODO memory menager could be None, should be checked. / fixed.
+                # TODO session.get_memory() is unnesseery, this structure issue that should be fixed
+                # TODO move session.conversation_memory into memory_menager!
                 session.memory_manager.finalize_current_cycle(session.get_memory(), user_message, result.final_answer, channel_logger)
                     
                 if result.error_content:
@@ -135,7 +139,7 @@ def process_llm_agents(user_message: str, session: Session,
             else:
                 # Agent failed - add FallbackAgent to stack
                 channel_logger.log_to_logs(f"⚠️ {current_agent.__class__.__name__} failed, spawning FallbackAgent")
-                fallback_agent = FallbackAgent(session)
+                fallback_agent = FallbackAgent(session, channel_logger)
                 agent_stack.push(fallback_agent, current_context)
                 continue
             
@@ -148,7 +152,7 @@ def process_llm_agents(user_message: str, session: Session,
             
             # Spawn FallbackAgent only if T3RNAgent failed and FallbackAgent hasn't been tried yet
             if isinstance(current_agent, T3RNAgent) and "FallbackAgent" not in failed_agents:
-                fallback_agent = FallbackAgent(session)
+                fallback_agent = FallbackAgent(session, channel_logger)
                 agent_stack.push(fallback_agent, current_context)
                 channel_logger.log_to_logs("🔄 Added FallbackAgent for T3RNAgent error")
             else:
@@ -168,7 +172,7 @@ def process_llm_agents(user_message: str, session: Session,
         channel_logger.log_to_logs("🛡️ Using emergency T3RN malfunction response as final fallback")
         
         # Finalize memory manager with emergency answer
-        memory_manager.finalize_current_cycle(session.get_memory(), user_message, emergency_message, channel_logger)
+        session.memory_manager.finalize_current_cycle(session.get_memory(), user_message, emergency_message, channel_logger)
         
         # Flush logs buffer for organized display
         channel_logger.flush_buffer(channel_logger.LOGS)
@@ -183,7 +187,7 @@ def process_llm_agents(user_message: str, session: Session,
         
         # Finalize memory manager with error message
         try:
-            memory_manager.finalize_current_cycle(session.get_memory(), user_message, error_message, channel_logger)
+            session.memory_manager.finalize_current_cycle(session.get_memory(), user_message, error_message, channel_logger)
         except:
             pass  # If memory manager also fails, just continue
         
