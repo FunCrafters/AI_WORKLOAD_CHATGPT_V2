@@ -314,11 +314,7 @@ class MemoryManager:
     def _summarize_text(self, text: str, target_size: int) -> str:
         """Summarize text to target size (in bytes) using LLM or simple truncation"""
         
-        if not self.openai_enabled:
-            # Fallback: simple truncation
-            if len(text.encode('utf-8')) <= target_size:
-                return text
-            # Truncate safely without breaking unicode
+        if self.openai_client is None:
             return textwrap.shorten(text, width=target_size)
         
         try:
@@ -328,13 +324,13 @@ class MemoryManager:
             # Use OpenAI for intelligent summarization
             prompt = f"Summarize the following text to approximately {target_chars} characters (aiming for {target_size} bytes) while preserving key information. Be concise:\n\n{text}"
             
-            response = self.openai_client.chat.completions.create( # type: ignore
+            response = self.openai_client.chat.completions.create( 
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant that creates very concise summaries. Be extremely brief."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3,
+                temperature=0.3, # TODO, for summarization we want more deterministic output - 0 will result in most probable output.
                 max_tokens=int(target_chars / 2)  # More conservative token limit
             ) 
 
@@ -405,6 +401,7 @@ class MemoryManager:
         
         return text.strip()
     
+    # TODO seems to be extensive logging function, but it is not used anywhere. (Dead code)
     def _log_final_memory_state(self, session: 'Session', channel_logger: 'ChannelLogger') -> None:
         """Log final memory state showing what agent would receive"""
         try:
