@@ -308,7 +308,7 @@ class Agent(ABC):
         
         return enhanced_tool_calls
 
-    def _log_llm_call_to_prompts_channel(self, messages: List[Dict[str, str]], tools: Optional[List] = None, 
+    def _log_llm_call_to_prompts_channel(self, messages: List[Dict], tools: Optional[List] = None, 
                                        use_json: bool = False):
         """Log complete LLM call information to Prompts channel"""
         try:            
@@ -343,11 +343,12 @@ class Agent(ABC):
                     "role": msg['role'],
                     "content": content
                 }
+
                 if 'tool_calls' in msg:
                     formatted_msg['tool_calls'] = "[tool_calls_present]"
                 if 'function_call' in msg:
-                    formatted_msg['function_call'] = {
-                        "name": msg['function_call']['name'],
+                    formatted_msg['function_call'] = {       
+                        "name": msg['function_call']['name'], 
                         "arguments": "[arguments_present]"
                     }
                 if 'name' in msg:
