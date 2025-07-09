@@ -316,7 +316,7 @@ class Agent(ABC):
             # Extract system prompt (first message)
             system_prompt = ""
             if messages and messages[0].get('role') == 'system':
-                system_prompt = messages[0]['content']
+                system_prompt = messages[0]['content'] # TODO content is more complex than that.
                 # No truncation - show complete system prompt
             
             # Format messages (with intelligent length limits for readability)
