@@ -20,6 +20,7 @@ from session import Session
 # Logger
 logger = logging.getLogger("Agent System")
 
+#TODO Agent stack should be in Agent Dir
 class AgentStack:
     """Manages the stack of agents to be executed"""
     
