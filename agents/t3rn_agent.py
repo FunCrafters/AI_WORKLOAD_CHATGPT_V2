@@ -11,6 +11,8 @@ import time
 import random
 from typing import List, Dict, Any, Optional
 
+from session import Session
+
 try:
     import openai
     OPENAI_AVAILABLE = True
@@ -18,16 +20,14 @@ except ImportError:
     OPENAI_AVAILABLE = False
 
 from agents.base_agent import Agent, AgentContext, AgentResult
-from agents.memory_manager import MemoryManager
 from tools_functions import get_function_schemas
 
 class T3RNAgent(Agent):
     """Main agent that analyzes questions, executes tools, and generates responses"""
     
-    def __init__(self, memory_manager: MemoryManager = None):
-        super().__init__()
+    def __init__(self, session: 'Session'):
+        super().__init__(session)
         self.tools = get_function_schemas()  # All available tools
-        self.memory_manager = memory_manager
         
         # Initialize OpenAI client if available
         if OPENAI_AVAILABLE:
@@ -81,7 +81,7 @@ CHAMPIONS LIST: {self.champions_list}"""
             'TOOL_RESULTS_ANALYSIS',
             'MOBILE_FORMAT'
         )
-    
+    # TODO CHANNAL LOGGER?!, make it global or agent field
     def call_llm(self, messages: List[Dict[str, Any]], tools: Optional[List] = None, 
                  use_json: bool = False, channel_logger=None) -> Any:
         """Make OpenAI API call with error handling, copied from response_agent_gpt.py"""
@@ -229,7 +229,7 @@ CHAMPIONS LIST: {self.champions_list}"""
                     continue
                 
                 # Check cache first
-                cache_entry = self.memory_manager.lookup_tool_in_cache(self.memory_manager.session_data, function_name, function_args)
+                cache_entry = self.memory_manager.lookup_tool_in_cache(self.session_data.get_memory(), function_name, function_args)
                 
                 if cache_entry:
                     # Use cached result
@@ -266,7 +266,7 @@ CHAMPIONS LIST: {self.champions_list}"""
                             
                             if llm_cache_duration > 0:
                                 self.memory_manager.add_tool_to_cache(
-                                    self.memory_manager.session_data,
+                                    self.session_data.get_memory(),
                                     function_name, function_args, result, llm_cache_duration, channel_logger
                                 )
                             
@@ -279,7 +279,6 @@ CHAMPIONS LIST: {self.champions_list}"""
                             result = error_msg
                             tool_call_id = f"{function_name}_{idx}"
                     else:
-                        # Unknown tool
                         error_msg = f"Unknown tool: {function_name}"
                         channel_logger.log_to_logs(f"❌ Unknown tool: {function_name}")
                         channel_logger.log_tool_call(function_name, function_args, error_msg, idx + 1)
@@ -347,16 +346,16 @@ CHAMPIONS LIST: {self.champions_list}"""
         if self.memory_manager is None:
             raise Exception("MemoryManager not set - should be passed from session")
         
+        # TODO FIX
         # Pass client and session info from channel_logger to memory manager
         if hasattr(self, 'channel_logger') and self.channel_logger:
             self.memory_manager.client = self.channel_logger.client
             self.memory_manager.session_id = self.channel_logger.session_id
             self.memory_manager.action_id = self.channel_logger.action_id
         
-        self.memory_manager.initialize_session_memory(context.session_data)
-        # Store reference to session_data in memory_manager for cache access
-        self.memory_manager.session_data = context.session_data
-        memory_messages = self.memory_manager.prepare_messages_for_agent(context.session_data, current_user_message)
+        self.session_data = context.session_data
+        # TODO Why context?
+        memory_messages = self.memory_manager.prepare_messages_for_agent(context.session_data.get_memory(), current_user_message)
         
         # Prepare messages: system prompt + memory + current user message
         messages: List[Dict[str, Any]] = []
@@ -375,9 +374,11 @@ CHAMPIONS LIST: {self.champions_list}"""
         try:
             from workload_game_cache import CURRENT_JSON_DATA
             
+            # TODO session should be object
             if CURRENT_JSON_DATA:
-                injection_messages = self.memory_manager.inject_screen_context(context.session_data, CURRENT_JSON_DATA, channel_logger)
+                injection_messages = self.memory_manager.inject_screen_context(context.session_data.get_memory(), CURRENT_JSON_DATA, channel_logger)
                 
+                # TODO Try replace with developer.
                 if injection_messages:
                     messages.extend(injection_messages)
                     channel_logger.log_to_logs(f"🎯 Screen injection: {len(injection_messages)} messages added")

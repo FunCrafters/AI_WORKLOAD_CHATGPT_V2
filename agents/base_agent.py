@@ -44,8 +44,13 @@ class AgentResult:
 class Agent(ABC):
     """Base class for all agents"""
     
-    def __init__(self):
+    def __init__(self, session: 'Session'):
         self.tools = []
+        self.session_data: 'Session' = session
+        # TODO is this correct? Trace back to session_data if it can be guaranteed to have memory manager
+        if self.session_data.memory_manager is None: 
+            raise ValueError("Session must have a memory manager initialized")
+        self.memory_manager = self.session_data.memory_manager
         
         # Channel logger will be set by agent system
         self.channel_logger = None
@@ -357,7 +362,6 @@ class Agent(ABC):
             
             # Create complete log (action_id will be added by channel_logger)
             prompt_log = f"""{agent_name} | Base Agent
-
 === CALL PARAMETERS ===
 Model: llama3.1:8b
 Format: {'json' if use_json else 'standard'}
@@ -428,8 +432,3 @@ Keep-alive: 60m
             'class_name': self.__class__.__name__
         }
     
-    @classmethod
-    def from_config(cls, config: Dict[str, Any]):
-        """Create agent from configuration"""
-        return cls()
-

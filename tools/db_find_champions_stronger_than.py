@@ -12,7 +12,7 @@ from db_postgres import execute_query
 logger = logging.getLogger("ChampionsStrongerThan")
 
 
-def db_find_champions_stronger_than(character_name: str, limit: int = 20, rarity: str = None, affinity: str = None, class_type: str = None) -> str:
+def db_find_champions_stronger_than(character_name: str, limit: int = 20, rarity: str|None = None, affinity: str|None = None, class_type: str|None = None) -> str:
     """
     Find champions who are stronger than the specified reference champion with optional trait filtering.
     

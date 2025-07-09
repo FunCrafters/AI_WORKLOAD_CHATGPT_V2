@@ -26,7 +26,7 @@ logger = ContextAdapter(logger)
 #######################
 
 # TODO Send response should not be passed as a parameter to process_main_channel!
-def process_main_channel(client, session: Session):
+def process_main_channel(client, session: 'Session'):
     """Process text on the main channel (0) with agent-based function calling"""
     session_id = session.session_id
     message_id = session.message_id

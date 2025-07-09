@@ -12,7 +12,7 @@ from db_postgres import execute_query
 logger = logging.getLogger("ChampComparator")
 
 
-def db_find_strongest_champions(limit: int = 10, rarity: str = None, affinity: str = None, class_type: str = None) -> str:
+def db_find_strongest_champions(limit: int = 10, rarity: str|None = None, affinity: str|None = None, class_type: str|None = None) -> str:
     """
     Find the strongest champions based on total power (attack + defense + health) with optional trait filtering.
     

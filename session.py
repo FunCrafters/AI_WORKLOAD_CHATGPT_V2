@@ -23,3 +23,8 @@ class Session:
     memory_manager: Optional['MemoryManager'] = None
     client: Optional[Any] = None
     conversation_memory: Optional[Dict[str, Any]] = None
+
+    def get_memory(self,) -> Dict[str, Any]:
+        if self.conversation_memory is None:
+            raise ValueError("Session memory is not initialized")
+        return self.conversation_memory

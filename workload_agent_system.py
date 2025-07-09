@@ -44,7 +44,7 @@ class AgentStack:
         return len(self.agents)
 
 
-def create_initial_context(user_message: str, session: Session, memory_manager: Optional[MemoryManager] = None) -> AgentContext:
+def create_initial_context(user_message: str, session: Session) -> AgentContext:
     """Create initial context for new processing with memory management"""
     context = AgentContext(session)
 
@@ -52,13 +52,12 @@ def create_initial_context(user_message: str, session: Session, memory_manager: 
     context.session_data = session
       
     # Initialize memory manager and prepare messages
-    if memory_manager is None:
-        if session.memory_manager is None:
-            session.memory_manager = MemoryManager()
-        memory_manager = session.memory_manager
+    if session.memory_manager is None:
+        session.memory_manager = MemoryManager()
+        session.conversation_memory = session.memory_manager.initialize_session_memory()
+    memory_manager = session.memory_manager
 
-    memory_manager.initialize_session_memory(session)
-    memory_messages = memory_manager.prepare_messages_for_agent(session, user_message)
+    memory_manager.prepare_messages_for_agent(session.get_memory(), user_message)
       
     return context
 
@@ -77,17 +76,12 @@ def process_llm_agents(user_message: str, session: Session,
     session.action_id += 1
     action_id = session.action_id
     
-    # Ensure memory manager exists
-    if session.memory_manager is None:
-        session.memory_manager = MemoryManager()
-    memory_manager = session.memory_manager
-
     channel_logger.set_action_id(action_id)
     channel_logger.log_to_logs(f"🚀 Starting agent-based processing [Action {action_id}]")
     channel_logger.log_to_logs("🆕 Starting new processing with T3RNAgent")
     
-    context = create_initial_context(user_message, session, memory_manager)
-    t3rn_agent = T3RNAgent(memory_manager)
+    context = create_initial_context(user_message, session)
+    t3rn_agent = T3RNAgent(session)
     
     # TODO CHeck if still required
     # TODO Simplify this code
@@ -128,7 +122,8 @@ def process_llm_agents(user_message: str, session: Session,
                 channel_logger.log_to_logs(f"✅ {current_agent.__class__.__name__} provided final answer")
                     
                 # Finalize memory manager with final answer
-                memory_manager.finalize_current_cycle(session, user_message, result.final_answer, channel_logger)
+                # TODO memory menager could be None, should be checked. / fixed.
+                session.memory_manager.finalize_current_cycle(session.get_memory(), user_message, result.final_answer, channel_logger)
                     
                 if result.error_content:
                     channel_logger.log_error(result.error_content)
@@ -140,7 +135,7 @@ def process_llm_agents(user_message: str, session: Session,
             else:
                 # Agent failed - add FallbackAgent to stack
                 channel_logger.log_to_logs(f"⚠️ {current_agent.__class__.__name__} failed, spawning FallbackAgent")
-                fallback_agent = FallbackAgent()
+                fallback_agent = FallbackAgent(session)
                 agent_stack.push(fallback_agent, current_context)
                 continue
             
@@ -153,7 +148,7 @@ def process_llm_agents(user_message: str, session: Session,
             
             # Spawn FallbackAgent only if T3RNAgent failed and FallbackAgent hasn't been tried yet
             if isinstance(current_agent, T3RNAgent) and "FallbackAgent" not in failed_agents:
-                fallback_agent = FallbackAgent()
+                fallback_agent = FallbackAgent(session)
                 agent_stack.push(fallback_agent, current_context)
                 channel_logger.log_to_logs("🔄 Added FallbackAgent for T3RNAgent error")
             else:
@@ -173,7 +168,7 @@ def process_llm_agents(user_message: str, session: Session,
         channel_logger.log_to_logs("🛡️ Using emergency T3RN malfunction response as final fallback")
         
         # Finalize memory manager with emergency answer
-        memory_manager.finalize_current_cycle(session, user_message, emergency_message, channel_logger)
+        memory_manager.finalize_current_cycle(session.get_memory(), user_message, emergency_message, channel_logger)
         
         # Flush logs buffer for organized display
         channel_logger.flush_buffer(channel_logger.LOGS)
@@ -188,7 +183,7 @@ def process_llm_agents(user_message: str, session: Session,
         
         # Finalize memory manager with error message
         try:
-            memory_manager.finalize_current_cycle(session, user_message, error_message, channel_logger)
+            memory_manager.finalize_current_cycle(session.get_memory(), user_message, error_message, channel_logger)
         except:
             pass  # If memory manager also fails, just continue
         

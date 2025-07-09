@@ -237,7 +237,7 @@ def get_proactive_tool_messages(json_data: Dict[str, Any]) -> Tuple[List[Dict[st
     screen_context = analyze_screen_context(json_data)
     
     # Step 2: Get applicable tools (always includes greeting tool)
-    tools_to_execute = get_applicable_tools(screen_context)
+    tools_to_execute = get_applicable_tools(screen_context) # TODO 
     
     # Step 3: Execute tools and get results
     tool_messages = []

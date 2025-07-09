@@ -7,12 +7,13 @@ Emergency agent that provides basic fallback responses
 import random
 from agents.base_agent import Agent, AgentContext, AgentResult
 from agents.agent_prompts import T3RN_MALFUNCTION_MESSAGES
+from session import Session
 
 class SimpleFallbackAgent(Agent):
     """Simple emergency agent that provides basic fallback responses"""
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self, session: 'Session'):
+        super().__init__(session)
     
     def get_system_prompt(self, context: AgentContext) -> str:
         """Get system prompt for fallback mode"""

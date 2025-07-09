@@ -9,6 +9,9 @@ import os
 import time
 from typing import List, Dict, Any, Optional
 
+from session import Session
+from tools.db_rag_get_general_knowledge import db_rag_get_general_knowledge
+
 try:
     import openai
     OPENAI_AVAILABLE = True
@@ -20,8 +23,8 @@ from agents.base_agent import Agent, AgentContext, AgentResult
 class FallbackAgent(Agent):
     """Simplified fallback agent using only RAG knowledge"""
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self, session: 'Session'):
+        super().__init__(session)
         
         # Initialize OpenAI client if available
         if OPENAI_AVAILABLE:
@@ -86,8 +89,7 @@ class FallbackAgent(Agent):
             original_query = context.original_user_message or "general help"
             
             # Pre-load RAG data
-            from tools_rag.rag_get_general_knowledge import rag_get_general_knowledge
-            general_knowledge = rag_get_general_knowledge(original_query)
+            general_knowledge = db_rag_get_general_knowledge(original_query)
             channel_logger.log_to_logs(f"🔍 FallbackAgent pre-loaded RAG data for: {original_query}")
             
             # Prepare simple messages

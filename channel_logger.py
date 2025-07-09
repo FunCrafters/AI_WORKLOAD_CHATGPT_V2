@@ -108,41 +108,34 @@ class ChannelLogger:
     def log_to_chat(self, content: str):
         """Log to Chat channel (0)"""
         self._send_to_channel(self.CHAT, content)
-        logger.info(content, extra={"channel": "CHAT", "session_id": self.session_id, "message_id": self.message_id})
     
     def log_to_databases(self, content: str):
         """Log to Databases channel (1)"""
         self._send_to_channel(self.DATABASES, content)
-        logger.info(content, extra={"channel": "DATABASES", "session_id": self.session_id, "message_id": self.message_id})
 
     def log_to_caches(self, content: str):
         """Log to Caches channel (2)"""
         self._send_to_channel(self.CACHES, content)
-        logger.info(content, extra={"channel": "CACHES", "session_id": self.session_id, "message_id": self.message_id})
 
     def log_to_tools(self, content: str):
         """Log to Tools channel (3)"""
         self._send_to_channel(self.TOOLS, content)
-        logger.info(content, extra={"channel": "TOOLS", "session_id": self.session_id, "message_id": self.message_id})
     
     def log_to_prompts(self, content: str):
         """Log to Prompts channel (4)"""
         if self.action_id:
             content = f"[Action {self.action_id}] {content}"
         self._send_to_channel(self.PROMPTS, content)
-        logger.info(content, extra={"channel": "PROMPTS", "session_id": self.session_id, "message_id": self.message_id})
     
     def log_to_memory(self, content: str):
         """Log to Memory channel (5)"""
         self._send_to_channel(self.MEMORY, content)
-        logger.info(content, extra={"channel": "MEMORY", "session_id": self.session_id, "message_id": self.message_id})
     
     def log_to_tool_calls(self, content: str):
         """Log to Tool Calls channel (6, previously LLM Tools)"""
         if self.action_id:
             content = f"[Action {self.action_id}] {content}"
         self._send_to_channel(self.TOOL_CALLS, content)
-        logger.info(content, extra={"channel": "TOOL_CALLS", "session_id": self.session_id, "message_id": self.message_id})
     
     def log_to_logs(self, content: str):
         """Log to Logs channel (8) - buffered for better organization"""
@@ -151,6 +144,8 @@ class ChannelLogger:
             bracket_end = content.find(']')
             if bracket_end != -1:
                 content = content[bracket_end + 1:].strip()
+        
+        logger.info(content)
         
         self.buffer_log(self.LOGS, content)
     

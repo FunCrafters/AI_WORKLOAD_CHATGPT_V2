@@ -55,8 +55,9 @@ class MemoryManager:
         self.client = None
         self.session_id = None
         self.action_id = None
+
     
-    def initialize_session_memory(self, session: 'Session') -> Dict[str, Any]:
+    def initialize_session_memory(self,) -> Dict[str, Any]:
         """Initialize simple conversation memory structure"""
         return {
             'exchanges': [],           # List of Q&A exchanges (max 10)
@@ -70,15 +71,7 @@ class MemoryManager:
             'screen_injection_done': False  # Track if screen injection was done
         }
     
-    def prepare_messages_for_agent(self, session: 'Session', user_message: str) -> List[Dict[str, str]]:
-        """Prepare conversation history messages for agent"""
-        
-        # Initialize memory if needed
-        if session.conversation_memory is None:
-            session.conversation_memory = self.initialize_session_memory(session)
-        
-        # Store current user message
-        memory = session.conversation_memory
+    def prepare_messages_for_agent(self, memory: Dict[str, Any], user_message: str) -> List[Dict[str, str]]:
         memory['current_cycle']['user_question'] = user_message
         
         # Build messages for LLM
@@ -103,7 +96,7 @@ class MemoryManager:
             })
         
         # Add cached tool messages (if any are still valid)
-        cached_tool_messages = self.get_cached_tool_messages(session)
+        cached_tool_messages = self._get_cached_tool_messages(memory)
         if cached_tool_messages:
             messages.extend(cached_tool_messages)
         
@@ -116,13 +109,12 @@ class MemoryManager:
         hash_input = f"{tool_name}:{params_json}"
         return hashlib.md5(hash_input.encode()).hexdigest()
     
-    def add_tool_to_cache(self, session: Dict[str, Any], tool_name: str, parameters: Dict[str, Any], 
+    def add_tool_to_cache(self, memory: Dict[str, Any], tool_name: str, parameters: Dict[str, Any], 
                          result: str, llm_cache_duration: int, channel_logger=None) -> None:
         """Add tool result to cache with specified duration"""
         if llm_cache_duration <= 0:
             return  # Don't cache if duration is 0
             
-        memory = session['conversation_memory']
         cache_key = self._generate_tool_cache_key(tool_name, parameters)
         
         call_id = f"call_cached_{uuid.uuid4().hex[:8]}"
@@ -140,11 +132,11 @@ class MemoryManager:
         memory['tool_cache'][cache_key] = cache_entry
         
         if channel_logger:
-            self._add_to_session_log(session, f"🗄️ Cached tool {tool_name} for {llm_cache_duration} exchanges")
+            self._add_to_session_log(memory, f"🗄️ Cached tool {tool_name} for {llm_cache_duration} exchanges")
     
-    def lookup_tool_in_cache(self, session: Dict[str, Any], tool_name: str, parameters: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    # TODO check what this function is doing and what is cache all about., Why it is with memory?
+    def lookup_tool_in_cache(self, memory: Dict[str, Any], tool_name: str, parameters: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Look up tool result in cache and refresh duration if found"""
-        memory = session['conversation_memory']
         cache_key = self._generate_tool_cache_key(tool_name, parameters)
         
         if cache_key in memory['tool_cache']:
@@ -153,15 +145,14 @@ class MemoryManager:
             # Refresh the duration to original value
             cache_entry['remaining_duration'] = cache_entry['original_duration']
             
-            self._add_to_session_log(session, f"♻️ Cache hit for {tool_name}, refreshed duration to {cache_entry['original_duration']}")
+            self._add_to_session_log(memory, f"♻️ Cache hit for {tool_name}, refreshed duration to {cache_entry['original_duration']}")
             return cache_entry
             
         return None
     
     # TODO seems like this is used at the end of exchange, but why?
-    def get_cached_tool_messages(self, session: 'Session') -> List[Dict[str, Any]]:
+    def _get_cached_tool_messages(self, memory: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Get all cached tool results as OpenAI messages"""
-        memory = session.conversation_memory if session.conversation_memory else self.initialize_session_memory(session)
         tool_messages = []
         
         for cache_entry in memory['tool_cache'].values():
@@ -194,9 +185,8 @@ class MemoryManager:
         
         return tool_messages
     
-    def cleanup_expired_cache(self, session: Dict[str, Any], channel_logger=None) -> None:
+    def _cleanup_expired_cache(self, memory: Dict[str, Any], channel_logger=None) -> None:
         """Remove expired tool cache entries and decrement remaining durations at end of exchange"""
-        memory = session['conversation_memory']
         expired_keys = []
         
         for cache_key, cache_entry in memory['tool_cache'].items():
@@ -210,7 +200,7 @@ class MemoryManager:
         for key in expired_keys:
             removed_entry = memory['tool_cache'].pop(key)
             if channel_logger:
-                self._add_to_session_log(session, f"🗑️ Expired cache for {removed_entry['tool_name']}")
+                self._add_to_session_log(memory, f"🗑️ Expired cache for {removed_entry['tool_name']}")
     
     def is_tool_already_in_current_messages(self, messages: List[Dict[str, Any]], tool_name: str, parameters: Dict[str, Any]) -> bool:
         """Check if tool with same parameters is already in current message list"""
@@ -224,9 +214,8 @@ class MemoryManager:
                         return True
         return False
     
-    def inject_screen_context(self, session: Dict[str, Any], json_data: Dict[str, Any], channel_logger=None) -> List[Dict[str, Any]]:
+    def inject_screen_context(self, memory: Dict[str, Any], json_data: Dict[str, Any], channel_logger=None) -> List[Dict[str, Any]]:
         """Inject screen context and proactive tools at session start"""
-        memory = session['conversation_memory']
         
         # Only inject once per session and only if we have json_data
         if memory.get('screen_injection_done') or not json_data:
@@ -246,17 +235,17 @@ class MemoryManager:
                 })
                 
                 if channel_logger:
-                    self._add_to_session_log(session, f"🎯 Injected screen context: {len(prompt_injection)} chars")
+                    self._add_to_session_log(memory, f"🎯 Injected screen context: {len(prompt_injection)} chars")
             
             # Add proactive tool results and cache them
             if proactive_messages:
                 injection_messages.extend(proactive_messages)
                 
                 # Cache the tool results
-                self._cache_proactive_tool_results(session, proactive_messages, channel_logger)
+                self._cache_proactive_tool_results(memory, proactive_messages, channel_logger)
                 
                 if channel_logger:
-                    self._add_to_session_log(session, f"🔧 Injected {len(proactive_messages)} proactive tool messages")
+                    self._add_to_session_log(memory, f"🔧 Injected {len(proactive_messages)} proactive tool messages")
             
             # Mark injection as done
             memory['screen_injection_done'] = True
@@ -265,14 +254,12 @@ class MemoryManager:
             
         except Exception as e:
             if channel_logger:
-                self._add_to_session_log(session, f"❌ Screen injection failed: {str(e)}")
+                self._add_to_session_log(memory, f"❌ Screen injection failed: {str(e)}")
             return []
     
-    def _cache_proactive_tool_results(self, session: Dict[str, Any], proactive_messages: List[Dict[str, Any]], channel_logger=None) -> None:
+    def _cache_proactive_tool_results(self, memory: Dict[str, Any], proactive_messages: List[Dict[str, Any]], channel_logger=None) -> None:
         """Cache proactive tool results based on their llm_cache_duration"""
-        try:
-            from tools_functions import available_all_tools
-            
+        try:            
             # Process pairs of assistant + tool messages
             for i in range(0, len(proactive_messages), 2):
                 if i + 1 < len(proactive_messages):
@@ -298,19 +285,14 @@ class MemoryManager:
                             pass
                         
                         if llm_cache_duration > 0:
-                            self.add_tool_to_cache(session, tool_name, parameters, result, llm_cache_duration, channel_logger)
+                            self.add_tool_to_cache(memory, tool_name, parameters, result, llm_cache_duration, channel_logger)
                             
         except Exception as e:
             if channel_logger:
-                self._add_to_session_log(session, f"❌ Failed to cache proactive tools: {str(e)}")
+                self._add_to_session_log(memory, f"❌ Failed to cache proactive tools: {str(e)}")
     
-    def finalize_current_cycle(self, session: 'Session', user_message: str, final_answer: str, channel_logger=None) -> None:
-        """Update memory with final exchange results"""
-        if session.conversation_memory is None:
-            session.conversation_memory = self.initialize_session_memory(session)
-        
-        memory = session.conversation_memory
-        
+    def finalize_current_cycle(self, memory: Dict[str, Any], user_message: str, final_answer: str, channel_logger=None) -> None:
+        """Update memory with final exchange results"""        
         # Prepare the current exchange
         current_exchange = {
             'question': user_message,
@@ -329,9 +311,7 @@ class MemoryManager:
             'final_answer': None
         }
         
-        # Cleanup tool cache (decrement duration)
-        # TODO 
-        self.cleanup_expired_cache(session.__dict__, channel_logger)
+        self._cleanup_expired_cache(memory, channel_logger)
     
     def _summarize_text(self, text: str, target_size: int) -> str:
         """Summarize text to target size (in bytes) using LLM or simple truncation"""
@@ -350,7 +330,7 @@ class MemoryManager:
             # Use OpenAI for intelligent summarization
             prompt = f"Summarize the following text to approximately {target_chars} characters (aiming for {target_size} bytes) while preserving key information. Be concise:\n\n{text}"
             
-            response = self.openai_client.chat.completions.create(
+            response = self.openai_client.chat.completions.create( # type: ignore
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant that creates very concise summaries. Be extremely brief."},
@@ -358,7 +338,11 @@ class MemoryManager:
                 ],
                 temperature=0.3,
                 max_tokens=int(target_chars / 2)  # More conservative token limit
-            )
+            ) 
+
+            if response.choices[0].message.content is None:
+                logger.error("Empty response from OpenAI summarization")
+                return textwrap.shorten(text, width=target_size)
             
             summary = response.choices[0].message.content.strip()
             
@@ -381,9 +365,8 @@ class MemoryManager:
             logger.info("Failed to log to memory channel")
             pass  # Silent fail - logging is not critical OwO?
     
-    def _add_to_session_log(self, session: Dict[str, Any], content: str) -> None:
+    def _add_to_session_log(self, memory: Dict[str, Any], content: str) -> None:
         """Add log entry to session logs (collected until final state)"""
-        memory = session['conversation_memory']
         if 'session_logs' not in memory:
             memory['session_logs'] = []
         memory['session_logs'].append(content)
@@ -430,7 +413,7 @@ class MemoryManager:
         """Log final memory state showing what agent would receive"""
         try:
             # Get the current user message
-            memory = session.conversation_memory if session.conversation_memory else self.initialize_session_memory(session)
+            memory = session.conversation_memory if session.conversation_memory else self.initialize_session_memory()
             current_user_message = memory['current_cycle'].get('user_question', 'No current message')
             
             # Get memory messages as agent would receive them
