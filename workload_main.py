@@ -4,6 +4,7 @@ LLM Workload
 Connects to RathTAR and processes text using LLM models with RAG capabilities
 """
 
+from dataclasses import dataclass
 import os
 import socket
 import json
@@ -55,7 +56,16 @@ logger = logging.getLogger("LLM Workload")
 logger = logging.LoggerAdapter(logger)
 
 # Dictionary to store session data for multiple users
-active_sessions = {}
+@dataclass
+class Session:
+    created_at: float
+    last_activity: float
+    message_count: int
+    session_id: str
+    channel: int
+    json_data: Optional[Dict[str, Any]] = None
+
+active_sessions = {} # type: Dict[str, Session] 
 
 def connect_to_server():
     """Connect to RathTAR socket server"""
@@ -110,24 +120,29 @@ def register_workload(client):
         return None
 
 #TODO Session handling?
-def create_or_update_session(session_id, text="", channel=0, is_initialization=False):
-    """Create a new session or update an existing one"""
+def create_or_update_session(data: dict, is_initialization=False):
+    session_id = data.get('session_id')
+    message_id = data.get('message_id', 0)
+    message_type = data.get('type')
+
+
     if not session_id:
         return None
         
     if session_id not in active_sessions:
         # Create new session
-        active_sessions[session_id] = {
-            "created_at": time.time(),
-            "last_activity": time.time(),
-            "message_count": 0,  # todo - do czego to sluzy
-            "session_id": session_id
-        }
+        active_sessions[session_id] = Session(
+            created_at=time.time(),
+            last_activity=time.time(),
+            message_count=0,        
+            session_id=session_id,
+            channel=channel
+        )
     
     # Update session activity
     if not is_initialization:
-        active_sessions[session_id]["last_activity"] = time.time()
-        active_sessions[session_id]["message_count"] += 1
+        active_sessions[session_id].last_activity = time.time()
+        active_sessions[session_id].message_count += 1
         
     return active_sessions[session_id]
 
@@ -143,9 +158,9 @@ def process_message(client, message):
         
         # Extract common message data
         message_type = data.get('type')
-        session_id = data.get('session_id')
-        message_id = data.get('message_id', 0)
-        
+
+        session = create_or_update_session(data)
+
         # Log standardized message receipt info
         preview = raw_message[:250] + "..." if len(raw_message) > 250 else raw_message
         logger.info(f"Recived Message {message_type}", extra=dict(session_id=session_id, message_id=message_id))
@@ -181,10 +196,8 @@ def process_initialization_message(client, data, session_id, message_id):
     channel = data.get('channel', 0)
     logger.info("   PROCESSING", extra=dict(session_id=session_id, channel=channel))
     
-    # Create a new session
     create_or_update_session(session_id, is_initialization=True)
         
-    # Send empty response for initialization
     response = create_response(channel, "", session_id, message_id)
     send_response(client, response, session_id, channel, message_id)
     
@@ -207,9 +220,11 @@ def process_settings_message(client, data, session_id, message_id):
     # Extract settings
     settings_data = data.get('settings', {})
     if settings_data:
+        # TODO 
         # Store settings directly in session
         for key, value in settings_data.items():
-            session[key] = value
+            session.__dict__[key] = value
+
         logger.info("   PROCESS_SETTINGS_STORED", extra=dict(session_id= session_id, keys=list(settings_data.keys())))
 
         logger.info("   SETTINGS_CONFIRMATION", extra=dict(session_id=session_id))        
@@ -292,7 +307,7 @@ def process_json_data_message(client, data, session_id, message_id):
                 return 'data_present'
         
         # Store a small sample and summary
-        session['json_data'] = {
+        session.json_data = {
             'size': data_size_bytes,
             'size_kb': data_size_kb,
             'summary': get_data_summary(json_data)

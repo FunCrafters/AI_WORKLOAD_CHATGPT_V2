@@ -11,6 +11,8 @@ import hashlib
 import uuid
 from typing import Dict, List, Any, Optional, Tuple
 
+from channel_logger import ChannelLogger
+
 try:
     import openai
     OPENAI_AVAILABLE = True
@@ -24,10 +26,10 @@ class MemoryManager:
     
     def __init__(self):
         # Simple configuration
-        self.max_exchanges = 10          # Max exchanges in list
+        self.max_exchanges = 10            # Max exchanges in list
         self.large_answer_threshold = 750  # Threshold for long answers (bytes)
-        self.summary_target_size = 500    # Target size for answer summarization
-        self.max_summary_size = 4000      # Max summary size before LLM compression
+        self.summary_target_size = 500     # Target size for answer summarization
+        self.max_summary_size = 4000       # Max summary size before LLM compression
         self.summary_target_after_llm = 3000  # Target size after LLM summarization
         
         # Statistics tracking
@@ -157,6 +159,7 @@ class MemoryManager:
             
         return None
     
+    # TODO seems like this is used at the end of exchange, but why?
     def get_cached_tool_messages(self, session: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Get all cached tool results as OpenAI messages"""
         memory = session['conversation_memory']
@@ -484,7 +487,7 @@ class MemoryManager:
         
         return text.strip()
     
-    def _log_final_memory_state(self, session: Dict[str, Any], channel_logger):
+    def _log_final_memory_state(self, session: Dict[str, Any], channel_logger: ChannelLogger) -> None:
         """Log final memory state showing what agent would receive"""
         try:
             # Get the current user message

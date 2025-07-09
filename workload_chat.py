@@ -33,7 +33,6 @@ def process_main_channel(client, session, text, channel, session_id, message_id,
         send_response(client, response, session_id, channel, message_id)
         return
     
-    # Add client and session_id to session for agent use
     session['client'] = client
     session['session_id'] = session_id
     
