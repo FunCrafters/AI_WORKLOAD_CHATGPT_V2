@@ -64,7 +64,7 @@ logger.addHandler(console_handler)
 
 # TODO - Replace with logging module across app
 class ChannelLogger:
-    """Handles logging to multiple channels in a structured way"""
+    """Handles logging into web server"""
     
     # Channel IDs as constants
     CHAT = 0
@@ -76,7 +76,7 @@ class ChannelLogger:
     TOOL_CALLS = 6  # Previously LLM Tools
     LOGS = 8       # Channel 7 (Errors) is removed
     
-    def __init__(self, client, session_id: str, message_id: int):
+    def __init__(self, client, session_id: int, message_id: int):
         """Initialize the channel logger
         
         Args:

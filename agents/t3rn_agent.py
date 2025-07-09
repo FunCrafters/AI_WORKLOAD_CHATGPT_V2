@@ -4,13 +4,12 @@ T3rn Agent
 Main agent with internal tool loop using ChatGPT-4o-mini
 Replaces QuestionAnalyzer with direct tool execution and response generation
 """
-
-import json
 import os
 import time
 import random
 from typing import List, Dict, Any, Optional
 
+from channel_logger import ChannelLogger
 from session import Session
 
 try:
@@ -25,8 +24,8 @@ from tools_functions import get_function_schemas
 class T3RNAgent(Agent):
     """Main agent that analyzes questions, executes tools, and generates responses"""
     
-    def __init__(self, session: 'Session'):
-        super().__init__(session)
+    def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
+        super().__init__(session, channel_logger)
         self.tools = get_function_schemas()  # All available tools
         
         # Initialize OpenAI client if available
@@ -59,8 +58,7 @@ class T3RNAgent(Agent):
     def get_system_prompt(self, context: AgentContext) -> str:
         """Get system prompt - randomly choose between T3RN and T4RN"""
         
-        champions_and_bosses = f"""
-CHAMPIONS LIST: {self.champions_list}"""
+        champions_and_bosses = f"""CHAMPIONS LIST: {self.champions_list}"""
         
         # Randomly choose between CHARACTER_BASE_T3RN and CHARACTER_BASE_T4RN
         character_prompt = random.choice(['CHARACTER_BASE_T3RN', 'CHARACTER_BASE_T4RN'])
@@ -82,13 +80,15 @@ CHAMPIONS LIST: {self.champions_list}"""
             'MOBILE_FORMAT'
         )
     # TODO CHANNAL LOGGER?!, make it global or agent field
-    def call_llm(self, messages: List[Dict[str, Any]], tools: Optional[List] = None, 
-                 use_json: bool = False, channel_logger=None) -> Any:
+    def call_llm(self, 
+                 messages: List[Dict[str, Any]], 
+                 tools: Optional[List] = None, 
+                 use_json: bool = False) -> Any:
         """Make OpenAI API call with error handling, copied from response_agent_gpt.py"""
         
         # Log LLM call to Prompts channel BEFORE making the call
-        if channel_logger:
-            self._log_llm_call_to_prompts_channel(messages, tools, use_json, channel_logger)
+        if self.channel_logger:
+            self._log_llm_call_to_prompts_channel(messages, tools, use_json, self.channel_logger)
         
         # Try OpenAI first if available and configured
         if self.openai_enabled and self.openai_client:
@@ -118,7 +118,7 @@ CHAMPIONS LIST: {self.champions_list}"""
                 completion_tokens = response.usage.completion_tokens if response.usage else 0
                 total_tokens = response.usage.total_tokens if response.usage else 0
                 
-                channel_logger.log_to_logs(f"⚡ gpt-4o-mini completed in {elapsed_time:.3f}s ({prompt_tokens}+{completion_tokens}={total_tokens} tokens)")
+                self.channel_logger.log_to_logs(f"⚡ gpt-4o-mini completed in {elapsed_time:.3f}s ({prompt_tokens}+{completion_tokens}={total_tokens} tokens)")
 
                 
                 # Create a response object similar to Ollama's format for compatibility
@@ -134,12 +134,12 @@ CHAMPIONS LIST: {self.champions_list}"""
                 return OpenAIResponse(response)
                 
             except Exception as e:
-                channel_logger.log_to_logs(f"❌ OpenAI API call failed: {str(e)}")
+                self.channel_logger.log_to_logs(f"❌ OpenAI API call failed: {str(e)}")
                 raise Exception(f"T3rnAgent OpenAI API call failed: {str(e)}")
         else:
             raise Exception("OpenAI API not available or not configured")
     
-    def add_complementary_tools(self, tool_calls: List, channel_logger) -> List:
+    def add_complementary_tools(self, tool_calls: List) -> List:
         """Add complementary tools - copied from QuestionAnalyzer"""
         
         # Create a new list with original + complementary tools
@@ -177,13 +177,13 @@ CHAMPIONS LIST: {self.champions_list}"""
                     )
                     enhanced_tool_calls.append(complementary_call)
                     
-                    channel_logger.log_to_logs(f"🔗 Added complementary tool: {complementary_function} for {function_name}")
+                    self.channel_logger.log_to_logs(f"🔗 Added complementary tool: {complementary_function} for {function_name}")
                 else:
-                    channel_logger.log_to_logs(f"⚠️ Complementary tool {complementary_function} already exists with same parameters, skipping")
+                    self.channel_logger.log_to_logs(f"⚠️ Complementary tool {complementary_function} already exists with same parameters, skipping")
         
         return enhanced_tool_calls
     
-    def process_and_execute_tools(self, tool_calls: List, response_content: str, channel_logger, messages: List[Dict[str, Any]]) -> bool:
+    def process_and_execute_tools(self, tool_calls: List, response_content: str, messages: List[Dict[str, Any]]) -> bool:
         """Process tool calls, add complementary tools, execute them and add to messages"""
         
         # Filter out agent spawning tools (we handle everything internally)
@@ -193,14 +193,14 @@ CHAMPIONS LIST: {self.champions_list}"""
             regular_tool_calls.append(tool_call)
         
         if not regular_tool_calls:
-            channel_logger.log_to_logs("⚠️ No regular tools to execute")
+            self.channel_logger.log_to_logs("⚠️ No regular tools to execute")
             return False
         
         # Add complementary tools
-        enhanced_tool_calls = self.add_complementary_tools(regular_tool_calls, channel_logger)
+        enhanced_tool_calls = self.add_complementary_tools(regular_tool_calls)
         
         # Log total number of tools that will actually be executed
-        channel_logger.log_to_logs(f"🔧 Will execute {len(enhanced_tool_calls)} tools total (including complementary)")
+        self.channel_logger.log_to_logs(f"🔧 Will execute {len(enhanced_tool_calls)} tools total (including complementary)")
         
         # Execute tools one by one and add to messages immediately
         for idx, tool_call in enumerate(enhanced_tool_calls):
@@ -219,13 +219,13 @@ CHAMPIONS LIST: {self.champions_list}"""
                         function_args = json.loads(function_args)
                     except json.JSONDecodeError as e:
                         error_msg = f"Invalid JSON in arguments: {str(e)}"
-                        channel_logger.log_to_logs(f"❌ {function_name}: {error_msg}")
-                        channel_logger.log_tool_call(function_name, function_args, f"Parameter validation error: {error_msg}", idx + 1)
+                        self.channel_logger.log_to_logs(f"❌ {function_name}: {error_msg}")
+                        self.channel_logger.log_tool_call(function_name, function_args, f"Parameter validation error: {error_msg}", idx + 1)
                         raise Exception(f"Tool execution failed: {error_msg}")
                 
                 # Check if tool is already in current messages to avoid duplicates
                 if self.memory_manager.is_tool_already_in_current_messages(messages, function_name, function_args):
-                    channel_logger.log_to_logs(f"⚠️ {function_name} already in current messages, skipping")
+                    self.channel_logger.log_to_logs(f"⚠️ {function_name} already in current messages, skipping")
                     continue
                 
                 # Check cache first
@@ -234,8 +234,8 @@ CHAMPIONS LIST: {self.champions_list}"""
                 if cache_entry:
                     # Use cached result
                     result = cache_entry['result']
-                    channel_logger.log_to_logs(f"♻️ {function_name} from cache ({len(str(result))} chars)")
-                    channel_logger.log_tool_call(function_name, function_args, f"[CACHED] {result}", idx + 1)
+                    self.channel_logger.log_to_logs(f"♻️ {function_name} from cache ({len(str(result))} chars)")
+                    self.channel_logger.log_tool_call(function_name, function_args, f"[CACHED] {result}", idx + 1)
                     
                     # Update call_id to the cached one
                     tool_call_id = cache_entry['call_id']
@@ -249,10 +249,10 @@ CHAMPIONS LIST: {self.champions_list}"""
                             elapsed_time = time.time() - start_time
                             
                             # Log to Logs channel
-                            channel_logger.log_to_logs(f"🔧 {function_name} executed in {elapsed_time:.3f}s ({len(str(result))} chars)")
+                            self.channel_logger.log_to_logs(f"🔧 {function_name} executed in {elapsed_time:.3f}s ({len(str(result))} chars)")
                             
                             # Log to Tool Calls channel with correct call number
-                            channel_logger.log_tool_call(function_name, function_args, result, idx + 1)
+                            self.channel_logger.log_tool_call(function_name, function_args, result, idx + 1)
                             
                             # Cache the result if it has llm_cache_duration > 0
                             # Check if result contains llm_cache_duration (default 0 if not present)
@@ -274,14 +274,14 @@ CHAMPIONS LIST: {self.champions_list}"""
                             
                         except Exception as tool_error:
                             error_msg = f"Tool execution error: {str(tool_error)}"
-                            channel_logger.log_to_logs(f"❌ {function_name}: {str(tool_error)}")
-                            channel_logger.log_tool_call(function_name, function_args, error_msg, idx + 1)
+                            self.channel_logger.log_to_logs(f"❌ {function_name}: {str(tool_error)}")
+                            self.channel_logger.log_tool_call(function_name, function_args, error_msg, idx + 1)
                             result = error_msg
                             tool_call_id = f"{function_name}_{idx}"
                     else:
                         error_msg = f"Unknown tool: {function_name}"
-                        channel_logger.log_to_logs(f"❌ Unknown tool: {function_name}")
-                        channel_logger.log_tool_call(function_name, function_args, error_msg, idx + 1)
+                        self.channel_logger.log_to_logs(f"❌ Unknown tool: {function_name}")
+                        self.channel_logger.log_tool_call(function_name, function_args, error_msg, idx + 1)
                         result = error_msg
                         tool_call_id = f"{function_name}_{idx}"
                 
@@ -323,30 +323,28 @@ CHAMPIONS LIST: {self.champions_list}"""
                 })
                 
             except Exception as e:
-                channel_logger.log_to_logs(f"❌ Tool {tool_call.function.name} failed: {str(e)}")
-                # Log failed tool call to Tool Calls channel
-                channel_logger.log_tool_call(tool_call.function.name, tool_call.function.arguments, f"Tool execution error: {str(e)}", idx + 1)
+                self.channel_logger.log_to_logs(f"❌ Tool {tool_call.function.name} failed: {str(e)}")
+                self.channel_logger.log_tool_call(tool_call.function.name, tool_call.function.arguments, f"Tool execution error: {str(e)}", idx + 1)
                 raise Exception(f"Tool execution failed: {str(e)}")
         
         return True
     
     
-    def execute(self, context: AgentContext, channel_logger) -> AgentResult:
+    def execute(self, context: AgentContext) -> AgentResult:
         """Execute T3rnAgent with internal tool loop"""
         
-        channel_logger.log_to_logs("🚀 T3rnAgent starting with internal tool loop")
+        self.channel_logger.log_to_logs("🚀 T3rnAgent starting with internal tool loop")
         
         # Get current user message
         current_user_message = context.original_user_message
         
-        # Store channel_logger reference for use in get_system_prompt
-        self.channel_logger = channel_logger
         
         # Use memory manager from session
         if self.memory_manager is None:
             raise Exception("MemoryManager not set - should be passed from session")
         
         # TODO FIX
+        # TODO memory_menager should have channel_logger.
         # Pass client and session info from channel_logger to memory manager
         if hasattr(self, 'channel_logger') and self.channel_logger:
             self.memory_manager.client = self.channel_logger.client
@@ -381,10 +379,10 @@ CHAMPIONS LIST: {self.champions_list}"""
                 # TODO Try replace with developer.
                 if injection_messages:
                     messages.extend(injection_messages)
-                    channel_logger.log_to_logs(f"🎯 Screen injection: {len(injection_messages)} messages added")
+                    self.channel_logger.log_to_logs(f"🎯 Screen injection: {len(injection_messages)} messages added")
                             
         except Exception as e:
-            channel_logger.log_to_logs(f"⚠️ Screen injection error: {str(e)}")
+            self.channel_logger.log_to_logs(f"⚠️ Screen injection error: {str(e)}")
         
         # Add current user message
         messages.append({
@@ -392,7 +390,7 @@ CHAMPIONS LIST: {self.champions_list}"""
             "content": current_user_message
         })
         
-        channel_logger.log_to_logs(f"🧠 Memory: {len(memory_messages)} context messages loaded")
+        self.channel_logger.log_to_logs(f"🧠 Memory: {len(memory_messages)} context messages loaded")
         
         # TODO Nie potrzebne z Chatem GPT.
         max_iterations = 10
@@ -401,12 +399,12 @@ CHAMPIONS LIST: {self.champions_list}"""
         try:
             while iteration < max_iterations:
                 iteration += 1
-                channel_logger.log_to_logs(f"🔄 T3rnAgent iteration {iteration}")
+                self.channel_logger.log_to_logs(f"🔄 T3rnAgent iteration {iteration}")
                 
                 try:
                     # Check if this is the final iteration - no tools, force final answer
                     if iteration == max_iterations:
-                        channel_logger.log_to_logs(f"⏰ T3RNAgent final iteration {iteration}/{max_iterations} - forcing final answer without tools")
+                        self.channel_logger.log_to_logs(f"⏰ T3RNAgent final iteration {iteration}/{max_iterations} - forcing final answer without tools")
                         
                         # Add strong instruction for final answer
                         from agents.agent_prompts import T3RN_FINAL_ITERATION_PROMPT
@@ -416,19 +414,19 @@ CHAMPIONS LIST: {self.champions_list}"""
                         })
                         
                         # Call LLM WITHOUT tools
-                        response = self.call_llm(messages, tools=None, channel_logger=channel_logger)
+                        response = self.call_llm(messages, tools=None)
                     else:
                         # Normal iteration - call LLM with tools
-                        response = self.call_llm(messages, tools=self.tools, channel_logger=channel_logger)
+                        response = self.call_llm(messages, tools=self.tools)
                     
                     # Check if tools were called (only possible in non-final iterations)
                     if iteration < max_iterations and hasattr(response.choices[0].message, 'tool_calls') and response.choices[0].message.tool_calls:
                         tool_calls = response.choices[0].message.tool_calls
-                        channel_logger.log_to_logs(f"🔧 T3RNAgent requested {len(tool_calls)} tools")
+                        self.channel_logger.log_to_logs(f"🔧 T3RNAgent requested {len(tool_calls)} tools")
                         
                         # Process and execute tools using dedicated function
                         response_content = response.choices[0].message.content or ""
-                        tools_executed = self.process_and_execute_tools(tool_calls, response_content, channel_logger, messages)
+                        tools_executed = self.process_and_execute_tools(tool_calls, response_content, messages)
                         
                         if tools_executed:
                             # Continue loop - call LLM again with tool results
@@ -448,10 +446,10 @@ CHAMPIONS LIST: {self.champions_list}"""
                     
                     # Final answer - no tools, no clarification needed
                     if iteration == max_iterations:
-                        channel_logger.log_to_logs(f"✅ T3RNAgent forced final answer after {iteration} iterations")
+                        self.channel_logger.log_to_logs(f"✅ T3RNAgent forced final answer after {iteration} iterations")
                     else:
-                        channel_logger.log_to_logs(f"✅ T3RNAgent completed after {iteration} iterations")
-                    channel_logger.log_to_logs(f"💭 T3RN AGENT PROCESSING: Completed in {iteration} iterations, final response generated")
+                        self.channel_logger.log_to_logs(f"✅ T3RNAgent completed after {iteration} iterations")
+                    self.channel_logger.log_to_logs(f"💭 T3RN AGENT PROCESSING: Completed in {iteration} iterations, final response generated")
                                         
                     result = AgentResult()
                     result.final_answer = response_content
@@ -459,7 +457,7 @@ CHAMPIONS LIST: {self.champions_list}"""
                     return result
                         
                 except Exception as llm_error:
-                    channel_logger.log_to_logs(f"❌ T3RNAgent error in iteration {iteration}: {str(llm_error)}")
+                    self.channel_logger.log_to_logs(f"❌ T3RNAgent error in iteration {iteration}: {str(llm_error)}")
                     raise llm_error
             
             # This should never be reached now
@@ -467,12 +465,11 @@ CHAMPIONS LIST: {self.champions_list}"""
             
         except Exception as main_error:
             # T3RNAgent failed - let workload_agent_system handle fallback
-            channel_logger.log_to_logs(f"🚨 T3RNAgent failed: {str(main_error)}")            
+            self.channel_logger.log_to_logs(f"🚨 T3RNAgent failed: {str(main_error)}")            
             
             result = AgentResult()
             result.error_content = f"T3RN AGENT ERROR: Failed in iteration {iteration} - {str(main_error)}"
             
-            # Return None for final_answer to trigger fallback in workload_agent_system
             result.final_answer = None
             
             return result

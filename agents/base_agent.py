@@ -11,7 +11,7 @@ import json
 import textwrap
 from typing import Dict, List, Any, Optional, Tuple
 from abc import ABC, abstractmethod
-
+from channel_logger import ChannelLogger
 from session import Session
 
 # Logger
@@ -20,11 +20,12 @@ logger = logging.getLogger("Base Agent")
 class AgentContext:
     """Context object passed between agents containing all necessary information"""
     
-    def __init__(self, session: 'Session'):
+    def __init__(self, session: 'Session', logger: 'ChannelLogger'):
         # Basic data
         self.original_user_message = ""    
         # Session data
-        self.session_data: 'Session' = session  
+        self.session_data: 'Session' = session
+        self.channel_logger: 'ChannelLogger' = logger
         # Action ID for tracking across channels
         self.action_id = None        
         # Simple conversation tracking
@@ -44,17 +45,17 @@ class AgentResult:
 class Agent(ABC):
     """Base class for all agents"""
     
-    def __init__(self, session: 'Session'):
+    def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
         self.tools = []
         self.session_data: 'Session' = session
+        self.channel_logger: 'ChannelLogger' = channel_logger
         # TODO is this correct? Trace back to session_data if it can be guaranteed to have memory manager
         if self.session_data.memory_manager is None: 
             raise ValueError("Session must have a memory manager initialized")
-        self.memory_manager = self.session_data.memory_manager
         
-        # Channel logger will be set by agent system
-        self.channel_logger = None
-    
+        self.memory_manager = self.session_data.memory_manager
+
+   
     
     @abstractmethod
     def get_system_prompt(self, context: AgentContext) -> str:
@@ -85,12 +86,12 @@ class Agent(ABC):
         ]
     
     def call_llm(self, messages: List[Dict[str, str]], tools: Optional[List] = None, 
-                 use_json: bool = False, channel_logger = None) -> Any:
+                 use_json: bool = False) -> Any:
         """Make LLM call with error handling"""
         
         # Log LLM call to Prompts channel BEFORE making the call
-        if channel_logger:
-            self._log_llm_call_to_prompts_channel(messages, tools, use_json, channel_logger)
+        if self.channel_logger:
+            self._log_llm_call_to_prompts_channel(messages, tools, use_json)
             
         try:
             start_time = time.time()
@@ -117,22 +118,20 @@ class Agent(ABC):
             prompt_tokens = getattr(response, 'prompt_eval_count', 0)
             completion_tokens = getattr(response, 'eval_count', 0)
             
-            if channel_logger:
-                if prompt_tokens and completion_tokens:
-                    total_tokens = prompt_tokens + completion_tokens
-                    channel_logger.log_to_logs(f"⚡ Base agent completed in {elapsed_time:.3f}s ({prompt_tokens}+{completion_tokens}={total_tokens} tokens)")
-                else:
-                    channel_logger.log_to_logs(f"⚡ Base agent completed in {elapsed_time:.3f}s")
-            
+            if prompt_tokens and completion_tokens:
+                total_tokens = prompt_tokens + completion_tokens
+                self.channel_logger.log_to_logs(f"⚡ Base agent completed in {elapsed_time:.3f}s ({prompt_tokens}+{completion_tokens}={total_tokens} tokens)")
+            else:
+                self.channel_logger.log_to_logs(f"⚡ Base agent completed in {elapsed_time:.3f}s")
+        
             return response
             
         except Exception as e:
             error_msg = f"LLM call failed for base agent: {str(e)}"
-            if channel_logger:
-                channel_logger.log_to_logs(f"❌ {error_msg}")
+            self.channel_logger.log_to_logs(f"❌ {error_msg}")
             raise Exception(error_msg)
     
-    def execute_tools(self, tool_calls: List, channel_logger) -> List[Dict[str, Any]]:
+    def execute_tools(self, tool_calls: List) -> List[Dict[str, Any]]:
         """Execute tools and return results - available to all agents"""
         if not tool_calls:
             return []
@@ -142,10 +141,9 @@ class Agent(ABC):
         import time
         
         tool_results = []
-        action_id = channel_logger.action_id if channel_logger else None
         
         # Add complementary tools first
-        enhanced_tool_calls = self._add_complementary_tools(tool_calls, channel_logger)
+        enhanced_tool_calls = self._add_complementary_tools(tool_calls)
         
         for idx, tool_call in enumerate(enhanced_tool_calls):
             function_name = tool_call.function.name
@@ -154,11 +152,11 @@ class Agent(ABC):
             # === PARAMETER VALIDATION AND NORMALIZATION ===
             try:
                 # Log original tool call details for debugging
-                channel_logger.log_to_logs(f"🔍 Tool call debug: function_name='{function_name}', args_type={type(function_args).__name__}")
+                self.channel_logger.log_to_logs(f"🔍 Tool call debug: function_name='{function_name}', args_type={type(function_args).__name__}")
                 
                 # Check if function_args is a string (JSON) - if so, parse it
                 if isinstance(function_args, str):
-                    channel_logger.log_to_logs(f"⚠️ {function_name}: arguments are JSON string, parsing...")
+                    self.channel_logger.log_to_logs(f"⚠️ {function_name}: arguments are JSON string, parsing...")
                     
                     # Parse JSON string to dictionary
                     function_args = json.loads(function_args)
@@ -175,17 +173,17 @@ class Agent(ABC):
                         value_str = textwrap.shorten(str(value), width=50)
                         arg_pairs.append(f"{key}={value_str}")
                     args_display = ", ".join(arg_pairs)
-                    channel_logger.log_to_logs(f"✅ {function_name}: arguments validated - {args_display}")
+                    self.channel_logger.log_to_logs(f"✅ {function_name}: arguments validated - {args_display}")
                 else:
-                    channel_logger.log_to_logs(f"✅ {function_name}: arguments validated - no arguments")
+                    self.channel_logger.log_to_logs(f"✅ {function_name}: arguments validated - no arguments")
                     
             except json.JSONDecodeError as json_error:
                 error_msg = f"Invalid JSON in arguments: {str(json_error)}"
-                channel_logger.log_to_logs(f"❌ {function_name}: {error_msg}")
+                self.channel_logger.log_to_logs(f"❌ {function_name}: {error_msg}")
                 
                 # Log validation error to Tool Calls channel
                 validation_error = f"Parameter validation error: {error_msg}"
-                channel_logger.log_tool_call(function_name, tool_call.function.arguments, validation_error, idx + 1)
+                self.channel_logger.log_tool_call(function_name, tool_call.function.arguments, validation_error, idx + 1)
                 
                 tool_results.append({
                     'tool_call_id': f"{function_name}_{idx}",
@@ -197,11 +195,11 @@ class Agent(ABC):
                 
             except Exception as validation_error:
                 error_msg = f"Argument validation failed: {str(validation_error)}"
-                channel_logger.log_to_logs(f"❌ {function_name}: {error_msg}")
+                self.channel_logger.log_to_logs(f"❌ {function_name}: {error_msg}")
                 
                 # Log validation error to Tool Calls channel
                 validation_error_msg = f"Parameter validation error: {error_msg}"
-                channel_logger.log_tool_call(function_name, tool_call.function.arguments, validation_error_msg, idx + 1)
+                self.channel_logger.log_tool_call(function_name, tool_call.function.arguments, validation_error_msg, idx + 1)
                 
                 tool_results.append({
                     'tool_call_id': f"{function_name}_{idx}",
@@ -219,10 +217,10 @@ class Agent(ABC):
                     result = tool_function(**function_args)
                     elapsed_time = time.time() - start_time
                     
-                    channel_logger.log_to_logs(f"🔧 {function_name} executed in {elapsed_time:.3f}s ({len(str(result))} chars)")
+                    self.channel_logger.log_to_logs(f"🔧 {function_name} executed in {elapsed_time:.3f}s ({len(str(result))} chars)")
                     
                     # Log detailed tool call info to Tool Calls channel
-                    channel_logger.log_tool_call(function_name, function_args, result, idx + 1)
+                    self.channel_logger.log_tool_call(function_name, function_args, result, idx + 1)
                     
                     tool_results.append({
                         'tool_call_id': f"{function_name}_{idx}",
@@ -233,10 +231,10 @@ class Agent(ABC):
                     
                 except Exception as e:
                     error_msg = f"Tool execution error: {str(e)}"
-                    channel_logger.log_to_logs(f"❌ {function_name}: {str(e)}")
+                    self.channel_logger.log_to_logs(f"❌ {function_name}: {str(e)}")
                     
                     # Log failed tool call to Tool Calls channel
-                    channel_logger.log_tool_call(function_name, function_args, error_msg, idx + 1)
+                    self.channel_logger.log_tool_call(function_name, function_args, error_msg, idx + 1)
                     
                     tool_results.append({
                         'tool_call_id': f"{function_name}_{idx}",
@@ -246,10 +244,10 @@ class Agent(ABC):
                     })
             else:
                 error_msg = f"Unknown tool: {function_name}"
-                channel_logger.log_to_logs(f"❌ Unknown tool: {function_name}")
+                self.channel_logger.log_to_logs(f"❌ Unknown tool: {function_name}")
                 
                 # Log unknown tool call to Tool Calls channel
-                channel_logger.log_tool_call(function_name, function_args, error_msg, idx + 1)
+                self.channel_logger.log_tool_call(function_name, function_args, error_msg, idx + 1)
                 
                 tool_results.append({
                     'tool_call_id': f"{function_name}_{idx}",
@@ -260,7 +258,7 @@ class Agent(ABC):
         
         return tool_results
     
-    def _add_complementary_tools(self, tool_calls: List, channel_logger) -> List:
+    def _add_complementary_tools(self, tool_calls: List) -> List:
         """Add complementary tools to the tool calls list based on existing calls"""
         complementary_mapping = {
             'db_rag_get_champion_details': 'db_get_champion_details',
@@ -304,21 +302,17 @@ class Agent(ABC):
                     )
                     enhanced_tool_calls.append(complementary_call)
                     
-                    channel_logger.log_to_logs(f"🔗 Added complementary tool: {complementary_function} for {function_name}")
+                    self.channel_logger.log_to_logs(f"🔗 Added complementary tool: {complementary_function} for {function_name}")
                 else:
-                    channel_logger.log_to_logs(f"⚠️ Complementary tool {complementary_function} already exists with same parameters, skipping")
+                    self.channel_logger.log_to_logs(f"⚠️ Complementary tool {complementary_function} already exists with same parameters, skipping")
         
         return enhanced_tool_calls
 
     def _log_llm_call_to_prompts_channel(self, messages: List[Dict[str, str]], tools: Optional[List] = None, 
-                                       use_json: bool = False, channel_logger=None):
+                                       use_json: bool = False):
         """Log complete LLM call information to Prompts channel"""
-        try:
-            # Only log if we have channel_logger
-            if not channel_logger:
-                return
-            
-            action_id = channel_logger.action_id or 'Unknown'
+        try:            
+            action_id = self.channel_logger.action_id or 'Unknown'
             agent_name = self.__class__.__name__
             
             # Extract system prompt (first message)
@@ -362,26 +356,22 @@ class Agent(ABC):
             
             # Create complete log (action_id will be added by channel_logger)
             prompt_log = f"""{agent_name} | Base Agent
-=== CALL PARAMETERS ===
-Model: llama3.1:8b
-Format: {'json' if use_json else 'standard'}
-Keep-alive: 60m
+                === CALL PARAMETERS ===
+                Model: llama3.1:8b
+                Format: {'json' if use_json else 'standard'}
+                Keep-alive: 60m
 
-=== MESSAGES TO LLM ===
-{json.dumps(formatted_messages, indent=2, ensure_ascii=False)}
+                === MESSAGES TO LLM ===
+                {json.dumps(formatted_messages, indent=2, ensure_ascii=False)}
 
-=== SYSTEM PROMPT ===
-{system_prompt}
----
-"""
-            
-            # Send to Prompts channel (4)
-            channel_logger.log_to_prompts(prompt_log)
+                === SYSTEM PROMPT ===
+                {system_prompt}
+                ---
+                """.strip()
+            self.channel_logger.log_to_prompts(prompt_log)
             
         except Exception as e:
-            # Fallback - add to channel_logger if logging fails
-            if channel_logger:
-                channel_logger.log_to_logs(f"❌ Failed to log to Prompts channel: {str(e)}")
+            self.channel_logger.log_to_logs(f"❌ Failed to log to Prompts channel: {str(e)}")
 
 
 

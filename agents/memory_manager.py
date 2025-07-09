@@ -51,6 +51,7 @@ class MemoryManager:
                 except Exception:
                     self.openai_enabled = False
         
+        # TODO can be removed if phantom call to logger is removed.
         # For logging (set by agent system)
         self.client = None
         self.session_id = None
@@ -354,6 +355,8 @@ class MemoryManager:
             logger.error(f"Error summarizing text: {str(e)}")
             return textwrap.shorten(text, width=target_size)
     
+    # TODO this seems like channal logger, but it is written by hand instead 
+    # TODO [ChannelLogger](https://github.com/FunCrafters/AI_WORKLOAD_CHATGPT_V2/blob/fb8e3b0162d06aee67f0893f4233fa8e5d85a5b2/channel_logger.py#L66) 
     def _log_to_memory_channel(self, content: str) -> None:
         """Log content to Memory channel (5) - only called by _log_final_memory_state"""
         try:
@@ -373,6 +376,7 @@ class MemoryManager:
     
     def _clean_markdown(self, text: str) -> str:
         """Remove markdown formatting from text for cleaner display"""
+        # TODO Strip with library instead
         import re
         
         # Handle None or non-string input
@@ -409,7 +413,7 @@ class MemoryManager:
         
         return text.strip()
     
-    def _log_final_memory_state(self, session: 'Session', channel_logger: ChannelLogger) -> None:
+    def _log_final_memory_state(self, session: 'Session', channel_logger: 'ChannelLogger') -> None:
         """Log final memory state showing what agent would receive"""
         try:
             # Get the current user message
@@ -417,7 +421,7 @@ class MemoryManager:
             current_user_message = memory['current_cycle'].get('user_question', 'No current message')
             
             # Get memory messages as agent would receive them
-            memory_messages = self.prepare_messages_for_agent(session, current_user_message)
+            memory_messages = self.prepare_messages_for_agent(session.get_memory(), current_user_message)
             
             # Calculate statistics
             exchanges = memory.get('exchanges', [])
