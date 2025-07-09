@@ -8,13 +8,14 @@ import time
 import logging
 
 # Import agent system
+from session import Session
 from workload_agent_system import (
     process_llm_agents
 )
 
 # Import channel logger
 from channel_logger import ChannelLogger
-from workload_tools import ContextAdapter
+from workload_tools import ContextAdapter, create_response, send_response
 
 # Logger
 logger = logging.getLogger("Workload Chat")
@@ -25,19 +26,23 @@ logger = ContextAdapter(logger)
 #######################
 
 # TODO Send response should not be passed as a parameter to process_main_channel!
-def process_main_channel(client, session, text, channel, session_id, message_id, 
-                         active_sessions, create_response, send_response):
+def process_main_channel(client, session: Session):
     """Process text on the main channel (0) with agent-based function calling"""
+    session_id = session.session_id
+    message_id = session.message_id
+    channel = session.channel
+    text = session.text.strip() if session.text else ""
+    
     if not text:
         response = create_response(channel, "", session_id, message_id)
         send_response(client, response, session_id, channel, message_id)
         return
     
-    session['client'] = client
-    session['session_id'] = session_id
+    session.client = client
+    session.session_id = session_id
     
     # Create channel logger for multi-channel logging
-    channel_logger = ChannelLogger(client, session_id, message_id)
+    channel_logger = ChannelLogger(client, session_id, session.message_id)
     
     # Import available functions count from LLM module
     from tools_functions import available_llm_functions
@@ -68,7 +73,7 @@ def process_main_channel(client, session, text, channel, session_id, message_id,
         error_traceback = traceback.format_exc()
         logger.error(error_traceback)
         
-        action_id = session.get('action_id', 'Unknown')
+        action_id = session.action_id 
         channel_logger.set_action_id(action_id)
         channel_logger.log_exception(e, error_traceback)
         

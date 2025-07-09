@@ -8,6 +8,7 @@ import time
 import logging
 import ollama
 import json
+import textwrap
 from typing import Dict, List, Any, Optional, Tuple
 from abc import ABC, abstractmethod
 
@@ -166,9 +167,7 @@ class Agent(ABC):
                     # Format as key=value pairs, truncate long values
                     arg_pairs = []
                     for key, value in function_args.items():
-                        value_str = str(value)
-                        if len(value_str) > 50:
-                            value_str = value_str[:50] + "..."
+                        value_str = textwrap.shorten(str(value), width=50)
                         arg_pairs.append(f"{key}={value_str}")
                     args_display = ", ".join(arg_pairs)
                     channel_logger.log_to_logs(f"✅ {function_name}: arguments validated - {args_display}")
@@ -337,12 +336,9 @@ class Agent(ABC):
                     # Tool results - show basic info only
                     content = f"[Tool result: {len(str(content))} chars]"
                 elif content and content.startswith("Tool execution results:"):
-                    # Tool execution results - truncate at ~200 chars
-                    if len(content) > 200:
-                        content = content[:200] + "...\n[truncated - tool results]"
+                    content = textwrap.shorten(content, width=200, placeholder="[...]\n[truncated - tool results]")
                 elif len(content) > 300:
-                    # Regular messages - truncate at 300 chars
-                    content = content[:300] + "..."
+                    content = textwrap.shorten(content, width=300)
                 
                 formatted_msg = {
                     "role": msg['role'],

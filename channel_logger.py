@@ -7,6 +7,7 @@ Unified logging system for multi-channel output
 import time
 import logging
 from typing import Optional, Dict, Any, List
+import textwrap
 
 from workload_tools import create_response, send_response
 
@@ -175,12 +176,7 @@ class ChannelLogger:
         
         # Truncate result to 500 bytes max
         result_str = str(result)
-        if len(result_str.encode('utf-8')) > 500:
-            # Find a safe truncation point (don't cut in the middle of a unicode character)
-            truncated = result_str.encode('utf-8')[:500].decode('utf-8', errors='ignore')
-            result_display = f"{truncated}...\n[Result truncated - showing first 500 bytes]"
-        else:
-            result_display = result_str
+        result_display = textwrap.shorten(result_str, width=500)
         
         # Build tool call info
         tool_info = f"TOOL CALL #{call_number}\n"

@@ -9,6 +9,7 @@ import time
 import json
 import hashlib
 import uuid
+import textwrap
 from typing import Dict, List, Any, Optional, Tuple, TYPE_CHECKING
 from venv import logger
 
@@ -100,9 +101,6 @@ class MemoryManager:
                 "role": "assistant",
                 "content": exchange['answer']
             })
-        
-        # Note: Cache cleanup moved to finalize_current_cycle to ensure
-        # tools are available for their full exchange duration
         
         # Add cached tool messages (if any are still valid)
         cached_tool_messages = self.get_cached_tool_messages(session)
@@ -343,8 +341,7 @@ class MemoryManager:
             if len(text.encode('utf-8')) <= target_size:
                 return text
             # Truncate safely without breaking unicode
-            truncated = text_bytes[:target_size].decode('utf-8', errors='ignore')
-            return truncated + "..."
+            return textwrap.shorten(text, width=target_size)
         
         try:
             # Calculate approximate character count (rough estimate: 1 byte per char for English)
@@ -365,23 +362,13 @@ class MemoryManager:
             
             summary = response.choices[0].message.content.strip()
             
-            # Verify the result is not too large
-            if len(summary.encode('utf-8')) > target_size:
-                # If still too large, truncate
-                summary_bytes = summary.encode('utf-8')[:target_size]
-                summary = summary_bytes.decode('utf-8', errors='ignore') + "..."
+            summary = textwrap.shorten(summary, width=target_size)
             
-            # Note: summarization logs handled in finalize_current_cycle
             return summary
             
         except Exception as e:
-            # Note: summarization logs handled in finalize_current_cycle
-            # Fallback to truncation
-            text_bytes = text.encode('utf-8')
-            if len(text_bytes) <= target_size:
-                return text
-            truncated = text_bytes[:target_size].decode('utf-8', errors='ignore')
-            return truncated + "..."
+            logger.error(f"Error summarizing text: {str(e)}")
+            return textwrap.shorten(text, width=target_size)
     
     def _log_to_memory_channel(self, content: str) -> None:
         """Log content to Memory channel (5) - only called by _log_final_memory_state"""
@@ -391,7 +378,8 @@ class MemoryManager:
                 response = create_response(5, content, self.session_id, f"memory_{int(time.time())}")
                 send_response(self.client, response, self.session_id, 5, f"memory_{int(time.time())}")
         except Exception:
-            pass  # Silent fail - logging is not critical
+            logger.info("Failed to log to memory channel")
+            pass  # Silent fail - logging is not critical OwO?
     
     def _add_to_session_log(self, session: Dict[str, Any], content: str) -> None:
         """Add log entry to session logs (collected until final state)"""
@@ -438,11 +426,11 @@ class MemoryManager:
         
         return text.strip()
     
-    def _log_final_memory_state(self, session: Dict[str, Any], channel_logger: ChannelLogger) -> None:
+    def _log_final_memory_state(self, session: 'Session', channel_logger: ChannelLogger) -> None:
         """Log final memory state showing what agent would receive"""
         try:
             # Get the current user message
-            memory = session['conversation_memory']
+            memory = session.conversation_memory if session.conversation_memory else self.initialize_session_memory(session)
             current_user_message = memory['current_cycle'].get('user_question', 'No current message')
             
             # Get memory messages as agent would receive them
@@ -455,7 +443,7 @@ class MemoryManager:
             
             # Format memory state for display
             memory_log = "=== MEMORY STATE ===\n"
-            memory_log += f"Session: {session.get('session_id', 'unknown')} | "
+            memory_log += f"Session: {session.session_id} | "
             memory_log += f"Exchanges: {len(exchanges)} | "
             memory_log += f"Summary: {len(summary.encode('utf-8'))} bytes | "
             memory_log += f"LLM compressions: {llm_summarizations}\n\n"
@@ -471,10 +459,8 @@ class MemoryManager:
                     original = cache_entry.get('original_duration', 0)
                     params = cache_entry.get('parameters', {})
                     
-                    # Format parameters for display (truncate if too long)
                     params_str = str(params)
-                    if len(params_str) > 50:
-                        params_str = params_str[:47] + "..."
+                    params_str = textwrap.shorten(params_str, width=50)
                     
                     memory_log += f"  • {tool_name}({params_str}): {remaining}/{original} exchanges remaining\n"
                 memory_log += "\n"
@@ -502,7 +488,6 @@ class MemoryManager:
                     role = msg.get('role', 'unknown')
                     content = msg.get('content') or ''  # Handle None content
                     
-                    # Clean markdown from content
                     content = self._clean_markdown(content)
 
                     content = textwrap.shorten(content, width=120)

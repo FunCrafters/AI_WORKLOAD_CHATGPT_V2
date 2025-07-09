@@ -7,6 +7,7 @@ Embedding and vectorstore related functionality for the workload
 import os
 import logging
 import ollama
+import textwrap
 from typing import List, Any
 
 # Chroma removed - all vector functionality is now in PostgreSQL
@@ -42,7 +43,8 @@ class OllamaEmbeddings:
             response = self.client.embeddings(model=self.model, prompt=text)
             return response['embedding']
         except Exception as e:
-            raise Exception(f"Embedding failed for text '{text[:50]}...': {e}")
+            truncated_text = textwrap.shorten(text, width=50)
+            raise Exception(f"Embedding failed for text '{truncated_text}': {e}")
             
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         return [self.embed_query(text) for text in texts]

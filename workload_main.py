@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-"""
-LLM Workload
-Connects to RathTAR and processes text using LLM models with RAG capabilities
-"""
+from typing import Union, Optional, Dict, List, Any, TYPE_CHECKING
 
 from dataclasses import dataclass
 import os
@@ -12,11 +8,12 @@ import time
 import sys
 import logging
 from dotenv import load_dotenv, dotenv_values
+import textwrap
 
-# Import workload configuration
+from session import Session
 from workload_config import WORKLOAD_CONFIG, WORKLOAD_HASH, SERVER_HOST, SERVER_PORT
 
-# Import embedding functionality for agent system
+
 from workload_embedding import (
     initialize_embeddings_and_vectorstore
 )
@@ -40,9 +37,6 @@ from workload_tools import (
     send_message
 )
 
-# For typing annotations
-from typing import Union, Optional, Dict, List, Any
-
 # Load environment variables from .env file
 load_dotenv()
 config = dotenv_values(".env")
@@ -54,16 +48,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger("LLM Workload")
 logger = logging.LoggerAdapter(logger)
-
-# Dictionary to store session data for multiple users
-@dataclass
-class Session:
-    created_at: float
-    last_activity: float
-    message_count: int
-    session_id: str
-    channel: int
-    json_data: Optional[Dict[str, Any]] = None
 
 active_sessions = {} # type: Dict[str, Session] 
 
@@ -134,7 +118,6 @@ def create_or_update_session(data: dict):
         return None
         
     if session_id not in active_sessions:
-        # Create new session
         active_sessions[session_id] = Session(
             created_at=time.time(),
             last_activity=time.time(),
@@ -146,7 +129,6 @@ def create_or_update_session(data: dict):
             text=text
         )
     
-    # Update session activity
     if not is_initialization:
         active_sessions[session_id].last_activity = time.time()
         active_sessions[session_id].message_count += 1
@@ -219,7 +201,7 @@ def process_initialization_message(client, session: Session):
     logger.info("   PROCESSING", extra=dict(session_id=session.session_id, channel=session.channel))
             
     response = create_response(session.channel, "", session.session_id, session.message_id)
-    send_response(client, response, session.session_id, session.channel, session.message_id)
+    send_response(client, response, session.session_id, session.channel or 0, session.message_id)
     
     # Immediately after initialization, send a separate message to request JSON data
     # This is a separate message to ensure proper socket communication

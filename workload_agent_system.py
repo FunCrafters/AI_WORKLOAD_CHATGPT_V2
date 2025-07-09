@@ -6,13 +6,15 @@ New agent-based architecture for processing user messages
 
 import time
 import logging
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple, Optional, TYPE_CHECKING
 
 # Import agent classes
 from agents.base_agent import Agent, AgentContext, AgentResult
 from agents.t3rn_agent import T3RNAgent
 from agents.fallback_agent import FallbackAgent
 from agents.memory_manager import MemoryManager
+from session import Session
+
 
 # Logger
 logger = logging.getLogger("Agent System")
@@ -42,20 +44,25 @@ class AgentStack:
         return len(self.agents)
 
 
-def create_initial_context(user_message: str, session: Dict[str, Any], memory_manager: MemoryManager) -> AgentContext:
+def create_initial_context(user_message: str, session: Session, memory_manager: Optional[MemoryManager] = None) -> AgentContext:
     """Create initial context for new processing with memory management"""
-    context = AgentContext()
-    
+    context = AgentContext(session)
+
     context.original_user_message = user_message
     context.session_data = session
       
     # Initialize memory manager and prepare messages
+    if memory_manager is None:
+        if session.memory_manager is None:
+            session.memory_manager = MemoryManager()
+        memory_manager = session.memory_manager
+
     memory_manager.initialize_session_memory(session)
     memory_messages = memory_manager.prepare_messages_for_agent(session, user_message)
       
     return context
 
-def process_llm_agents(user_message: str, session: Dict[str, Any], 
+def process_llm_agents(user_message: str, session: Session, 
                       channel_logger) -> str:
     """
     New agent-based function calling system
@@ -66,21 +73,14 @@ def process_llm_agents(user_message: str, session: Dict[str, Any],
     All other information (tools, errors, thinking) is logged via channel_logger
     """
     
-    # Get client and session_id from session
-    client = session.get('client')
-    session_id = session.get('session_id')
+    # Increment action_id
+    session.action_id += 1
+    action_id = session.action_id
     
-    # Get or create action_id in session
-    if 'action_id' not in session:
-        session['action_id'] = 1
-    else:
-        session['action_id'] += 1
-    action_id = session['action_id']
-    
-    # Get or create memory manager from session
-    if 'memory_manager' not in session:
-        session['memory_manager'] = MemoryManager()
-    memory_manager = session['memory_manager']
+    # Ensure memory manager exists
+    if session.memory_manager is None:
+        session.memory_manager = MemoryManager()
+    memory_manager = session.memory_manager
 
     channel_logger.set_action_id(action_id)
     channel_logger.log_to_logs(f"🚀 Starting agent-based processing [Action {action_id}]")
