@@ -45,16 +45,16 @@ class AgentStack:
         return len(self.agents)
 
 
-def create_initial_context(user_message: str, session: Session) -> AgentContext:
+def create_initial_context(user_message: str, session: Session, channel_logger: ChannelLogger) -> AgentContext:
     """Create initial context for new processing with memory management"""
-    context = AgentContext(session)
+    context = AgentContext(session, channel_logger)
 
     context.original_user_message = user_message
     context.session_data = session
       
     # Initialize memory manager and prepare messages
     if session.memory_manager is None:
-        session.memory_manager = MemoryManager()
+        session.memory_manager = MemoryManager(channel_logger)
         session.conversation_memory = session.memory_manager.initialize_session_memory()
     memory_manager = session.memory_manager
 
@@ -82,7 +82,7 @@ def process_llm_agents(user_message: str,
     channel_logger.log_to_logs(f"🚀 Starting agent-based processing [Action {action_id}]")
     channel_logger.log_to_logs("🆕 Starting new processing with T3RNAgent")
     
-    context = create_initial_context(user_message, session)
+    context = create_initial_context(user_message, session, channel_logger)
     t3rn_agent = T3RNAgent(session, channel_logger)
     
     # TODO CHeck if still required

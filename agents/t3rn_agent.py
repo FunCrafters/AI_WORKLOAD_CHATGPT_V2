@@ -25,7 +25,9 @@ from tools_functions import get_function_schemas
 class T3RNAgent(Agent):
     """Main agent that analyzes questions, executes tools, and generates responses"""
     
-    def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
+    def __init__(self, 
+                 session: 'Session', 
+                 channel_logger: 'ChannelLogger'):
         super().__init__(session, channel_logger)
         self.tools = get_function_schemas()  # All available tools
         
@@ -80,7 +82,7 @@ class T3RNAgent(Agent):
             'TOOL_RESULTS_ANALYSIS',
             'MOBILE_FORMAT'
         )
-    # TODO CHANNAL LOGGER?!, make it global or agent field
+
     def call_llm(self, 
                  messages: List['ChatCompletionMessageParam'], 
                  tools: Optional[List] = None, 
@@ -344,14 +346,6 @@ class T3RNAgent(Agent):
         # Use memory manager from session
         if self.memory_manager is None:
             raise Exception("MemoryManager not set - should be passed from session")
-        
-        # TODO FIX
-        # TODO memory_menager should have channel_logger.
-        # Pass client and session info from channel_logger to memory manager
-        if hasattr(self, 'channel_logger') and self.channel_logger:
-            self.memory_manager.client = self.channel_logger.client
-            self.memory_manager.session_id = self.channel_logger.session_id
-            self.memory_manager.action_id = self.channel_logger.action_id
         
         self.session_data = context.session_data
         # TODO Why context?
