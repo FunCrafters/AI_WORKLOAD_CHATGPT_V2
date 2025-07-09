@@ -11,6 +11,7 @@ from typing import List, Dict, Any, Optional
 
 from channel_logger import ChannelLogger
 from session import Session
+from openai.types.chat import ChatCompletionMessageParam
 
 try:
     import openai
@@ -81,14 +82,14 @@ class T3RNAgent(Agent):
         )
     # TODO CHANNAL LOGGER?!, make it global or agent field
     def call_llm(self, 
-                 messages: List[Dict[str, Any]], 
+                 messages: List['ChatCompletionMessageParam'], 
                  tools: Optional[List] = None, 
                  use_json: bool = False) -> Any:
         """Make OpenAI API call with error handling, copied from response_agent_gpt.py"""
         
         # Log LLM call to Prompts channel BEFORE making the call
         if self.channel_logger:
-            self._log_llm_call_to_prompts_channel(messages, tools, use_json, self.channel_logger)
+            self._log_llm_call_to_prompts_channel(messages, tools, use_json)
         
         # Try OpenAI first if available and configured
         if self.openai_enabled and self.openai_client:
@@ -220,6 +221,7 @@ class T3RNAgent(Agent):
                     except json.JSONDecodeError as e:
                         error_msg = f"Invalid JSON in arguments: {str(e)}"
                         self.channel_logger.log_to_logs(f"❌ {function_name}: {error_msg}")
+                        # TODO Check this call
                         self.channel_logger.log_tool_call(function_name, function_args, f"Parameter validation error: {error_msg}", idx + 1)
                         raise Exception(f"Tool execution failed: {error_msg}")
                 
@@ -267,7 +269,7 @@ class T3RNAgent(Agent):
                             if llm_cache_duration > 0:
                                 self.memory_manager.add_tool_to_cache(
                                     self.session_data.get_memory(),
-                                    function_name, function_args, result, llm_cache_duration, channel_logger
+                                    function_name, function_args, result, llm_cache_duration
                                 )
                             
                             tool_call_id = f"{function_name}_{idx}"
@@ -356,7 +358,7 @@ class T3RNAgent(Agent):
         memory_messages = self.memory_manager.prepare_messages_for_agent(context.session_data.get_memory(), current_user_message)
         
         # Prepare messages: system prompt + memory + current user message
-        messages: List[Dict[str, Any]] = []
+        messages: List['ChatCompletionMessageParam'] = []
         
         # Add system prompt
         system_prompt = self.get_system_prompt(context)

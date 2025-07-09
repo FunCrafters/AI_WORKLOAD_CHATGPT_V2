@@ -10,8 +10,10 @@ import json
 import hashlib
 import uuid
 import textwrap
-from typing import Dict, List, Any, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, List, Any, Optional, Tuple, TYPE_CHECKING, Union, Iterable
 from venv import logger
+from openai.types.chat import ChatCompletionMessageParam
+
 
 from channel_logger import ChannelLogger
 from session import Session
@@ -26,7 +28,7 @@ except ImportError:
 class MemoryManager:
     """Simple memory manager with straightforward rules"""
     
-    def __init__(self):
+    def __init__(self, channel_logger: 'ChannelLogger'):
         # Simple configuration
         self.max_exchanges = 10            # Max exchanges in list
         self.large_answer_threshold = 750  # Threshold for long answers (bytes)
@@ -51,12 +53,7 @@ class MemoryManager:
                 except Exception:
                     self.openai_enabled = False
         
-        # TODO can be removed if phantom call to logger is removed.
-        # For logging (set by agent system)
-        self.client = None
-        self.session_id = None
-        self.action_id = None
-
+        self.channal_logger: ChannelLogger = channel_logger
     
     def initialize_session_memory(self,) -> Dict[str, Any]:
         """Initialize simple conversation memory structure"""
@@ -73,7 +70,7 @@ class MemoryManager:
             'screen_injection_done': False  # Track if screen injection was done
         }
     
-    def prepare_messages_for_agent(self, memory: Dict[str, Any], user_message: str) -> List[Dict[str, str]]:
+    def prepare_messages_for_agent(self, memory: Dict[str, Any], user_message: str) -> List['ChatCompletionMessageParam']:
         memory['current_cycle']['user_question'] = user_message
         
         # Build messages for LLM
@@ -112,7 +109,7 @@ class MemoryManager:
         return hashlib.md5(hash_input.encode()).hexdigest()
     
     def add_tool_to_cache(self, memory: Dict[str, Any], tool_name: str, parameters: Dict[str, Any], 
-                         result: str, llm_cache_duration: int, channel_logger=None) -> None:
+                         result: str, llm_cache_duration: int) -> None:
         """Add tool result to cache with specified duration"""
         if llm_cache_duration <= 0:
             return  # Don't cache if duration is 0
@@ -133,8 +130,7 @@ class MemoryManager:
         
         memory['tool_cache'][cache_key] = cache_entry
         
-        if channel_logger:
-            self._add_to_session_log(memory, f"🗄️ Cached tool {tool_name} for {llm_cache_duration} exchanges")
+        self.channal_logger.log_to_memory(f"🗄️ Cached tool {tool_name} for {llm_cache_duration} exchanges")
     
     # TODO check what this function is doing and what is cache all about., Why it is with memory?
     def lookup_tool_in_cache(self, memory: Dict[str, Any], tool_name: str, parameters: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -147,7 +143,7 @@ class MemoryManager:
             # Refresh the duration to original value
             cache_entry['remaining_duration'] = cache_entry['original_duration']
             
-            self._add_to_session_log(memory, f"♻️ Cache hit for {tool_name}, refreshed duration to {cache_entry['original_duration']}")
+            self.channal_logger.log_to_memory(f"♻️ Cache hit for {tool_name}, refreshed duration to {cache_entry['original_duration']}")
             return cache_entry
             
         return None
@@ -287,7 +283,7 @@ class MemoryManager:
                             pass
                         
                         if llm_cache_duration > 0:
-                            self.add_tool_to_cache(memory, tool_name, parameters, result, llm_cache_duration, channel_logger)
+                            self.add_tool_to_cache(memory, tool_name, parameters, result, llm_cache_duration)
                             
         except Exception as e:
             if channel_logger:
@@ -369,11 +365,6 @@ class MemoryManager:
             logger.info("Failed to log to memory channel")
             pass  # Silent fail - logging is not critical OwO?
     
-    def _add_to_session_log(self, memory: Dict[str, Any], content: str) -> None:
-        """Add log entry to session logs (collected until final state)"""
-        if 'session_logs' not in memory:
-            memory['session_logs'] = []
-        memory['session_logs'].append(content)
     
     def _clean_markdown(self, text: str) -> str:
         """Remove markdown formatting from text for cleaner display"""
@@ -474,8 +465,10 @@ class MemoryManager:
                 memory_log += f"=== AGENT RECEIVES ({len(memory_messages)} messages) ===\n"
                 for idx, msg in enumerate(memory_messages, 1):
                     role = msg.get('role', 'unknown')
-                    content = msg.get('content') or ''  # Handle None content
-                    
+                    # TODO for now assume content is always a string
+                    # Handle all types later.
+                    content = str(msg.get('content') or '')
+
                     content = self._clean_markdown(content)
 
                     content = textwrap.shorten(content, width=120)
