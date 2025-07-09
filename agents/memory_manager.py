@@ -9,10 +9,11 @@ import time
 import json
 import hashlib
 import uuid
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional, Tuple, TYPE_CHECKING
+from venv import logger
 
 from channel_logger import ChannelLogger
-
+from session import Session
 try:
     import openai
     OPENAI_AVAILABLE = True
@@ -54,29 +55,29 @@ class MemoryManager:
         self.session_id = None
         self.action_id = None
     
-    def initialize_session_memory(self, session: Dict[str, Any]) -> None:
+    def initialize_session_memory(self, session: 'Session') -> Dict[str, Any]:
         """Initialize simple conversation memory structure"""
-        if 'conversation_memory' not in session:
-            session['conversation_memory'] = {
-                'exchanges': [],           # List of Q&A exchanges (max 10)
-                'summary': '',            # Text summary of old conversations
-                'current_cycle': {
-                    'user_question': "",
-                    'agent_messages': [],
-                    'final_answer': None
-                },
-                'tool_cache': {},         # Tool results cache {tool_key: cache_entry}
-                'screen_injection_done': False  # Track if screen injection was done
-            }
+        return {
+            'exchanges': [],           # List of Q&A exchanges (max 10)
+            'summary': '',            # Text summary of old conversations
+            'current_cycle': {
+                'user_question': "",
+                'agent_messages': [],
+                'final_answer': None
+            },
+            'tool_cache': {},         # Tool results cache {tool_key: cache_entry}
+            'screen_injection_done': False  # Track if screen injection was done
+        }
     
-    def prepare_messages_for_agent(self, session: Dict[str, Any], user_message: str) -> List[Dict[str, str]]:
+    def prepare_messages_for_agent(self, session: 'Session', user_message: str) -> List[Dict[str, str]]:
         """Prepare conversation history messages for agent"""
         
         # Initialize memory if needed
-        self.initialize_session_memory(session)
+        if session.conversation_memory is None:
+            session.conversation_memory = self.initialize_session_memory(session)
         
         # Store current user message
-        memory = session['conversation_memory']
+        memory = session.conversation_memory
         memory['current_cycle']['user_question'] = user_message
         
         # Build messages for LLM
@@ -160,9 +161,9 @@ class MemoryManager:
         return None
     
     # TODO seems like this is used at the end of exchange, but why?
-    def get_cached_tool_messages(self, session: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def get_cached_tool_messages(self, session: 'Session') -> List[Dict[str, Any]]:
         """Get all cached tool results as OpenAI messages"""
-        memory = session['conversation_memory']
+        memory = session.conversation_memory if session.conversation_memory else self.initialize_session_memory(session)
         tool_messages = []
         
         for cache_entry in memory['tool_cache'].values():
@@ -305,91 +306,41 @@ class MemoryManager:
             if channel_logger:
                 self._add_to_session_log(session, f"❌ Failed to cache proactive tools: {str(e)}")
     
-    def finalize_current_cycle(self, session: Dict[str, Any], user_question: str, final_answer: str, channel_logger=None) -> None:
-        """Finalize current cycle with simple memory management"""
+    def finalize_current_cycle(self, session: 'Session', user_message: str, final_answer: str, channel_logger=None) -> None:
+        """Update memory with final exchange results"""
+        if session.conversation_memory is None:
+            session.conversation_memory = self.initialize_session_memory(session)
         
-        memory = session['conversation_memory']
+        memory = session.conversation_memory
         
-        # STEP 1: Check if last exchange has long answer that needs summarization
-        if memory['exchanges']:
-            last_exchange = memory['exchanges'][-1]
-            if len(last_exchange['answer'].encode('utf-8')) > self.large_answer_threshold:
-                # Summarize the last answer to target size
-                old_size = len(last_exchange['answer'].encode('utf-8'))
-                summarized_answer = self._summarize_text(last_exchange['answer'], self.summary_target_size)
-                last_exchange['answer'] = summarized_answer
-                new_size = len(summarized_answer.encode('utf-8'))
-                if channel_logger:
-                    self._add_to_session_log(session, f"📝 Summarized last answer from {old_size} to {new_size} bytes")
-        
-        # STEP 2: Create new exchange and add to list
-        new_exchange = {
-            'question': user_question,
-            'answer': final_answer,
-            'timestamp': time.time()
+        # Prepare the current exchange
+        current_exchange = {
+            'question': user_message,
+            'answer': final_answer
         }
-        memory['exchanges'].append(new_exchange)
-        if channel_logger:
-            self._add_to_session_log(session, f"➕ Added new exchange to list (now {len(memory['exchanges'])} exchanges)")
         
-        # STEP 3: Check if we have too many exchanges (> 10)
-        while len(memory['exchanges']) > self.max_exchanges:
-            # Move oldest exchange to summary
-            oldest = memory['exchanges'].pop(0)
-            summary_entry = f"Question: {oldest['question']}. Answer: {oldest['answer']}"
-            
-            # Add to summary
-            if memory['summary']:
-                memory['summary'] += f"\n\n{summary_entry}"
-            else:
-                memory['summary'] = summary_entry
-            
-            if channel_logger:
-                self._add_to_session_log(session, f"📚 Moved oldest exchange to summary (exchanges: {len(memory['exchanges'])})")
-            
-            # Check summary size after EACH addition
-            if len(memory['summary'].encode('utf-8')) > self.max_summary_size:
-                # Compress immediately
-                old_size = len(memory['summary'].encode('utf-8'))
-                compressed_summary = self._summarize_text(memory['summary'], self.summary_target_after_llm)
-                memory['summary'] = compressed_summary
-                new_size = len(compressed_summary.encode('utf-8'))
-                self.llm_summarization_count += 1
-                if channel_logger:
-                    self._add_to_session_log(session, f"🗜️ Compressed summary from {old_size} to {new_size} bytes using LLM (#{self.llm_summarization_count})")
+        # Add to exchanges list, managing max_exchanges
+        memory['exchanges'].insert(0, current_exchange)
+        if len(memory['exchanges']) > self.max_exchanges:
+            memory['exchanges'] = memory['exchanges'][:self.max_exchanges]
         
-        # STEP 4: Final check if summary is still too long (> 4000 bytes)
-        if len(memory['summary'].encode('utf-8')) > self.max_summary_size:
-            # Use LLM to compress summary
-            old_size = len(memory['summary'].encode('utf-8'))
-            compressed_summary = self._summarize_text(memory['summary'], self.summary_target_after_llm)
-            memory['summary'] = compressed_summary
-            new_size = len(compressed_summary.encode('utf-8'))
-            self.llm_summarization_count += 1  # Track LLM usage
-            if channel_logger:
-                self._add_to_session_log(session, f"🗜️ Compressed summary from {old_size} to {new_size} bytes using LLM (#{self.llm_summarization_count})")
-        
-        # Log final memory state to Memory channel if channel_logger is provided
-        if channel_logger:
-            self._log_final_memory_state(session, channel_logger)
-        
-        # Clean up expired tool cache entries at end of exchange
-        self.cleanup_expired_cache(session, channel_logger)
-        
-        # Clear current cycle
-        session['conversation_memory']['current_cycle'] = {
+        # Reset current cycle
+        memory['current_cycle'] = {
             'user_question': "",
             'agent_messages': [],
             'final_answer': None
         }
+        
+        # Cleanup tool cache (decrement duration)
+        # TODO 
+        self.cleanup_expired_cache(session.__dict__, channel_logger)
     
     def _summarize_text(self, text: str, target_size: int) -> str:
         """Summarize text to target size (in bytes) using LLM or simple truncation"""
         
         if not self.openai_enabled:
             # Fallback: simple truncation
-            text_bytes = text.encode('utf-8')
-            if len(text_bytes) <= target_size:
+            if len(text.encode('utf-8')) <= target_size:
                 return text
             # Truncate safely without breaking unicode
             truncated = text_bytes[:target_size].decode('utf-8', errors='ignore')
@@ -553,10 +504,8 @@ class MemoryManager:
                     
                     # Clean markdown from content
                     content = self._clean_markdown(content)
-                    
-                    # Truncate for readability
-                    if len(content) > 120:
-                        content = content[:120] + "..."
+
+                    content = textwrap.shorten(content, width=120)
                     
                     memory_log += f"[{idx}] {role.upper()}: {content}\n"
             else:

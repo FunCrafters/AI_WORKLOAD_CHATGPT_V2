@@ -11,17 +11,19 @@ import json
 from typing import Dict, List, Any, Optional, Tuple
 from abc import ABC, abstractmethod
 
+from session import Session
+
 # Logger
 logger = logging.getLogger("Base Agent")
 
 class AgentContext:
     """Context object passed between agents containing all necessary information"""
     
-    def __init__(self):
+    def __init__(self, session: 'Session'):
         # Basic data
         self.original_user_message = ""    
         # Session data
-        self.session_data = {}       
+        self.session_data: 'Session' = session  
         # Action ID for tracking across channels
         self.action_id = None        
         # Simple conversation tracking

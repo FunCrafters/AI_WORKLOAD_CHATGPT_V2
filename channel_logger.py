@@ -75,7 +75,7 @@ class ChannelLogger:
     TOOL_CALLS = 6  # Previously LLM Tools
     LOGS = 8       # Channel 7 (Errors) is removed
     
-    def __init__(self, client, session_id: str, message_id: str):
+    def __init__(self, client, session_id: str, message_id: int):
         """Initialize the channel logger
         
         Args:
@@ -100,7 +100,7 @@ class ChannelLogger:
             self.LOGS: []
         }
     
-    def set_action_id(self, action_id: str):
+    def set_action_id(self, action_id: int):
         """Set the current action ID for all subsequent logs"""
         self.action_id = action_id
     
