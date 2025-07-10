@@ -128,10 +128,12 @@ class T3RNAgent(Agent):
                 raise Exception(f"T3rnAgent OpenAI API call failed: {str(e)}")
         else:
             raise Exception("OpenAI API not available or not configured")
+    
     # TODO Complementary tools:
-    # This function adds complementary tools based on the original tool calls.
+    # This function adds simillar tools based on the original tool call.
     # So if db_rag_get_champion_details is called, it will also add db_get_champion_details
     # it also prevents duplicates by checking if the complementary tool with the same parameters already exists.
+    # I think that this should not be nesessery.
     def add_complementary_tools(self, tool_calls: List['ChatCompletionMessageToolCall']) -> List['ChatCompletionMessageToolCall']:
         """Add complementary tools - copied from QuestionAnalyzer"""
         
@@ -154,10 +156,9 @@ class T3RNAgent(Agent):
                         complementary_already_exists = True
                         break
                 
-                # Only add if complementary function with these specific parameters doesn't exist
                 if not complementary_already_exists:
                     complementary_call = ChatCompletionMessageToolCall(
-                        id=f"toolcall-{complementary_function}",  # Use a unique or generated ID if needed
+                        id=f"toolcall-{complementary_function}", 
                         type="function",
                         function=Function(
                             name=complementary_function,

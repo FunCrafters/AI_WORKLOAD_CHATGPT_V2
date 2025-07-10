@@ -14,6 +14,14 @@ from abc import ABC, abstractmethod
 from openai.types.chat import ChatCompletionMessageParam
 from channel_logger import ChannelLogger
 from session import Session
+from agents.agent_prompts import (
+    CHARACTER_BASE_T3RN, CHARACTER_BASE_T4RN, GAME_CONTEXT, CONTENT_RESTRICTIONS, T3RN_INTRODUCTION,
+    JSON_FORMAT,MOBILE_FORMAT,
+    QUESTION_ANALYZER_INITIAL_TASK, 
+    QUESTION_ANALYZER_RULES, QUESTION_ANALYZER_TOOLS, CHAMPIONS_AND_BOSSES,
+    TOOL_RESULTS_ANALYSIS
+)
+
 
 # Logger
 logger = logging.getLogger("Base Agent")
@@ -55,8 +63,6 @@ class Agent(ABC):
         
         self.memory_manager = self.session_data.memory_manager
 
-   
-    
     @abstractmethod
     def get_system_prompt(self, context: AgentContext) -> str:
         """Get system prompt for this agent"""
@@ -67,20 +73,18 @@ class Agent(ABC):
         """Execute the agent with given context"""
         pass
     
+    # TODO DEAD CODE
     def prepare_messages(self, context: AgentContext) -> List[Dict[str, str]]:
-        """Prepare messages for LLM call"""        
-        # Get base prompt
         base_prompt = self.get_system_prompt(context)
         
-        # Get current user message (simplified - just use original_user_message)
         current_user_message = context.original_user_message
         
-        # Simple message preparation - just system prompt + user message
         return [
             {"role": "system", "content": base_prompt},
             {"role": "user", "content": current_user_message}
         ]
     
+    # TODO Abstract method.
     def call_llm(self, 
                  messages: List['ChatCompletionMessageParam'], 
                  tools: Optional[List] = None, 
@@ -128,6 +132,7 @@ class Agent(ABC):
             self.channel_logger.log_to_logs(f"❌ {error_msg}")
             raise Exception(error_msg)
     
+    # TODO - DEAD CODE
     def execute_tools(self, tool_calls: List) -> List[Dict[str, Any]]:
         """Execute tools and return results - available to all agents"""
         if not tool_calls:
@@ -256,7 +261,7 @@ class Agent(ABC):
         return tool_results
     
     def _add_complementary_tools(self, tool_calls: List) -> List:
-        """Add complementary tools to the tool calls list based on existing calls"""
+        """Add complementary tools to the tool calls list based on existing calls."""
         complementary_mapping = {
             'db_rag_get_champion_details': 'db_get_champion_details',
             'db_get_champion_details': 'db_rag_get_champion_details',
@@ -307,7 +312,6 @@ class Agent(ABC):
 
     def _log_llm_call_to_prompts_channel(self, messages: List['ChatCompletionMessageParam'], tools: Optional[List] = None, 
                                        use_json: bool = False):
-        """Log complete LLM call information to Prompts channel"""
         try:            
             action_id = self.channel_logger.action_id or 'Unknown'
             agent_name = self.__class__.__name__
@@ -315,7 +319,7 @@ class Agent(ABC):
             # Extract system prompt (first message)
             system_prompt = ""
             if messages and messages[0].get('role') == 'system':
-                system_prompt = messages[0]['content'] # TODO content is more complex than that.
+                system_prompt = messages[0]['content'] # TODO content is more complex than that. There should be function 'parse content' that will handle all cases and always return str
                 # No truncation - show complete system prompt
             
             # Format messages (with intelligent length limits for readability)
@@ -374,15 +378,6 @@ class Agent(ABC):
 
 
     def build_prompt(self, *fragments) -> str:
-        """Build system prompt from prompt fragments"""
-        from agents.agent_prompts import (
-            CHARACTER_BASE_T3RN, CHARACTER_BASE_T4RN, GAME_CONTEXT, CONTENT_RESTRICTIONS, T3RN_INTRODUCTION,
-            JSON_FORMAT,MOBILE_FORMAT,
-            QUESTION_ANALYZER_INITIAL_TASK, 
-            QUESTION_ANALYZER_RULES, QUESTION_ANALYZER_TOOLS, CHAMPIONS_AND_BOSSES,
-            TOOL_RESULTS_ANALYSIS
-        )
-        
         # Map fragment names to actual fragments
         fragment_map = {
             'CHARACTER_BASE_T3RN': CHARACTER_BASE_T3RN,
@@ -399,7 +394,6 @@ class Agent(ABC):
             'TOOL_RESULTS_ANALYSIS': TOOL_RESULTS_ANALYSIS
         }
         
-        # Build prompt from fragments
         prompt_parts = []
         for fragment in fragments:
             if isinstance(fragment, str):
@@ -415,7 +409,6 @@ class Agent(ABC):
         return '\n\n'.join(prompt_parts)
 
     def get_config(self) -> Dict[str, Any]:
-        """Get agent configuration for serialization"""
         return {
             'class_name': self.__class__.__name__
         }
