@@ -4,66 +4,19 @@ Agent-Based LLM System
 New agent-based architecture for processing user messages
 """
 
-import time
 import logging
-from typing import List, Dict, Any, Tuple, Optional, TYPE_CHECKING, Type
+from typing import Type
 
 # Import agent classes
-from agents.base_agent import Agent, AgentContext, AgentResult
+from agents.base_agent import Agent
 from agents.simple_fallback_agent import SimpleFallbackAgent
 from agents.t3rn_agent import T3RNAgent
 from agents.fallback_agent import FallbackAgent
-from agents.memory_manager import MemoryManager
 from channel_logger import ChannelLogger
 from session import Session
-import random
-from agents.agent_prompts import T3RN_MALFUNCTION_MESSAGES
-
 
 # Logger
 logger = logging.getLogger("Agent System")
-
-#TODO Agent stack should be in Agent Dir
-class AgentStack:
-    """Manages the stack of agents to be executed"""
-    
-    def __init__(self):
-        self.agents: List[Tuple[Agent, AgentContext]] = []
-    
-    def push(self, agent: Agent, context: AgentContext):
-        """Add agent to stack"""
-        self.agents.append((agent, context))
-    
-    def pop(self) -> Optional[Tuple[Agent, AgentContext]]:
-        """Remove and return agent from stack"""
-        if self.agents:
-            return self.agents.pop(0)  # FIFO
-        return None
-    
-    def is_empty(self) -> bool:
-        """Check if stack is empty"""
-        return len(self.agents) == 0
-    
-    def size(self) -> int:
-        """Get stack size"""
-        return len(self.agents)
-
-
-def create_initial_context(user_message: str, session: Session, channel_logger: ChannelLogger) -> AgentContext:
-    context = AgentContext(session, channel_logger)
-
-    context.original_user_message = user_message
-    context.session_data = session
-      
-    # Initialize memory manager and prepare messages
-    if session.memory_manager is None:
-        session.memory_manager = MemoryManager(channel_logger)
-        session.conversation_memory = session.memory_manager.initialize_session_memory()
-    memory_manager = session.memory_manager
-
-    memory_manager.prepare_messages_for_agent(session.get_memory(), user_message)
-      
-    return context
 
 def process_llm_agents(user_message: str,
                        session: Session,

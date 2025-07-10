@@ -19,7 +19,7 @@ try:
 except ImportError:
     OPENAI_AVAILABLE = False
 
-from agents.base_agent import Agent, AgentContext, AgentResult
+from agents.base_agent import Agent, AgentResult
 
 class FallbackAgent(Agent):
     """Simplified fallback agent using only RAG knowledge"""

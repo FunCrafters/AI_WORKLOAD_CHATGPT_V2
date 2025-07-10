@@ -25,7 +25,7 @@ try:
 except ImportError:
     OPENAI_AVAILABLE = False
 
-from agents.base_agent import Agent, AgentContext, AgentResult
+from agents.base_agent import Agent, AgentResult
 from tools_functions import get_function_schemas
 
 class T3RNAgent(Agent):

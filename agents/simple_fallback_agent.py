@@ -5,7 +5,7 @@ Emergency agent that provides basic fallback responses
 """
 
 import random
-from agents.base_agent import Agent, AgentContext, AgentResult
+from agents.base_agent import Agent, AgentResult
 from agents.agent_prompts import T3RN_MALFUNCTION_MESSAGES
 from channel_logger import ChannelLogger
 from session import Session
@@ -16,7 +16,7 @@ class SimpleFallbackAgent(Agent):
     def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
         super().__init__(session, channel_logger)
     
-    def get_system_prompt(self, context: AgentContext) -> str:
+    def get_system_prompt(self) -> str:
         return self.build_prompt('CHARACTER_BASE_T3RN')
     
     def execute(self, user_message: str) -> AgentResult:        

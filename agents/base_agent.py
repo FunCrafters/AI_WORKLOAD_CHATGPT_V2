@@ -4,12 +4,10 @@ Base Agent Class
 Foundation for all agents in the agent-based architecture
 """
 
-import time
 import logging
-import ollama
 import json
 import textwrap
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 from abc import ABC, abstractmethod
 from openai.types.chat import ChatCompletionMessageParam
 from channel_logger import ChannelLogger
@@ -22,31 +20,11 @@ from agents.agent_prompts import (
     TOOL_RESULTS_ANALYSIS
 )
 
-
-# Logger
 logger = logging.getLogger("Base Agent")
 
-class AgentContext:
-    """Context object passed between agents containing all necessary information"""
-    
-    def __init__(self, session: 'Session', logger: 'ChannelLogger'):
-        # Basic data
-        self.original_user_message = ""    
-        # Session data
-        self.session_data: 'Session' = session
-        self.channel_logger: 'ChannelLogger' = logger
-        # Action ID for tracking across channels
-        self.action_id = None        
-        # Simple conversation tracking
-        self.conversation_topics = []
-    
-
 class AgentResult:
-    """Result object returned by agent execution"""
-    
     def __init__(self):
         self.final_answer: Optional[str] = None
-        self.spawn_agents: List[Tuple[Agent, AgentContext]] = []
         self.user_message: str = ""
         self.error_content: str = ""
         self.missing_information: Optional[List[str]] = None
@@ -64,7 +42,7 @@ class Agent(ABC):
         self.memory_manager = self.session_data.memory_manager
 
     @abstractmethod
-    def get_system_prompt(self, context: AgentContext) -> str:
+    def get_system_prompt(self,) -> str:
         """Get system prompt for this agent"""
         pass
     
