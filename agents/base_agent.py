@@ -44,7 +44,6 @@ class AgentResult:
         self.missing_information: Optional[List[str]] = None
 
 class Agent(ABC):
-    """Base class for all agents"""
     
     def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
         self.tools = []

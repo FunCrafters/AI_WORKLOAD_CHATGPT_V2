@@ -37,6 +37,8 @@ def db_get_screen_context_help(user_question: str) -> str:
                 user_question
             )
         
+        logger.info(f"{CURRENT_JSON_DATA}")
+
         # Simple screen extraction like analyze_screen_context
         screen_data = CURRENT_JSON_DATA.get("screenData", {})
         screen_name = screen_data.get("Screen", "")

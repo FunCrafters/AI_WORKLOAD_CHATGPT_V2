@@ -9,9 +9,11 @@ import time
 import random
 from typing import List, Dict, Any, Optional
 
+from openai import NOT_GIVEN
+
 from channel_logger import ChannelLogger
 from session import Session
-from openai.types.chat import ChatCompletionMessageParam
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletion, ChatCompletionMessageToolCall
 
 try:
     import openai
@@ -86,7 +88,7 @@ class T3RNAgent(Agent):
     def call_llm(self, 
                  messages: List['ChatCompletionMessageParam'], 
                  tools: Optional[List] = None, 
-                 use_json: bool = False) -> Any:
+                 use_json: bool = False) -> 'ChatCompletion':
         """Make OpenAI API call with error handling, copied from response_agent_gpt.py"""
         
         # Log LLM call to Prompts channel BEFORE making the call
@@ -97,22 +99,15 @@ class T3RNAgent(Agent):
         if self.openai_enabled and self.openai_client:
             try:
                 start_time = time.time()
-                
-                call_params = {
-                    'model': 'gpt-4o-mini',
-                    'messages': messages,
-                    'temperature': 0.3,  # Lower temperature for more consistent tool selection
-                    'max_tokens': 8000
-                }
-                
-                if tools:
-                    call_params['tools'] = tools
-                    call_params['tool_choice'] = 'auto'
-                
-                if use_json:
-                    call_params['response_format'] = {'type': 'json_object'}
-                
-                response = self.openai_client.chat.completions.create(**call_params)
+                response = self.openai_client.chat.completions.create(
+                    model='gpt-4o-mini',
+                    messages=messages,
+                    temperature=0.3,
+                    max_tokens=8000,
+                    tools = tools if tools else NOT_GIVEN,
+                    tool_choice = 'auto' if tools else NOT_GIVEN,
+                    response_format = {'type': 'json_object'} if use_json else NOT_GIVEN
+                )
                 
                 elapsed_time = time.time() - start_time
                 
@@ -123,25 +118,27 @@ class T3RNAgent(Agent):
                 
                 self.channel_logger.log_to_logs(f"⚡ gpt-4o-mini completed in {elapsed_time:.3f}s ({prompt_tokens}+{completion_tokens}={total_tokens} tokens)")
 
-                
                 # Create a response object similar to Ollama's format for compatibility
-                class OpenAIResponse:
-                    def __init__(self, openai_response):
-                        self.message = type('message', (), {
-                            'content': openai_response.choices[0].message.content,
-                            'tool_calls': getattr(openai_response.choices[0].message, 'tool_calls', None)
-                        })()
-                        self.usage = openai_response.usage
-                        self.choices = [openai_response.choices[0]]  # For compatibility
+                # class OpenAIResponse:
+                #     def __init__(self, openai_response):
+                #         self.message = type('message', (), {
+                #             'content': openai_response.choices[0].message.content,
+                #             'tool_calls': getattr(openai_response.choices[0].message, 'tool_calls', None)
+                #         })()
+                #         self.usage = openai_response.usage
+                #         self.choices = [openai_response.choices[0]]  # For compatibility
                 
-                return OpenAIResponse(response)
+                return response
                 
             except Exception as e:
                 self.channel_logger.log_to_logs(f"❌ OpenAI API call failed: {str(e)}")
                 raise Exception(f"T3rnAgent OpenAI API call failed: {str(e)}")
         else:
             raise Exception("OpenAI API not available or not configured")
-    
+    # TODO Complementary tools:
+    # This function adds complementary tools based on the original tool calls.
+    # So if db_rag_get_champion_details is called, it will also add db_get_champion_details
+    # it also prevents duplicates by checking if the complementary tool with the same parameters already exists.
     def add_complementary_tools(self, tool_calls: List) -> List:
         """Add complementary tools - copied from QuestionAnalyzer"""
         
@@ -186,7 +183,7 @@ class T3RNAgent(Agent):
         
         return enhanced_tool_calls
     
-    def process_and_execute_tools(self, tool_calls: List, response_content: str, messages: List[Dict[str, Any]]) -> bool:
+    def process_and_execute_tools(self, tool_calls: List['ChatCompletionMessageToolCall'], response_content: str, messages: List['ChatCompletionMessageParam']) -> bool:
         """Process tool calls, add complementary tools, execute them and add to messages"""
         
         # Filter out agent spawning tools (we handle everything internally)

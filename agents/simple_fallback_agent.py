@@ -13,25 +13,25 @@ from session import Session
 class SimpleFallbackAgent(Agent):
     """Simple emergency agent that provides basic fallback responses"""
     
-    def __init__(self, session: 'Session',channel_logger: 'ChannelLogger'):
+    def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
         super().__init__(session, channel_logger)
     
     def get_system_prompt(self, context: AgentContext) -> str:
         """Get system prompt for fallback mode"""
         return self.build_prompt('CHARACTER_BASE_T3RN')
     
-    def execute(self, context: AgentContext, channel_logger) -> AgentResult:
+    def execute(self, context: AgentContext) -> AgentResult:
         """Execute SimpleFallbackAgent with minimal processing"""
         
-        channel_logger.log_to_logs("🛡️ SimpleFallbackAgent starting error recovery")
+        self.channel_logger.log_to_logs("🛡️ SimpleFallbackAgent starting error recovery")
         
         original_query = context.original_user_message or "your request"
             
         # Select a random T3RN malfunction message
         fallback_response = random.choice(T3RN_MALFUNCTION_MESSAGES)
             
-        channel_logger.log_to_logs("✅ SimpleFallbackAgent completed successfully")
-        channel_logger.log_to_logs("💭 SIMPLE FALLBACK: System error occurred, providing T3RN malfunction response")
+        self.channel_logger.log_to_logs("✅ SimpleFallbackAgent completed successfully")
+        self.channel_logger.log_to_logs("💭 SIMPLE FALLBACK: System error occurred, providing T3RN malfunction response")
             
         result = AgentResult()
         result.final_answer = fallback_response

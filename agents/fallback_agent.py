@@ -74,7 +74,7 @@ class FallbackAgent(Agent):
             self.channel_logger.log_to_logs(f"❌ FallbackAgent LLM error: {str(e)}")
             raise
     
-    def execute(self, context: AgentContext, channel_logger) -> AgentResult:
+    def execute(self, context: AgentContext) -> AgentResult:
         """Execute FallbackAgent with RAG knowledge only"""
         
         self.channel_logger.log_to_logs("🛡️ FallbackAgent starting with RAG knowledge")
@@ -91,7 +91,7 @@ class FallbackAgent(Agent):
             messages = [{
                 "role": "system",
                 "content": self.get_system_prompt(context)
-            }]
+            }] # type: List[ChatCompletionMessageParam]
             
             # Add RAG context if available
             if general_knowledge:

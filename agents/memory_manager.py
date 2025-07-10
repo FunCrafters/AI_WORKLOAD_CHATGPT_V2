@@ -13,7 +13,8 @@ import textwrap
 from typing import Dict, List, Any, Optional, Tuple, TYPE_CHECKING, Union, Iterable
 from venv import logger
 from openai.types.chat import ChatCompletionMessageParam
-
+import markdown
+from bs4 import BeautifulSoup
 
 from channel_logger import ChannelLogger
 from session import Session
@@ -198,7 +199,7 @@ class MemoryManager:
         for key in expired_keys:
             removed_entry = memory['tool_cache'].pop(key)
             if channel_logger:
-                self._add_to_session_log(memory, f"🗑️ Expired cache for {removed_entry['tool_name']}")
+                self.channal_logger.log_to_memory(f"🗑️ Expired cache for {removed_entry['tool_name']}")
     
     def is_tool_already_in_current_messages(self, messages: List[Dict[str, Any]], tool_name: str, parameters: Dict[str, Any]) -> bool:
         """Check if tool with same parameters is already in current message list"""
@@ -233,7 +234,7 @@ class MemoryManager:
                 })
                 
                 if channel_logger:
-                    self._add_to_session_log(memory, f"🎯 Injected screen context: {len(prompt_injection)} chars")
+                    self.channal_logger.log_to_memory(f"🎯 Injected screen context: {len(prompt_injection)} chars")
             
             # Add proactive tool results and cache them
             if proactive_messages:
@@ -243,7 +244,7 @@ class MemoryManager:
                 self._cache_proactive_tool_results(memory, proactive_messages, channel_logger)
                 
                 if channel_logger:
-                    self._add_to_session_log(memory, f"🔧 Injected {len(proactive_messages)} proactive tool messages")
+                    self.channal_logger.log_to_memory(f"🔧 Injected {len(proactive_messages)} proactive tool messages")
             
             # Mark injection as done
             memory['screen_injection_done'] = True
@@ -252,7 +253,7 @@ class MemoryManager:
             
         except Exception as e:
             if channel_logger:
-                self._add_to_session_log(memory, f"❌ Screen injection failed: {str(e)}")
+                self.channal_logger.log_to_memory(f"❌ Screen injection failed: {str(e)}")
             return []
     
     def _cache_proactive_tool_results(self, memory: Dict[str, Any], proactive_messages: List[Dict[str, Any]], channel_logger=None) -> None:
@@ -287,7 +288,7 @@ class MemoryManager:
                             
         except Exception as e:
             if channel_logger:
-                self._add_to_session_log(memory, f"❌ Failed to cache proactive tools: {str(e)}")
+                self.channal_logger.log_to_memory(f"❌ Failed to cache proactive tools: {str(e)}")
     
     def finalize_current_cycle(self, memory: Dict[str, Any], user_message: str, final_answer: str, channel_logger=None) -> None:
         """Update memory with final exchange results"""        
@@ -348,136 +349,102 @@ class MemoryManager:
             logger.error(f"Error summarizing text: {str(e)}")
             return textwrap.shorten(text, width=target_size)
     
-    # TODO this seems like channal logger, but it is written by hand instead 
-    # TODO [ChannelLogger](https://github.com/FunCrafters/AI_WORKLOAD_CHATGPT_V2/blob/fb8e3b0162d06aee67f0893f4233fa8e5d85a5b2/channel_logger.py#L66) 
-    def _log_to_memory_channel(self, content: str) -> None:
-        """Log content to Memory channel (5) - only called by _log_final_memory_state"""
-        try:
-            if self.client and self.session_id:
-                from workload_tools import create_response, send_response
-                response = create_response(5, content, self.session_id, f"memory_{int(time.time())}")
-                send_response(self.client, response, self.session_id, 5, f"memory_{int(time.time())}")
-        except Exception:
-            logger.info("Failed to log to memory channel")
-            pass  # Silent fail - logging is not critical OwO?
+    # # TODO this seems like channal logger, but it is written by hand instead 
+    # # TODO [ChannelLogger](https://github.com/FunCrafters/AI_WORKLOAD_CHATGPT_V2/blob/fb8e3b0162d06aee67f0893f4233fa8e5d85a5b2/channel_logger.py#L66) 
+    # def _log_to_memory_channel(self, content: str) -> None:
+    #     """Log content to Memory channel (5) - only called by _log_final_memory_state"""
+    #     try:
+    #         if self.client and self.session_id:
+    #             from workload_tools import create_response, send_response
+    #             response = create_response(5, content, self.session_id, f"memory_{int(time.time())}")
+    #             send_response(self.client, response, self.session_id, 5, f"memory_{int(time.time())}")
+    #     except Exception:
+    #         logger.info("Failed to log to memory channel")
+    #         pass  # Silent fail - logging is not critical OwO?
     
     
     def _clean_markdown(self, text: str) -> str:
-        """Remove markdown formatting from text for cleaner display"""
-        # TODO Strip with library instead
-        import re
-        
-        # Handle None or non-string input
-        if text is None:
-            return ""
-        if not isinstance(text, str):
-            text = str(text)
-        
-        # Remove bold (**text** or __text__)
-        text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)
-        text = re.sub(r'__([^_]+)__', r'\1', text)
-        
-        # Remove italic (*text* or _text_)
-        text = re.sub(r'\*([^*]+)\*', r'\1', text)
-        text = re.sub(r'_([^_]+)_', r'\1', text)
-        
-        # Remove headers (# Header)
-        text = re.sub(r'^#+\s+', '', text, flags=re.MULTILINE)
-        
-        # Remove code blocks (```code```)
-        text = re.sub(r'```[^`]+```', '', text)
-        
-        # Remove inline code (`code`)
-        text = re.sub(r'`([^`]+)`', r'\1', text)
-        
-        # Remove bullet points
-        text = re.sub(r'^[\*\-]\s+', '', text, flags=re.MULTILINE)
-        
-        # Remove numbered lists
-        text = re.sub(r'^\d+\.\s+', '', text, flags=re.MULTILINE)
-        
-        # Clean up multiple newlines
-        text = re.sub(r'\n{3,}', '\n\n', text)
-        
-        return text.strip()
+        html = markdown.markdown(text)
+        return BeautifulSoup(html, features='html.parser').get_text()
+
     
     # TODO seems to be extensive logging function, but it is not used anywhere. (Dead code)
-    def _log_final_memory_state(self, session: 'Session', channel_logger: 'ChannelLogger') -> None:
-        """Log final memory state showing what agent would receive"""
-        try:
-            # Get the current user message
-            memory = session.conversation_memory if session.conversation_memory else self.initialize_session_memory()
-            current_user_message = memory['current_cycle'].get('user_question', 'No current message')
+    # def _log_final_memory_state(self, session: 'Session', channel_logger: 'ChannelLogger') -> None:
+    #     """Log final memory state showing what agent would receive"""
+    #     try:
+    #         # Get the current user message
+    #         memory = session.conversation_memory if session.conversation_memory else self.initialize_session_memory()
+    #         current_user_message = memory['current_cycle'].get('user_question', 'No current message')
             
-            # Get memory messages as agent would receive them
-            memory_messages = self.prepare_messages_for_agent(session.get_memory(), current_user_message)
+    #         # Get memory messages as agent would receive them
+    #         memory_messages = self.prepare_messages_for_agent(session.get_memory(), current_user_message)
             
-            # Calculate statistics
-            exchanges = memory.get('exchanges', [])
-            summary = memory.get('summary', '')
-            llm_summarizations = getattr(self, 'llm_summarization_count', 0)  # Track LLM usage
+    #         # Calculate statistics
+    #         exchanges = memory.get('exchanges', [])
+    #         summary = memory.get('summary', '')
+    #         llm_summarizations = getattr(self, 'llm_summarization_count', 0)  # Track LLM usage
             
-            # Format memory state for display
-            memory_log = "=== MEMORY STATE ===\n"
-            memory_log += f"Session: {session.session_id} | "
-            memory_log += f"Exchanges: {len(exchanges)} | "
-            memory_log += f"Summary: {len(summary.encode('utf-8'))} bytes | "
-            memory_log += f"LLM compressions: {llm_summarizations}\n\n"
+    #         # Format memory state for display
+    #         memory_log = "=== MEMORY STATE ===\n"
+    #         memory_log += f"Session: {session.session_id} | "
+    #         memory_log += f"Exchanges: {len(exchanges)} | "
+    #         memory_log += f"Summary: {len(summary.encode('utf-8'))} bytes | "
+    #         memory_log += f"LLM compressions: {llm_summarizations}\n\n"
             
-            # Show function cache state
-            tool_cache = memory.get('tool_cache', {})
-            if tool_cache:
-                memory_log += "=== FUNCTION CACHE STATE ===\n"
-                memory_log += f"Cached functions: {len(tool_cache)}\n"
-                for cache_key, cache_entry in tool_cache.items():
-                    tool_name = cache_entry.get('tool_name', 'unknown')
-                    remaining = cache_entry.get('remaining_duration', 0)
-                    original = cache_entry.get('original_duration', 0)
-                    params = cache_entry.get('parameters', {})
+    #         # Show function cache state
+    #         tool_cache = memory.get('tool_cache', {})
+    #         if tool_cache:
+    #             memory_log += "=== FUNCTION CACHE STATE ===\n"
+    #             memory_log += f"Cached functions: {len(tool_cache)}\n"
+    #             for cache_key, cache_entry in tool_cache.items():
+    #                 tool_name = cache_entry.get('tool_name', 'unknown')
+    #                 remaining = cache_entry.get('remaining_duration', 0)
+    #                 original = cache_entry.get('original_duration', 0)
+    #                 params = cache_entry.get('parameters', {})
                     
-                    params_str = str(params)
-                    params_str = textwrap.shorten(params_str, width=50)
+    #                 params_str = str(params)
+    #                 params_str = textwrap.shorten(params_str, width=50)
                     
-                    memory_log += f"  • {tool_name}({params_str}): {remaining}/{original} exchanges remaining\n"
-                memory_log += "\n"
-            else:
-                memory_log += "=== FUNCTION CACHE STATE ===\n"
-                memory_log += "No cached functions\n\n"
+    #                 memory_log += f"  • {tool_name}({params_str}): {remaining}/{original} exchanges remaining\n"
+    #             memory_log += "\n"
+    #         else:
+    #             memory_log += "=== FUNCTION CACHE STATE ===\n"
+    #             memory_log += "No cached functions\n\n"
             
-            # Show full summary if exists
-            if summary:
-                memory_log += "=== FULL SUMMARY ===\n"
-                memory_log += self._clean_markdown(summary) + "\n\n"
+    #         # Show full summary if exists
+    #         if summary:
+    #             memory_log += "=== FULL SUMMARY ===\n"
+    #             memory_log += self._clean_markdown(summary) + "\n\n"
             
-            # Add session logs to memory log
-            session_logs = memory.get('session_logs', [])
-            if session_logs:
-                memory_log += "=== SESSION ACTIVITY ===\n"
-                for log_entry in session_logs:
-                    memory_log += f"{log_entry}\n"
-                memory_log += "\n"
+    #         # Add session logs to memory log
+    #         session_logs = memory.get('session_logs', [])
+    #         if session_logs:
+    #             memory_log += "=== SESSION ACTIVITY ===\n"
+    #             for log_entry in session_logs:
+    #                 memory_log += f"{log_entry}\n"
+    #             memory_log += "\n"
             
-            # Show what agent receives
-            if memory_messages:
-                memory_log += f"=== AGENT RECEIVES ({len(memory_messages)} messages) ===\n"
-                for idx, msg in enumerate(memory_messages, 1):
-                    role = msg.get('role', 'unknown')
-                    # TODO for now assume content is always a string
-                    # Handle all types later.
-                    content = str(msg.get('content') or '')
+    #         # Show what agent receives
+    #         if memory_messages:
+    #             memory_log += f"=== AGENT RECEIVES ({len(memory_messages)} messages) ===\n"
+    #             for idx, msg in enumerate(memory_messages, 1):
+    #                 role = msg.get('role', 'unknown')
+    #                 # TODO for now assume content is always a string
+    #                 # Handle all types later.
+    #                 content = str(msg.get('content') or '')
 
-                    content = self._clean_markdown(content)
+    #                 content = self._clean_markdown(content)
 
-                    content = textwrap.shorten(content, width=120)
+    #                 content = textwrap.shorten(content, width=120)
                     
-                    memory_log += f"[{idx}] {role.upper()}: {content}\n"
-            else:
-                memory_log += "=== NO MEMORY CONTEXT ===\n"
+    #                 memory_log += f"[{idx}] {role.upper()}: {content}\n"
+    #         else:
+    #             memory_log += "=== NO MEMORY CONTEXT ===\n"
             
-            # Clear session logs after sending to avoid accumulation
-            memory['session_logs'] = []
+    #         # Clear session logs after sending to avoid accumulation
+    #         memory['session_logs'] = []
             
-            channel_logger.log_to_memory(memory_log)
+    #         channel_logger.log_to_memory(memory_log)
             
-        except Exception as e:
-            channel_logger.log_to_memory(f"❌ Error logging final memory state: {str(e)}")
+    #     except Exception as e:
+    #         channel_logger.log_to_memory(f"❌ Error logging final memory state: {str(e)}")
