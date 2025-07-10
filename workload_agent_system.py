@@ -6,7 +6,7 @@ New agent-based architecture for processing user messages
 
 import time
 import logging
-from typing import List, Dict, Any, Tuple, Optional, TYPE_CHECKING
+from typing import List, Dict, Any, Tuple, Optional, TYPE_CHECKING, Type
 
 # Import agent classes
 from agents.base_agent import Agent, AgentContext, AgentResult
@@ -77,7 +77,7 @@ def process_llm_agents(user_message: str,
     # Create initial context
     context = create_initial_context(user_message, session, channel_logger)
     
-    def run_agent(agent_class, context):
+    def run_agent(agent_class: Type[Agent], context: AgentContext) -> str|None:
         agent_type = agent_class.__name__
         channel_logger.log_to_logs(f"🤖 Executing {agent_type}")
 
@@ -120,46 +120,27 @@ def process_llm_agents(user_message: str,
     # Context should be isolated between runs
     final_answer = run_agent(T3RNAgent, context)
 
-    if not final_answer:
+    if final_answer is None:
         channel_logger.log_to_logs("🔄 Attempting FallbackAgent due to T3RNAgent failure")
         final_answer = run_agent(FallbackAgent, context)
 
-    if not final_answer:
+    if final_answer is None:
         channel_logger.log_to_logs("⚠️ Using emergency fallback due to FallbackAgent failure")
 
-        try:
-            emergency_message = random.choice(T3RN_MALFUNCTION_MESSAGES)
-            channel_logger.log_to_logs("🛡️ Using emergency T3RN malfunction response as final fallback")
-            
-            # TODO I think it is not good place to put new messages into the stack
-            # Why? Mssages are added anyway within the agent so adding them there
-            # is braking the flow and adding complexity.
-            # execute should do this in the agent. 
-            session.memory_manager.finalize_current_cycle(
-                session.get_memory(),
-                user_message,
-                emergency_message,
-                channel_logger
-            )
-            channel_logger.flush_buffer(channel_logger.LOGS)
-            return emergency_message
+        emergency_message = random.choice(T3RN_MALFUNCTION_MESSAGES)
+        channel_logger.log_to_logs("🛡️ Using emergency T3RN malfunction response as final fallback")
+        
+        # TODO I think it is not good place to put new messages into the stack
+        # Why? Mssages are added anyway within the agent so adding them there
+        # is braking the flow and adding complexity.
+        # execute should do this in the agent. 
+        session.memory_manager.finalize_current_cycle(
+            session.get_memory(),
+            user_message,
+            emergency_message,
+            channel_logger
+        )
+        channel_logger.flush_buffer(channel_logger.LOGS)
+        return emergency_message
 
-        except Exception as e:
-            channel_logger.log_to_logs(f"❌ Emergency response also failed: {str(e)}")
-            error_message = "Critical system malfunction. This droid requires immediate maintenance."
-
-            try:
-                session.memory_manager.finalize_current_cycle(
-                    session.get_memory(),
-                    user_message,
-                    error_message,
-                    channel_logger
-                )
-            except:
-                pass  # Fails silently
-
-            channel_logger.log_to_logs("💭 CRITICAL ERROR: All agents failed")
-            channel_logger.log_error(f"Critical system error: {str(e)}")
-            channel_logger.flush_buffer(channel_logger.LOGS)
-
-            return error_message
+    return final_answer

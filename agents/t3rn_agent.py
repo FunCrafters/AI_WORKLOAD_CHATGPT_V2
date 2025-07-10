@@ -96,8 +96,7 @@ class T3RNAgent(Agent):
         """Make OpenAI API call with error handling, copied from response_agent_gpt.py"""
         
         # Log LLM call to Prompts channel BEFORE making the call
-        if self.channel_logger:
-            self._log_llm_call_to_prompts_channel(messages, tools, use_json)
+        self._log_llm_call_to_prompts_channel(messages, tools, use_json)
         
         # Try OpenAI first if available and configured
         if self.openai_enabled and self.openai_client:
