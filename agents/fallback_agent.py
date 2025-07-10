@@ -34,7 +34,7 @@ class FallbackAgent(Agent):
             if api_key:
                 self.openai_client = openai.OpenAI(api_key=api_key)
     
-    def get_system_prompt(self, context: AgentContext) -> str:
+    def get_system_prompt(self,) -> str:
         """Simple system prompt for fallback"""
         return self.build_prompt(
             'CHARACTER_BASE_T3RN',
@@ -74,47 +74,45 @@ class FallbackAgent(Agent):
             self.channel_logger.log_to_logs(f"❌ FallbackAgent LLM error: {str(e)}")
             raise
     
-    def execute(self, context: AgentContext) -> AgentResult:
+    def execute(self, user_message: str) -> AgentResult:
         """Execute FallbackAgent with RAG knowledge only"""
         
         self.channel_logger.log_to_logs("🛡️ FallbackAgent starting with RAG knowledge")
         
-        try:
-            # Get original query
-            original_query = context.original_user_message or "general help"
-            
+        try:            
             # Pre-load RAG data
-            general_knowledge = db_rag_get_general_knowledge(original_query)
-            self.channel_logger.log_to_logs(f"🔍 FallbackAgent pre-loaded RAG data for: {original_query}")
+            general_knowledge = db_rag_get_general_knowledge(user_message)
+            self.channel_logger.log_to_logs(f"🔍 FallbackAgent pre-loaded RAG data for: '{user_message}'")
             
             # Prepare simple messages
             messages = [{
                 "role": "system",
-                "content": self.get_system_prompt(context)
+                "content": self.get_system_prompt()
             }] # type: List[ChatCompletionMessageParam]
             
-            # Add RAG context if available
             if general_knowledge:
                 messages.append({
                     "role": "system", 
                     "content": f"Available knowledge: {general_knowledge}"
                 })
             
-            # Add user question
             messages.append({
                 "role": "user",
-                "content": original_query
+                "content": user_message
             })
             
-            # Call LLM (no tools)
             self.channel_logger.log_to_logs("🤖 FallbackAgent calling ChatGPT-4o-mini without tools")
             response = self.call_llm(messages)
             
-            # Get response
             response_content = response.choices[0].message.content or "No response generated"
             
             self.channel_logger.log_to_logs("✅ FallbackAgent completed successfully")
             
+            messages.append({
+                "role": "assistant",
+                "content": response_content
+            })
+
             result = AgentResult()
             result.final_answer = response_content
             result.error_content = ""
@@ -122,17 +120,4 @@ class FallbackAgent(Agent):
             return result
             
         except Exception as e:
-            self.channel_logger.log_to_logs(f"❌ FallbackAgent error: {str(e)}")
-            self.channel_logger.log_to_logs("🛡️ FallbackAgent using emergency T3RN malfunction response")
-            
-            # Use emergency T3RN malfunction messages instead of failing
-            import random
-            from agents.agent_prompts import T3RN_MALFUNCTION_MESSAGES
-            
-            emergency_response = random.choice(T3RN_MALFUNCTION_MESSAGES)
-            
-            result = AgentResult()
-            result.final_answer = emergency_response
-            result.error_content = ""
-            
-            return result
+            raise Exception(f"Fallback Agent logic error")

@@ -64,7 +64,7 @@ class T3RNAgent(Agent):
         except Exception:
             self.champions_list = "Champions list not available"
     
-    def get_system_prompt(self, context: AgentContext) -> str:
+    def get_system_prompt(self) -> str:
         """Get system prompt - randomly choose between T3RN and T4RN"""
         
         champions_and_bosses = f"""CHAMPIONS LIST: {self.champions_list}"""
@@ -279,24 +279,20 @@ class T3RNAgent(Agent):
         return True
     
     
-    def execute(self, context: AgentContext) -> AgentResult:
+    def execute(self, user_message: str) -> AgentResult:
         """Execute T3rnAgent with internal tool loop"""
         
         self.channel_logger.log_to_logs("🚀 T3rnAgent starting with internal tool loop")
-        
-        current_user_message = context.original_user_message
-        
+                
         if self.memory_manager is None:
             raise Exception("MemoryManager not set - should be passed from session")
         
-        self.session_data = context.session_data
-        # TODO Why context?
-        memory_messages = self.memory_manager.prepare_messages_for_agent(context.session_data.get_memory(), current_user_message)
+        memory_messages = self.memory_manager.prepare_messages_for_agent(self.session_data.get_memory(), user_message)
         
         # Prepare messages: system prompt + memory + current user message
         messages: List['ChatCompletionMessageParam'] = []
         
-        system_prompt = self.get_system_prompt(context)
+        system_prompt = self.get_system_prompt()
         messages.append({
             "role": "system",
             "content": system_prompt
@@ -311,7 +307,7 @@ class T3RNAgent(Agent):
             
             # TODO session should be object
             if CURRENT_JSON_DATA:
-                injection_messages = self.memory_manager.inject_screen_context(context.session_data.get_memory(), CURRENT_JSON_DATA)
+                injection_messages = self.memory_manager.inject_screen_context(self.session_data.get_memory(), CURRENT_JSON_DATA)
                 
                 # TODO Try replace with developer.
                 if injection_messages:
@@ -324,7 +320,7 @@ class T3RNAgent(Agent):
         # Add current user message
         messages.append({
             "role": "user",
-            "content": current_user_message
+            "content": user_message
         })
         
         self.channel_logger.log_to_logs(f"🧠 Memory: {len(memory_messages)} context messages loaded")

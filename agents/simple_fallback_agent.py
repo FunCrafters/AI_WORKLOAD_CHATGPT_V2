@@ -17,17 +17,11 @@ class SimpleFallbackAgent(Agent):
         super().__init__(session, channel_logger)
     
     def get_system_prompt(self, context: AgentContext) -> str:
-        """Get system prompt for fallback mode"""
         return self.build_prompt('CHARACTER_BASE_T3RN')
     
-    def execute(self, context: AgentContext) -> AgentResult:
-        """Execute SimpleFallbackAgent with minimal processing"""
-        
+    def execute(self, user_message: str) -> AgentResult:        
         self.channel_logger.log_to_logs("🛡️ SimpleFallbackAgent starting error recovery")
-        
-        original_query = context.original_user_message or "your request"
-            
-        # Select a random T3RN malfunction message
+                    
         fallback_response = random.choice(T3RN_MALFUNCTION_MESSAGES)
             
         self.channel_logger.log_to_logs("✅ SimpleFallbackAgent completed successfully")

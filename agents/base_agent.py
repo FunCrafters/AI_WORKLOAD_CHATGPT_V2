@@ -69,14 +69,14 @@ class Agent(ABC):
         pass
     
     @abstractmethod
-    def execute(self, context: AgentContext) -> AgentResult:
+    def execute(self, context: str) -> AgentResult:
         """Execute the agent with given context"""
         pass
     
+    # TODO CHECK IF THIS IS HELPFULL AT ALL...
     def _log_llm_call_to_prompts_channel(self, messages: List['ChatCompletionMessageParam'], tools: Optional[List] = None, 
                                        use_json: bool = False):
         try:            
-            action_id = self.channel_logger.action_id or 'Unknown'
             agent_name = self.__class__.__name__
             
             # Extract system prompt (first message)

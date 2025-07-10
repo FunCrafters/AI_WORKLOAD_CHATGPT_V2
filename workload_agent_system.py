@@ -10,6 +10,7 @@ from typing import List, Dict, Any, Tuple, Optional, TYPE_CHECKING, Type
 
 # Import agent classes
 from agents.base_agent import Agent, AgentContext, AgentResult
+from agents.simple_fallback_agent import SimpleFallbackAgent
 from agents.t3rn_agent import T3RNAgent
 from agents.fallback_agent import FallbackAgent
 from agents.memory_manager import MemoryManager
@@ -74,18 +75,17 @@ def process_llm_agents(user_message: str,
     channel_logger.log_to_logs(f"🚀 Starting agent-based processing [Action {action_id}]")
     channel_logger.log_to_logs("🆕 Starting new processing with T3RNAgent")
 
-    # Create initial context
-    context = create_initial_context(user_message, session, channel_logger)
     
-    def run_agent(agent_class: Type[Agent], context: AgentContext) -> str|None:
+    def run_agent(agent_class: Type[Agent], session: 'Session', user_message: str) -> str|None:
         agent_type = agent_class.__name__
         channel_logger.log_to_logs(f"🤖 Executing {agent_type}")
 
         try:
             agent = agent_class(session, channel_logger)
-            result = agent.execute(context)
 
-            if result.final_answer:
+            result = agent.execute(user_message)
+
+            if result.final_answer is not None:
                 channel_logger.log_to_logs(f"✅ {agent_type} provided final answer")
 
                 # Finalize memory manager
@@ -118,29 +118,15 @@ def process_llm_agents(user_message: str,
     # What if T3RN Agents sets context into unrecoverable state that will cause
     # Fallback to fail as well? 
     # Context should be isolated between runs
-    final_answer = run_agent(T3RNAgent, context)
+    final_answer = run_agent(T3RNAgent, session, user_message)
 
     if final_answer is None:
         channel_logger.log_to_logs("🔄 Attempting FallbackAgent due to T3RNAgent failure")
-        final_answer = run_agent(FallbackAgent, context)
+        final_answer = run_agent(FallbackAgent, session, user_message)
 
     if final_answer is None:
         channel_logger.log_to_logs("⚠️ Using emergency fallback due to FallbackAgent failure")
 
-        emergency_message = random.choice(T3RN_MALFUNCTION_MESSAGES)
-        channel_logger.log_to_logs("🛡️ Using emergency T3RN malfunction response as final fallback")
-        
-        # TODO I think it is not good place to put new messages into the stack
-        # Why? Mssages are added anyway within the agent so adding them there
-        # is braking the flow and adding complexity.
-        # execute should do this in the agent. 
-        session.memory_manager.finalize_current_cycle(
-            session.get_memory(),
-            user_message,
-            emergency_message,
-            channel_logger
-        )
-        channel_logger.flush_buffer(channel_logger.LOGS)
-        return emergency_message
+        final_answer = run_agent(SimpleFallbackAgent, session, user_message) or "ERROR 1138: Primary directive compromised. Rebooting memory core"
 
     return final_answer
