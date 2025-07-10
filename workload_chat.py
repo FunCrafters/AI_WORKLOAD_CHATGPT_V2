@@ -8,10 +8,12 @@ import time
 import logging
 
 # Import agent system
+from agents.memory_manager import MemoryManager
 from session import Session
 from workload_agent_system import (
     process_llm_agents
 )
+from tools_functions import available_llm_functions
 
 # Import channel logger
 from channel_logger import ChannelLogger
@@ -20,7 +22,6 @@ from workload_tools import ContextAdapter, create_response, send_response
 # Logger
 logger = logging.getLogger("Workload Chat")
 logger = ContextAdapter(logger)
-
 #######################
 # Main Processing Function
 #######################
@@ -43,10 +44,12 @@ def process_main_channel(client, session: 'Session'):
     
     # Create channel logger for multi-channel logging
     channel_logger = ChannelLogger(client, session_id, session.message_id)
-    
-    # Import available functions count from LLM module
-    from tools_functions import available_llm_functions
-    
+
+    if session.memory_manager is None:
+        session.memory_manager = MemoryManager(channel_logger)
+
+    session.memory_manager.prepare_messages_for_agent(text)
+        
     # Initial logging
     channel_logger.log_to_logs(f"🚀 Processing with Agent-Based System: \"{text}\"")
     channel_logger.log_to_logs(f"💬 Session ID: {session_id}")

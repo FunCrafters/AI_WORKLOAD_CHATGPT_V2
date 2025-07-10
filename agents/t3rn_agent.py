@@ -18,6 +18,7 @@ from channel_logger import ChannelLogger
 from session import Session
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletion, ChatCompletionMessageToolCall
 from openai.types.chat.chat_completion_message_tool_call import Function
+from workload_game_cache import CURRENT_JSON_DATA
 
 try:
     import openai
@@ -93,12 +94,9 @@ class T3RNAgent(Agent):
                  messages: List['ChatCompletionMessageParam'], 
                  tools: Optional[List] = None, 
                  use_json: bool = False) -> 'ChatCompletion':
-        """Make OpenAI API call with error handling, copied from response_agent_gpt.py"""
-        
-        # Log LLM call to Prompts channel BEFORE making the call
-        self._log_llm_call_to_prompts_channel(messages, tools, use_json)
-        
-        # Try OpenAI first if available and configured
+        # before LLM call
+        self._log_state(messages)
+
         if self.openai_enabled and self.openai_client:
             try:
                 start_time = time.time()
@@ -213,9 +211,7 @@ class T3RNAgent(Agent):
                     continue
 
                 # Check for cached results
-                cache_entry = self.memory_manager.lookup_tool_in_cache(
-                    self.session_data.get_memory(), function_name, function_args
-                )
+                cache_entry = self.memory_manager.lookup_tool_in_cache(function_name, function_args)
 
                 # TODO IDK if cache is required at all.
                 # TODO We should decorate tools with cachetools!
@@ -249,10 +245,7 @@ class T3RNAgent(Agent):
                         if isinstance(result_json, dict):
                             cache_duration = result_json.get("llm_cache_duration", 0)
                             if cache_duration > 0:
-                                self.memory_manager.add_tool_to_cache(
-                                    self.session_data.get_memory(),
-                                    function_name, function_args, result, cache_duration
-                                )
+                                self.memory_manager.add_tool_to_cache(function_name, function_args, result, cache_duration)
                     except Exception as e:
                         self.channel_logger.log_error(f"Cache save failed: {e}")
           
@@ -287,7 +280,7 @@ class T3RNAgent(Agent):
         if self.memory_manager is None:
             raise Exception("MemoryManager not set - should be passed from session")
         
-        memory_messages = self.memory_manager.prepare_messages_for_agent(self.session_data.get_memory(), user_message)
+        memory_messages = self.memory_manager.prepare_messages_for_agent(user_message)
         
         # Prepare messages: system prompt + memory + current user message
         messages: List['ChatCompletionMessageParam'] = []
@@ -298,16 +291,15 @@ class T3RNAgent(Agent):
             "content": system_prompt
         })
         
-        # Add memory context messages
         messages.extend(memory_messages)
         
-        # Add screen context injection at session start
-        try:
-            from workload_game_cache import CURRENT_JSON_DATA
-            
+        # TODO Here is an Injection Pattern visible Some of that is also
+        # below the message in call_llm so it needs to me moved somewere.
+           
+        try:            
             # TODO session should be object
             if CURRENT_JSON_DATA:
-                injection_messages = self.memory_manager.inject_screen_context(self.session_data.get_memory(), CURRENT_JSON_DATA)
+                injection_messages = self.memory_manager.inject_screen_context(CURRENT_JSON_DATA)
                 
                 # TODO Try replace with developer.
                 if injection_messages:
@@ -317,7 +309,6 @@ class T3RNAgent(Agent):
         except Exception as e:
             self.channel_logger.log_to_logs(f"⚠️ Screen injection error: {str(e)}")
         
-        # Add current user message
         messages.append({
             "role": "user",
             "content": user_message
@@ -325,20 +316,16 @@ class T3RNAgent(Agent):
         
         self.channel_logger.log_to_logs(f"🧠 Memory: {len(memory_messages)} context messages loaded")
         
-        # TODO Nie potrzebne z Chatem GPT.
-        max_iterations = 10
+        MAX_ITERATIONS = 10
         iteration = 0
         
         try:
-            while iteration < max_iterations:
+            while iteration < MAX_ITERATIONS:
                 iteration += 1
                 self.channel_logger.log_to_logs(f"🔄 T3rnAgent iteration {iteration}")
                 
                 try:
-                    # Check if this is the final iteration - no tools, force final answer
-                    if iteration == max_iterations:
-                        self.channel_logger.log_to_logs(f"⏰ T3RNAgent final iteration {iteration}/{max_iterations} - forcing final answer without tools")
-                        
+                    if iteration == MAX_ITERATIONS:
                         messages.append({
                             "role": "system",
                             "content": T3RN_FINAL_ITERATION_PROMPT
@@ -348,7 +335,7 @@ class T3RNAgent(Agent):
                     else:
                         response = self.call_llm(messages, tools=self.tools)
                     
-                    if iteration < max_iterations and hasattr(response.choices[0].message, 'tool_calls') and response.choices[0].message.tool_calls:
+                    if iteration < MAX_ITERATIONS and hasattr(response.choices[0].message, 'tool_calls') and response.choices[0].message.tool_calls:
                         tool_calls = response.choices[0].message.tool_calls
                         self.channel_logger.log_to_logs(f"🔧 T3RNAgent requested {len(tool_calls)} tools")
                         
@@ -366,7 +353,7 @@ class T3RNAgent(Agent):
                     })
                     
                     # Final answer - no tools, no clarification needed
-                    if iteration == max_iterations:
+                    if iteration == MAX_ITERATIONS:
                         self.channel_logger.log_to_logs(f"✅ T3RNAgent forced final answer after {iteration} iterations")
                     else:
                         self.channel_logger.log_to_logs(f"✅ T3RNAgent completed after {iteration} iterations")

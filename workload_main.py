@@ -126,7 +126,7 @@ def create_or_update_session(data: dict):
             channel=channel,
             message_id=message_id,
             json_data=None,
-            text=text
+            text=text,
         )
     
     if not is_initialization:

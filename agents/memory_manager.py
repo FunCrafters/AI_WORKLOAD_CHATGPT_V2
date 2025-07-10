@@ -10,82 +10,71 @@ import json
 import hashlib
 import uuid
 import textwrap
-from typing import Dict, List, Any, Optional, Tuple, TYPE_CHECKING, Union, Iterable
+from typing import Dict, List, Any, Optional
 from venv import logger
 from openai.types.chat import ChatCompletionMessageParam
 import markdown
 from bs4 import BeautifulSoup
-
 from channel_logger import ChannelLogger
-
-try:
-    import openai
-    OPENAI_AVAILABLE = True
-except ImportError:
-    OPENAI_AVAILABLE = False
-
+import openai
 
 # TODO test diffrent summarization heuristics
+# TODO split into MemoryMenger, CacheManager and MessageInjector 
 class MemoryManager:
-    """Simple memory manager with straightforward rules"""
-    
     def __init__(self, channel_logger: 'ChannelLogger'):
-        # Simple configuration
         self.max_exchanges = 10            # Max exchanges in list
         self.large_answer_threshold = 750  # Threshold for long answers (bytes)
         self.summary_target_size = 500     # Target size for answer summarization
         self.max_summary_size = 4000       # Max summary size before LLM compression
         self.summary_target_after_llm = 3000  # Target size after LLM summarization
         
-        # Statistics tracking
-        self.llm_summarization_count = 0  # Track how many times LLM was used for compression
-        
-        # OpenAI client for summaries
+        self.llm_summarization_count = 0 
+
         self.openai_client = None
-        self.openai_enabled = False
+
+        self.memory = self.initialize_session_memory()
         
-        # Initialize OpenAI client for summaries
-        if OPENAI_AVAILABLE:
-            api_key = os.getenv('OPENAI_API_KEY')
-            if api_key and api_key != 'your_openai_api_key_here':
-                try:
-                    self.openai_client = openai.OpenAI(api_key=api_key)
-                    self.openai_enabled = True
-                except Exception:
-                    self.openai_enabled = False
-        
+        api_key = os.getenv('OPENAI_API_KEY')
+        if api_key:
+            try:
+                self.openai_client = openai.OpenAI(api_key=api_key)
+            except Exception:
+                self.openai_client = None
+        else:
+            logger.warning("Memory Menager will not use openAI for summarization (No API KEY)")
+
         self.channal_logger: ChannelLogger = channel_logger
     
     def initialize_session_memory(self,) -> Dict[str, Any]:
         """Initialize simple conversation memory structure"""
         # TODO REPLACE WITH MEMORY STATE / STH LIKE THIS.
         return {
-            'exchanges': [],           # List of Q&A exchanges (max 10)
-            'summary': '',            # Text summary of old conversations
+            'exchanges': [],
+            'summary': '', 
             'current_cycle': {
                 'user_question': "",
                 'agent_messages': [],
                 'final_answer': None
             },
-            'tool_cache': {},         # Tool results cache {tool_key: cache_entry}
+            'tool_cache': {},
             'screen_injection_done': False  # Track if screen injection was done
         }
     
-    def prepare_messages_for_agent(self, memory: Dict[str, Any], user_message: str) -> List['ChatCompletionMessageParam']:
-        memory['current_cycle']['user_question'] = user_message
+    def prepare_messages_for_agent(self, user_message: str) -> List['ChatCompletionMessageParam']:
+        self.memory['current_cycle']['user_question'] = user_message
         
         # Build messages for LLM
         messages = []
         
         # Add summary if exists (as user message describing history)
-        if memory.get('summary'):
+        if self.memory.get('summary'):
             messages.append({
                 "role": "user",
-                "content": f"Previous conversation summary: {memory['summary']}"
+                "content": f"Previous conversation summary: {self.memory['summary']}"
             })
         
         # Add all exchanges from the list
-        for exchange in memory.get('exchanges', []):
+        for exchange in self.memory.get('exchanges', []):
             messages.append({
                 "role": "user",
                 "content": exchange['question']
@@ -96,7 +85,7 @@ class MemoryManager:
             })
         
         # Add cached tool messages (if any are still valid)
-        cached_tool_messages = self._get_cached_tool_messages(memory)
+        cached_tool_messages = self._get_cached_tool_messages()
         if cached_tool_messages:
             messages.extend(cached_tool_messages)
         
@@ -109,7 +98,7 @@ class MemoryManager:
         hash_input = f"{tool_name}:{params_json}"
         return hashlib.md5(hash_input.encode()).hexdigest()
     
-    def add_tool_to_cache(self, memory: Dict[str, Any], tool_name: str, parameters: Dict[str, Any], 
+    def add_tool_to_cache(self, tool_name: str, parameters: Dict[str, Any], 
                          result: str, llm_cache_duration: int) -> None:
         """Add tool result to cache with specified duration"""
         if llm_cache_duration <= 0:
@@ -129,17 +118,17 @@ class MemoryManager:
             'cached_at': time.time()
         }
         
-        memory['tool_cache'][cache_key] = cache_entry
+        self.memory['tool_cache'][cache_key] = cache_entry
         
         self.channal_logger.log_to_memory(f"🗄️ Cached tool {tool_name} for {llm_cache_duration} exchanges")
     
     # TODO check what this function is doing and what is cache all about., Why it is with memory?
-    def lookup_tool_in_cache(self, memory: Dict[str, Any], tool_name: str, parameters: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def lookup_tool_in_cache(self, tool_name: str, parameters: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Look up tool result in cache and refresh duration if found"""
         cache_key = self._generate_tool_cache_key(tool_name, parameters)
         
-        if cache_key in memory['tool_cache']:
-            cache_entry = memory['tool_cache'][cache_key]
+        if cache_key in self.memory['tool_cache']:
+            cache_entry = self.memory['tool_cache'][cache_key]
             
             # Refresh the duration to original value
             cache_entry['remaining_duration'] = cache_entry['original_duration']
@@ -150,11 +139,11 @@ class MemoryManager:
         return None
     
     # TODO seems like this is used at the end of exchange, but why?
-    def _get_cached_tool_messages(self, memory: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _get_cached_tool_messages(self) -> List[Dict[str, Any]]:
         """Get all cached tool results as OpenAI messages"""
         tool_messages = []
         
-        for cache_entry in memory['tool_cache'].values():
+        for cache_entry in self.memory['tool_cache'].values():
             if cache_entry['remaining_duration'] > 0:
                 # Add assistant message with tool call
                 assistant_message = {
@@ -184,11 +173,11 @@ class MemoryManager:
         
         return tool_messages
     
-    def _cleanup_expired_cache(self, memory: Dict[str, Any], channel_logger=None) -> None:
+    def _cleanup_expired_cache(self, channel_logger=None) -> None:
         """Remove expired tool cache entries and decrement remaining durations at end of exchange"""
         expired_keys = []
         
-        for cache_key, cache_entry in memory['tool_cache'].items():
+        for cache_key, cache_entry in self.memory['tool_cache'].items():
             # Decrement duration for all cached tools at end of exchange
             cache_entry['remaining_duration'] -= 1
             
@@ -197,7 +186,7 @@ class MemoryManager:
         
         # Remove expired entries
         for key in expired_keys:
-            removed_entry = memory['tool_cache'].pop(key)
+            removed_entry = self.memory['tool_cache'].pop(key)
             if channel_logger:
                 self.channal_logger.log_to_memory(f"🗑️ Expired cache for {removed_entry['tool_name']}")
     
@@ -213,11 +202,11 @@ class MemoryManager:
                         return True
         return False
     
-    def inject_screen_context(self, memory: Dict[str, Any], json_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def inject_screen_context(self, json_data: Dict[str, Any]) -> List['ChatCompletionMessageParam']:
         """Inject screen context and proactive tools at session start"""
         
         # Only inject once per session and only if we have json_data
-        if memory.get('screen_injection_done') or not json_data:
+        if self.memory.get('screen_injection_done') or not json_data:
             return []
         
         try:
@@ -240,12 +229,12 @@ class MemoryManager:
                 injection_messages.extend(proactive_messages)
                 
                 # Cache the tool results
-                self._cache_proactive_tool_results(memory, proactive_messages)
+                self._cache_proactive_tool_results(proactive_messages)
                 
                 self.channal_logger.log_to_memory(f"🔧 Injected {len(proactive_messages)} proactive tool messages")
             
             # Mark injection as done
-            memory['screen_injection_done'] = True
+            self.memory['screen_injection_done'] = True
             
             return injection_messages
             
@@ -253,7 +242,7 @@ class MemoryManager:
             self.channal_logger.log_to_memory(f"❌ Screen injection failed: {str(e)}")
             return []
     
-    def _cache_proactive_tool_results(self, memory: Dict[str, Any], proactive_messages: List[Dict[str, Any]]) -> None:
+    def _cache_proactive_tool_results(self, proactive_messages: List[Dict[str, Any]]) -> None:
         try:            
             # Process pairs of assistant + tool messages
             for i in range(0, len(proactive_messages), 2):
@@ -280,12 +269,12 @@ class MemoryManager:
                             pass
                         
                         if llm_cache_duration > 0:
-                            self.add_tool_to_cache(memory, tool_name, parameters, result, llm_cache_duration)
+                            self.add_tool_to_cache(tool_name, parameters, result, llm_cache_duration)
                             
         except Exception as e:
             self.channal_logger.log_to_memory(f"❌ Failed to cache proactive tools: {str(e)}")
     
-    def finalize_current_cycle(self, memory: Dict[str, Any], user_message: str, final_answer: str, channel_logger=None) -> None:
+    def finalize_current_cycle(self, user_message: str, final_answer: str, channel_logger=None) -> None:
         """Update memory with final exchange results"""        
         # Prepare the current exchange
         current_exchange = {
@@ -294,18 +283,18 @@ class MemoryManager:
         }
         
         # Add to exchanges list, managing max_exchanges
-        memory['exchanges'].insert(0, current_exchange)
-        if len(memory['exchanges']) > self.max_exchanges:
-            memory['exchanges'] = memory['exchanges'][:self.max_exchanges]
+        self.memory['exchanges'].insert(0, current_exchange)
+        if len(self.memory['exchanges']) > self.max_exchanges:
+            self.memory['exchanges'] = self.memory['exchanges'][:self.max_exchanges]
         
         # Reset current cycle
-        memory['current_cycle'] = {
+        self.memory['current_cycle'] = {
             'user_question': "",
             'agent_messages': [],
             'final_answer': None
         }
         
-        self._cleanup_expired_cache(memory, channel_logger)
+        self._cleanup_expired_cache(channel_logger)
     
     def _summarize_text(self, text: str, target_size: int) -> str:
         """Summarize text to target size (in bytes) using LLM or simple truncation"""
@@ -326,8 +315,9 @@ class MemoryManager:
                     {"role": "system", "content": "You are a helpful assistant that creates very concise summaries. Be extremely brief."},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3, # TODO, for summarization we want more deterministic output - 0 will result in most probable output.
-                max_tokens=int(target_chars / 2)  # More conservative token limit
+                # TODO, for summarization we want more deterministic output - 0 will result in most probable output.
+                temperature=0.3,  
+                max_tokens=int(target_chars / 2),
             ) 
 
             if response.choices[0].message.content is None:

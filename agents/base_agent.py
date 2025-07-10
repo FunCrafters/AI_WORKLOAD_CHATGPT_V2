@@ -30,7 +30,6 @@ class AgentResult:
         self.missing_information: Optional[List[str]] = None
 
 class Agent(ABC):
-    
     def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
         self.tools = []
         self.session_data: 'Session' = session
@@ -51,69 +50,57 @@ class Agent(ABC):
         """Execute the agent with given context"""
         pass
     
-    # TODO CHECK IF THIS IS HELPFULL AT ALL...
-    def _log_llm_call_to_prompts_channel(self, messages: List['ChatCompletionMessageParam'], tools: Optional[List] = None, 
-                                       use_json: bool = False):
-        try:            
+    def _log_state(self, messages: List['ChatCompletionMessageParam']|List[Any]):
+        try:
             agent_name = self.__class__.__name__
-            
-            # Extract system prompt (first message)
-            system_prompt = ""
-            if messages and messages[0].get('role') == 'system':
-                system_prompt = messages[0]['content'] # TODO content is more complex than that. There should be function 'parse content' that will handle all cases and always return str
-            
-            # Format messages (with intelligent length limits for readability)
-            formatted_messages = []
-            for msg in messages:
-                content = msg.get('content', '')
-                
-                # Handle None content
-                if content is None:
-                    content = '[None]'
-                
-                # Special handling for different message types
-                if msg.get('role') == 'function':
-                    # Tool results - show basic info only
-                    content = f"[Tool result: {len(str(content))} chars]"
-                elif content and content.startswith("Tool execution results:"):
-                    content = textwrap.shorten(content, width=200, placeholder="[...]\n[truncated - tool results]")
-                elif len(content) > 300:
-                    content = textwrap.shorten(content, width=300)
-                
-                formatted_msg = {
-                    "role": msg['role'],
-                    "content": content
+
+            session = self.session_data
+            mm = session.memory_manager
+
+            short_messages = [
+                {
+                    **message,
+                    'content': textwrap.shorten(str(message['content']), width=500)
                 }
+                for message in messages
+            ]
 
-                if 'tool_calls' in msg:
-                    formatted_msg['tool_calls'] = "[tool_calls_present]"
-                if 'function_call' in msg:
-                    formatted_msg['function_call'] = {       
-                        "name": msg['function_call']['name'], 
-                        "arguments": "[arguments_present]"
-                    }
-                if 'name' in msg:
-                    formatted_msg['name'] = msg['name']
-                formatted_messages.append(formatted_msg)
-            
-            # Create complete log (action_id will be added by channel_logger)
-            prompt_log = f"""{agent_name} | Base Agent
-                === CALL PARAMETERS ===
-                Model: llama3.1:8b
-                Format: {'json' if use_json else 'standard'}
-                Keep-alive: 60m
+            state_log = {
+                "agent": agent_name,
+                "session_id": session.session_id,
+                "created_at": session.created_at,
+                "last_activity": session.last_activity,
+                "message_count": session.message_count,
+                "channel": session.channel,
+                "message_id": session.message_id,
+                "action_id": session.action_id,
+                "text_snippet": (session.text[:100] + '...') if session.text and len(session.text) > 100 else session.text,
+                "memory_summary": {
+                    "llm_summarization_count": mm.llm_summarization_count
 
-                === MESSAGES TO LLM ===
-                {json.dumps(formatted_messages, indent=2, ensure_ascii=False)}
+                } if mm else "No memory manager",
+                "messages": messages, 
+                "json_data_keys": list(session.json_data.keys()) if session.json_data else []
+            }
 
-                === SYSTEM PROMPT ===
-                {system_prompt}
-                ---
-                """.strip()
-            self.channel_logger.log_to_prompts(prompt_log)
-            
+            pretty_log = f"""
+=== AGENT STATE DUMP ===
+Agent: {agent_name}
+Session ID: {state_log['session_id']}
+Created At: {state_log['created_at']}
+Last Activity: {state_log['last_activity']}
+Msg Count: {state_log['message_count']} | Action ID: {state_log['action_id']}
+Channel: {state_log['channel']} | Msg ID: {state_log['message_id']}
+Text Snippet: {state_log['text_snippet']}
+
+=== Messages ===
+{json.dumps(short_messages, indent=2)}
+""".strip()
+
+            self.channel_logger.log_to_prompts(pretty_log)
+
         except Exception as e:
-            self.channel_logger.log_to_logs(f"❌ Failed to log to Prompts channel: {str(e)}")
+            self.channel_logger.log_to_logs(f"❌ Failed to log state: {str(e)}")
 
 
 

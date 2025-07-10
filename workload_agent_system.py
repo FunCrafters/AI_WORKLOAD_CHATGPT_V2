@@ -28,7 +28,7 @@ def process_llm_agents(user_message: str,
     channel_logger.log_to_logs(f"🚀 Starting agent-based processing [Action {action_id}]")
     channel_logger.log_to_logs("🆕 Starting new processing with T3RNAgent")
 
-    
+ 
     def run_agent(agent_class: Type[Agent], session: 'Session', user_message: str) -> str|None:
         agent_type = agent_class.__name__
         channel_logger.log_to_logs(f"🤖 Executing {agent_type}")
@@ -43,10 +43,7 @@ def process_llm_agents(user_message: str,
 
                 # Finalize memory manager
                 # TODO memory menager could be None, should be checked. / fixed.
-                # TODO session.get_memory() is unnesseery, this structure issue that should be fixed
-                # TODO move session.conversation_memory into memory_menager!
                 session.memory_manager.finalize_current_cycle(
-                    session.get_memory(),
                     user_message,
                     result.final_answer,
                     channel_logger
