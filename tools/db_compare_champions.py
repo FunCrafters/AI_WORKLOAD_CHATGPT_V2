@@ -11,7 +11,6 @@ from db_postgres import execute_query
 # Logger
 logger = logging.getLogger("ChampionsComparator")
 
-
 def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
     """
     Compare two or more champions with comprehensive analysis including stats, traits, and recommendations.

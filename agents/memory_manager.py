@@ -201,12 +201,12 @@ class MemoryManager:
             if channel_logger:
                 self.channal_logger.log_to_memory(f"🗑️ Expired cache for {removed_entry['tool_name']}")
     
-    def is_tool_already_in_current_messages(self, messages: List[Dict[str, Any]], tool_name: str, parameters: Dict[str, Any]) -> bool:
+    def is_tool_already_in_current_messages(self, messages: List['ChatCompletionMessageParam'], tool_name: str, parameters: Dict[str, Any]) -> bool:
         """Check if tool with same parameters is already in current message list"""
         target_args = json.dumps(parameters, sort_keys=True)
         
         for message in messages:
-            if message.get('role') == 'assistant' and message.get('tool_calls'):
+            if message['role'] == 'assistant' and 'tool_calls' in message:
                 for tool_call in message['tool_calls']:
                     if (tool_call['function']['name'] == tool_name and 
                         tool_call['function']['arguments'] == target_args):

@@ -8,12 +8,13 @@ import os
 import time
 import random
 from typing import List, Dict, Any, Optional
-
+from tools_functions import available_llm_functions
 from openai import NOT_GIVEN
 
 from channel_logger import ChannelLogger
 from session import Session
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletion, ChatCompletionMessageToolCall
+from openai.types.chat.chat_completion_message_tool_call import Function
 
 try:
     import openai
@@ -117,17 +118,6 @@ class T3RNAgent(Agent):
                 total_tokens = response.usage.total_tokens if response.usage else 0
                 
                 self.channel_logger.log_to_logs(f"⚡ gpt-4o-mini completed in {elapsed_time:.3f}s ({prompt_tokens}+{completion_tokens}={total_tokens} tokens)")
-
-                # Create a response object similar to Ollama's format for compatibility
-                # class OpenAIResponse:
-                #     def __init__(self, openai_response):
-                #         self.message = type('message', (), {
-                #             'content': openai_response.choices[0].message.content,
-                #             'tool_calls': getattr(openai_response.choices[0].message, 'tool_calls', None)
-                #         })()
-                #         self.usage = openai_response.usage
-                #         self.choices = [openai_response.choices[0]]  # For compatibility
-                
                 return response
                 
             except Exception as e:
@@ -139,7 +129,7 @@ class T3RNAgent(Agent):
     # This function adds complementary tools based on the original tool calls.
     # So if db_rag_get_champion_details is called, it will also add db_get_champion_details
     # it also prevents duplicates by checking if the complementary tool with the same parameters already exists.
-    def add_complementary_tools(self, tool_calls: List) -> List:
+    def add_complementary_tools(self, tool_calls: List['ChatCompletionMessageToolCall']) -> List['ChatCompletionMessageToolCall']:
         """Add complementary tools - copied from QuestionAnalyzer"""
         
         # Create a new list with original + complementary tools
@@ -163,17 +153,13 @@ class T3RNAgent(Agent):
                 
                 # Only add if complementary function with these specific parameters doesn't exist
                 if not complementary_already_exists:
-                    # Create a new tool call object with same arguments
-                    class ComplementaryToolCall:
-                        def __init__(self, function_name, function_args):
-                            self.function = type('function', (), {
-                                'name': function_name,
-                                'arguments': function_args
-                            })()
-                    
-                    complementary_call = ComplementaryToolCall(
-                        complementary_function, 
-                        function_args
+                    complementary_call = ChatCompletionMessageToolCall(
+                        id=f"toolcall-{complementary_function}",  # Use a unique or generated ID if needed
+                        type="function",
+                        function=Function(
+                            name=complementary_function,
+                            arguments=function_args
+                        )
                     )
                     enhanced_tool_calls.append(complementary_call)
                     
@@ -184,8 +170,6 @@ class T3RNAgent(Agent):
         return enhanced_tool_calls
     
     def process_and_execute_tools(self, tool_calls: List['ChatCompletionMessageToolCall'], response_content: str, messages: List['ChatCompletionMessageParam']) -> bool:
-        """Process tool calls, add complementary tools, execute them and add to messages"""
-        
         # Filter out agent spawning tools (we handle everything internally)
         regular_tool_calls = []
         for tool_call in tool_calls:
@@ -205,10 +189,6 @@ class T3RNAgent(Agent):
         # Execute tools one by one and add to messages immediately
         for idx, tool_call in enumerate(enhanced_tool_calls):
             try:
-                # Execute single tool - use global call number for Tool Calls logging
-                from tools_functions import available_llm_functions
-                import time
-                
                 function_name = tool_call.function.name
                 function_args = tool_call.function.arguments
                 
@@ -223,7 +203,8 @@ class T3RNAgent(Agent):
                         # TODO Check this call
                         self.channel_logger.log_tool_call(function_name, function_args, f"Parameter validation error: {error_msg}", idx + 1)
                         raise Exception(f"Tool execution failed: {error_msg}")
-                
+                    
+                # TODO Why wont you let LLM call function second time if it wants?
                 # Check if tool is already in current messages to avoid duplicates
                 if self.memory_manager.is_tool_already_in_current_messages(messages, function_name, function_args):
                     self.channel_logger.log_to_logs(f"⚠️ {function_name} already in current messages, skipping")
@@ -295,6 +276,7 @@ class T3RNAgent(Agent):
                 }
                 
                 # Check for tool error - be more specific about error detection
+                # TODO This seems off. sometimes tools fails but should work fine.
                 result_str = str(tool_result['result'])
                 try:
                     # Try to parse as JSON to check for structured error
