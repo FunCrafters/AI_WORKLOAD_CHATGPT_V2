@@ -367,7 +367,7 @@ class T3RNAgent(Agent):
             
             # TODO session should be object
             if CURRENT_JSON_DATA:
-                injection_messages = self.memory_manager.inject_screen_context(context.session_data.get_memory(), CURRENT_JSON_DATA, channel_logger)
+                injection_messages = self.memory_manager.inject_screen_context(context.session_data.get_memory(), CURRENT_JSON_DATA)
                 
                 # TODO Try replace with developer.
                 if injection_messages:
