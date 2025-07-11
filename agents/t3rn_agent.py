@@ -10,16 +10,17 @@ import random
 import json
 import time
 from typing import List, Optional
+from agents.modules import screen_injector
+from agents.modules.module import T3RNModule
 from tools_functions import available_llm_functions
 from openai import NOT_GIVEN
 from agents.agent_prompts import T3RN_FINAL_ITERATION_PROMPT
 
 from channel_logger import ChannelLogger
 from session import Session
-from openai.types.chat import ChatCompletionMessageParam, ChatCompletion, ChatCompletionMessage, ChatCompletionMessageToolCall
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletion, ChatCompletionMessageToolCall
 from openai.types.chat.chat_completion_message_tool_call import Function
 from workload_game_cache import CURRENT_JSON_DATA
-
 import openai
 
 from agents.base_agent import Agent, AgentResult
@@ -45,6 +46,10 @@ class T3RNAgent(Agent):
             'db_get_champion_details': 'db_rag_get_champion_details',
             # Add more mappings here as needed
         }
+
+        self.MODULES: List[T3RNModule] = []
+
+        self.MODULES.append(screen_injector.ScreenContextInjector())
         
         try:
             self.champions_list = db_get_champions_list_text()
@@ -269,7 +274,7 @@ class T3RNAgent(Agent):
         messages.extend(memory_messages)
         
         # TODO This is crealry 'injection pattern'. It can be generalized.
-           
+        # BEFORE user   
         try:            
             # TODO session should be object
             if CURRENT_JSON_DATA:
@@ -287,6 +292,8 @@ class T3RNAgent(Agent):
             "role": "user",
             "content": user_message
         })
+
+        # After user.
         
         self.channel_logger.log_to_logs(f"🧠 Memory: {len(memory_messages)} context messages loaded")
         
