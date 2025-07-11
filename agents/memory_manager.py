@@ -295,6 +295,43 @@ class MemoryManager:
         }
         
         self._cleanup_expired_cache(channel_logger)
+
+
+        while len(self.memory['exchanges']) > self.max_exchanges:
+            # Move oldest exchange to summary
+            oldest = self.memory['exchanges'].pop(0)
+            summary_entry = f"Question: {oldest['question']}. Answer: {oldest['answer']}"
+            
+            # Add to summary
+            if self.memory['summary']:
+                self.memory['summary'] += f"\n\n{summary_entry}"
+            else:
+                self.memory['summary'] = summary_entry
+             
+            # Check summary size after EACH addition
+            if len(self.memory['summary'].encode('utf-8')) > self.max_summary_size:
+                # Compress immediately
+                old_size = len(self.memory['summary'].encode('utf-8'))
+                compressed_summary = self._summarize_text(self.memory['summary'], self.summary_target_after_llm)
+                self.memory['summary'] = compressed_summary
+                new_size = len(compressed_summary.encode('utf-8'))
+                self.llm_summarization_count += 1
+ 
+        # STEP 4: Final check if summary is still too long (> 4000 bytes)
+        if len(self.memory['summary'].encode('utf-8')) > self.max_summary_size:
+            # Use LLM to compress summary
+            old_size = len(self.memory['summary'].encode('utf-8'))
+            compressed_summary = self._summarize_text(self.memory['summary'], self.summary_target_after_llm)
+            self.memory['summary'] = compressed_summary
+            new_size = len(compressed_summary.encode('utf-8'))
+            self.llm_summarization_count += 1  # Track LLM usage
+
+        # Clear current cycle
+        self.memory['current_cycle'] = {
+            'user_question': "",
+            'agent_messages': [],
+            'final_answer': None
+        }
     
     def _summarize_text(self, text: str, target_size: int) -> str:
         """Summarize text to target size (in bytes) using LLM or simple truncation"""
