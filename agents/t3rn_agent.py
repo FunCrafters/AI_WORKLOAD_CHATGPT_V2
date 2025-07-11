@@ -16,7 +16,7 @@ from agents.agent_prompts import T3RN_FINAL_ITERATION_PROMPT
 
 from channel_logger import ChannelLogger
 from session import Session
-from openai.types.chat import ChatCompletionMessageParam, ChatCompletion, ChatCompletionMessageToolCall
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletionMessage, ChatCompletionMessageToolCall
 from openai.types.chat.chat_completion_message_tool_call import Function
 from workload_game_cache import CURRENT_JSON_DATA
 
@@ -29,9 +29,8 @@ except ImportError:
 from agents.base_agent import Agent, AgentResult
 from tools_functions import get_function_schemas
 
-class T3RNAgent(Agent):
-    """Main agent that analyzes questions, executes tools, and generates responses"""
-    
+
+class T3RNAgent(Agent):    
     def __init__(self, 
                  session: 'Session', 
                  channel_logger: 'ChannelLogger'):
@@ -94,7 +93,6 @@ class T3RNAgent(Agent):
                  messages: List['ChatCompletionMessageParam'], 
                  tools: Optional[List] = None, 
                  use_json: bool = False) -> 'ChatCompletion':
-        # before LLM call
         self._log_state(messages)
 
         if self.openai_enabled and self.openai_client:
@@ -132,8 +130,6 @@ class T3RNAgent(Agent):
     # it also prevents duplicates by checking if the complementary tool with the same parameters already exists.
     # I think that this should not be nesessery.
     def add_complementary_tools(self, tool_calls: List['ChatCompletionMessageToolCall']) -> List['ChatCompletionMessageToolCall']:
-        """Add complementary tools - copied from QuestionAnalyzer"""
-        
         # Create a new list with original + complementary tools
         enhanced_tool_calls = list(tool_calls)  # Copy original list
         
@@ -196,7 +192,6 @@ class T3RNAgent(Agent):
             function_args = tool_call.function.arguments
 
             try:
-                # Parse JSON arguments if passed as string
                 if isinstance(function_args, str):
                     try:
                         function_args = json.loads(function_args)
@@ -205,7 +200,6 @@ class T3RNAgent(Agent):
                         self.channel_logger.log_to_tools(error_msg)
                         raise Exception(f"Tool execution failed: {error_msg}")
 
-                # Skip duplicate tool calls
                 if self.memory_manager.is_tool_already_in_current_messages(messages, function_name, function_args):
                     self.channel_logger.log_to_logs(f"⚠️ {function_name} already in current messages, skipping")
                     continue
@@ -272,9 +266,7 @@ class T3RNAgent(Agent):
         return True
     
     
-    def execute(self, user_message: str) -> AgentResult:
-        """Execute T3rnAgent with internal tool loop"""
-        
+    def execute(self, user_message: str) -> AgentResult:        
         self.channel_logger.log_to_logs("🚀 T3rnAgent starting with internal tool loop")
                 
         if self.memory_manager is None:
@@ -293,8 +285,7 @@ class T3RNAgent(Agent):
         
         messages.extend(memory_messages)
         
-        # TODO Here is an Injection Pattern visible Some of that is also
-        # below the message in call_llm so it needs to me moved somewere.
+        # TODO This is crealry 'injection pattern'. It can be generalized.
            
         try:            
             # TODO session should be object
@@ -316,6 +307,7 @@ class T3RNAgent(Agent):
         
         self.channel_logger.log_to_logs(f"🧠 Memory: {len(memory_messages)} context messages loaded")
         
+        # TODO global
         MAX_ITERATIONS = 10
         iteration = 0
         
@@ -344,7 +336,6 @@ class T3RNAgent(Agent):
                         if tools_executed:
                             continue
                     
-                    # No tools called or final iteration - final answer
                     response_content = response.choices[0].message.content or ""
                     
                     messages.append({
@@ -352,12 +343,7 @@ class T3RNAgent(Agent):
                         "content": response_content
                     })
                     
-                    # Final answer - no tools, no clarification needed
-                    if iteration == MAX_ITERATIONS:
-                        self.channel_logger.log_to_logs(f"✅ T3RNAgent forced final answer after {iteration} iterations")
-                    else:
-                        self.channel_logger.log_to_logs(f"✅ T3RNAgent completed after {iteration} iterations")
-                    self.channel_logger.log_to_logs(f"💭 T3RN AGENT PROCESSING: Completed in {iteration} iterations, final response generated")
+                    self.channel_logger.log_to_logs(f"✅ T3RNAgent completed after {iteration} iterations")
                                         
                     result = AgentResult()
                     result.final_answer = response_content

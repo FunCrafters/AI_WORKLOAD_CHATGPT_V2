@@ -20,6 +20,20 @@ from agents.agent_prompts import (
     TOOL_RESULTS_ANALYSIS
 )
 
+
+def chat_completion_to_content_str(content: ChatCompletionMessageParam) -> str:
+    content_str = content.get("content", None)
+
+    if content_str is None:
+        return ""
+
+    if isinstance(content_str, str):
+        return content_str
+    
+    
+    return str(''.join([str(x) for x in content_str]))
+
+
 logger = logging.getLogger("Base Agent")
 
 class AgentResult:
@@ -60,7 +74,7 @@ class Agent(ABC):
             short_messages = [
                 {
                     **message,
-                    'content': textwrap.shorten(str(message['content']), width=500)
+                    'content': textwrap.shorten(chat_completion_to_content_str(message), width=500)
                 }
                 for message in messages
             ]
@@ -102,10 +116,7 @@ Text Snippet: {state_log['text_snippet']}
         except Exception as e:
             self.channel_logger.log_to_logs(f"❌ Failed to log state: {str(e)}")
 
-
-
     def build_prompt(self, *fragments) -> str:
-        # Map fragment names to actual fragments
         fragment_map = {
             'CHARACTER_BASE_T3RN': CHARACTER_BASE_T3RN,
             'CHARACTER_BASE_T4RN': CHARACTER_BASE_T4RN,

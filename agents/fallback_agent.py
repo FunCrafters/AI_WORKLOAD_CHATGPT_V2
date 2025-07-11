@@ -21,9 +21,7 @@ except ImportError:
 
 from agents.base_agent import Agent, AgentResult
 
-class FallbackAgent(Agent):
-    """Simplified fallback agent using only RAG knowledge"""
-    
+class FallbackAgent(Agent):    
     def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
         super().__init__(session, channel_logger)
         
@@ -35,7 +33,6 @@ class FallbackAgent(Agent):
                 self.openai_client = openai.OpenAI(api_key=api_key)
     
     def get_system_prompt(self,) -> str:
-        """Simple system prompt for fallback"""
         return self.build_prompt(
             'CHARACTER_BASE_T3RN',
             'GAME_CONTEXT', 
@@ -44,7 +41,6 @@ class FallbackAgent(Agent):
 
     
     def call_llm(self, messages: List['ChatCompletionMessageParam']) -> Any:
-        """Simple LLM call without tools"""
         
         if self.openai_client is None:
             raise Exception("OpenAI not available for FallbackAgent")
@@ -74,9 +70,7 @@ class FallbackAgent(Agent):
             self.channel_logger.log_to_logs(f"❌ FallbackAgent LLM error: {str(e)}")
             raise
     
-    def execute(self, user_message: str) -> AgentResult:
-        """Execute FallbackAgent with RAG knowledge only"""
-        
+    def execute(self, user_message: str) -> AgentResult:        
         self.channel_logger.log_to_logs("🛡️ FallbackAgent starting with RAG knowledge")
         
         try:            
