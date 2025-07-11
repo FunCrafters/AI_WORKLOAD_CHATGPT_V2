@@ -39,7 +39,6 @@ def process_main_channel(client, session: 'Session'):
         send_response(client, response, session_id, channel or 0, message_id)
         return
     
-    session.client = client
     session.session_id = session_id
     
     # Create channel logger for multi-channel logging

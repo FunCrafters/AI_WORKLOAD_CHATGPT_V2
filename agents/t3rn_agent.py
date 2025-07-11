@@ -9,7 +9,7 @@ import time
 import random
 import json
 import time
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 from tools_functions import available_llm_functions
 from openai import NOT_GIVEN
 from agents.agent_prompts import T3RN_FINAL_ITERATION_PROMPT
@@ -20,14 +20,11 @@ from openai.types.chat import ChatCompletionMessageParam, ChatCompletion, ChatCo
 from openai.types.chat.chat_completion_message_tool_call import Function
 from workload_game_cache import CURRENT_JSON_DATA
 
-try:
-    import openai
-    OPENAI_AVAILABLE = True
-except ImportError:
-    OPENAI_AVAILABLE = False
+import openai
 
 from agents.base_agent import Agent, AgentResult
 from tools_functions import get_function_schemas
+from tools.db_get_champions_list import db_get_champions_list_text
 
 
 class T3RNAgent(Agent):    
@@ -35,31 +32,21 @@ class T3RNAgent(Agent):
                  session: 'Session', 
                  channel_logger: 'ChannelLogger'):
         super().__init__(session, channel_logger)
-        self.tools = get_function_schemas()  # All available tools
+        self.tools = get_function_schemas() 
         
-        # Initialize OpenAI client if available
-        if OPENAI_AVAILABLE:
-            api_key = os.getenv('OPENAI_API_KEY')
-            if api_key and api_key != 'your_openai_api_key_here':
-                self.openai_client = openai.OpenAI(api_key=api_key)
-                self.openai_enabled = True
-            else:
-                self.openai_client = None
-                self.openai_enabled = False
-        else:
-            self.openai_client = None
-            self.openai_enabled = False
+        self.openai_client = None
+
+        api_key = os.getenv('OPENAI_API_KEY')
+        if api_key:
+            self.openai_client = openai.OpenAI(api_key=api_key)
         
-        # Complementary tools mapping (copied from QuestionAnalyzer)
         self.COMPLEMENTARY_MAPPING = {
             'db_rag_get_champion_details': 'db_get_champion_details',
             'db_get_champion_details': 'db_rag_get_champion_details',
             # Add more mappings here as needed
         }
         
-        # Get available tools info (copied from QuestionAnalyzer)
         try:
-            from tools.db_get_champions_list import db_get_champions_list_text
             self.champions_list = db_get_champions_list_text()
         except Exception:
             self.champions_list = "Champions list not available"
@@ -95,7 +82,7 @@ class T3RNAgent(Agent):
                  use_json: bool = False) -> 'ChatCompletion':
         self._log_state(messages)
 
-        if self.openai_enabled and self.openai_client:
+        if self.openai_client is not None:
             try:
                 start_time = time.time()
                 response = self.openai_client.chat.completions.create(

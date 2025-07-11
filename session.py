@@ -1,7 +1,4 @@
 
-
-
-
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
@@ -15,10 +12,15 @@ class Session:
     last_activity: float
     message_count: int
     session_id: int
+    action_id: int = 1
     channel: Optional[int] = None
     message_id: Optional[int] = None
     json_data: Optional[Dict[str, Any]] = None
     user_message: Optional[str] = None
-    action_id: int = 1
     memory_manager: Optional['MemoryManager'] = None
-    client: Optional[Any] = None
+
+    def get_memory(self):
+        if self.memory_manager is None:
+            raise Exception("Memory must be initalized")
+        
+        return self.memory_manager

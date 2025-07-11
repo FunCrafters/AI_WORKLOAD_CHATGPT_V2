@@ -27,14 +27,12 @@ def process_llm_agents(user_message: str,
     channel_logger.set_action_id(action_id)
     channel_logger.log_to_logs(f"🚀 Starting agent-based processing [Action {action_id}]")
     
-    if session.memory_manager is None:
-        raise Exception("Memory must be initalized")
  
     def run_agent(agent_class: Type[Agent], session: 'Session', user_message: str) -> str|None:
         agent_type = agent_class.__name__
         channel_logger.log_to_logs(f"🤖 Executing {agent_type}")
-        if session.memory_manager is None:
-            raise Exception("Memory must be initalized")
+        
+        memory_menager = session.get_memory()
 
         try:
             agent = agent_class(session, channel_logger)
@@ -46,7 +44,7 @@ def process_llm_agents(user_message: str,
 
                 # Finalize memory manager
                 # TODO memory menager could be None, should be checked. / fixed.
-                session.memory_manager.finalize_current_cycle(
+                memory_menager.finalize_current_cycle(
                     user_message,
                     result.final_answer,
                     channel_logger

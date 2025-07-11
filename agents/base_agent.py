@@ -94,7 +94,7 @@ class Agent(ABC):
 
                 } if mm else "No memory manager",
                 "messages": messages, 
-                "json_data_keys": list(session.json_data.keys()) if session.json_data else []
+                "json_data_keys": session.json_data
             }
 
             pretty_log = f"""
@@ -109,6 +109,8 @@ Text Snippet: {state_log['text_snippet']}
 
 === Messages ===
 {json.dumps(short_messages, indent=2)}
+=== JSON DATA ===
+{json.dumps(session.json_data, indent=2)}
 """.strip()
 
             self.channel_logger.log_to_prompts(pretty_log)
