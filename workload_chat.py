@@ -32,7 +32,7 @@ def process_main_channel(client, session: 'Session'):
     session_id = session.session_id
     message_id = session.message_id
     channel = session.channel
-    text = session.text.strip() if session.text else ""
+    text = session.user_message.strip() if session.user_message else ""
     
     if not text:
         response = create_response(channel, "", session_id, message_id)

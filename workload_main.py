@@ -126,7 +126,7 @@ def create_or_update_session(data: dict):
             channel=channel,
             message_id=message_id,
             json_data=None,
-            text=text,
+            user_message=text,
         )
     
     if not is_initialization:
@@ -135,7 +135,7 @@ def create_or_update_session(data: dict):
         if channel is not None:
             active_sessions[session_id].channel = channel
         if text is not None:
-            active_sessions[session_id].text = text
+            active_sessions[session_id].user_message = text
         if message_id is not None:
             active_sessions[session_id].message_id = message_id 
 
@@ -358,7 +358,7 @@ def process_json_data_message(client, session: Session, data: dict):
 
 def process_text_message(client, session: Session):
     """Process a text message on a specific channel"""
-    text = session.text or ""
+    text = session.user_message or ""
     channel = session.channel
     session_id = session.session_id
     message_id = session.message_id

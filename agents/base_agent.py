@@ -88,7 +88,7 @@ class Agent(ABC):
                 "channel": session.channel,
                 "message_id": session.message_id,
                 "action_id": session.action_id,
-                "text_snippet": (session.text[:100] + '...') if session.text and len(session.text) > 100 else session.text,
+                "text_snippet": (session.user_message[:100] + '...') if session.user_message and len(session.user_message) > 100 else session.user_message,
                 "memory_summary": {
                     "llm_summarization_count": mm.llm_summarization_count
 

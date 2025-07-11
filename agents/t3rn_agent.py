@@ -16,7 +16,7 @@ from agents.agent_prompts import T3RN_FINAL_ITERATION_PROMPT
 
 from channel_logger import ChannelLogger
 from session import Session
-from openai.types.chat import ChatCompletionMessageParam, ChatCompletionMessage, ChatCompletionMessageToolCall
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletion, ChatCompletionMessage, ChatCompletionMessageToolCall
 from openai.types.chat.chat_completion_message_tool_call import Function
 from workload_game_cache import CURRENT_JSON_DATA
 
