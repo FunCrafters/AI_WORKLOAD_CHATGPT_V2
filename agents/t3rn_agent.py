@@ -51,15 +51,11 @@ class T3RNAgent(Agent):
         except Exception:
             self.champions_list = "Champions list not available"
     
-    def get_system_prompt(self) -> str:
-        """Get system prompt - randomly choose between T3RN and T4RN"""
-        
+    def get_system_prompt(self) -> str:        
         champions_and_bosses = f"""CHAMPIONS LIST: {self.champions_list}"""
         
-        # Randomly choose between CHARACTER_BASE_T3RN and CHARACTER_BASE_T4RN
         character_prompt = random.choice(['CHARACTER_BASE_T3RN', 'CHARACTER_BASE_T4RN'])
         
-        # Log which character was chosen
         if hasattr(self, 'channel_logger') and self.channel_logger:
             self.channel_logger.log_to_logs(f"🎲 Selected character: {character_prompt}")
         
