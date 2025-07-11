@@ -78,7 +78,7 @@ class ChannelLogger:
     TOOL_CALLS = 6  # Previously LLM Tools
     LOGS = 8       # Channel 7 (Errors) is removed
     
-    def __init__(self, client, session_id: int, message_id: int):
+    def __init__(self, client, session_id: int, message_id: int|None):
         """Initialize the channel logger
         
         Args:

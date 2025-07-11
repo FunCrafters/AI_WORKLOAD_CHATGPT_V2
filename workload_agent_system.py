@@ -26,12 +26,15 @@ def process_llm_agents(user_message: str,
 
     channel_logger.set_action_id(action_id)
     channel_logger.log_to_logs(f"🚀 Starting agent-based processing [Action {action_id}]")
-    channel_logger.log_to_logs("🆕 Starting new processing with T3RNAgent")
-
+    
+    if session.memory_manager is None:
+        raise Exception("Memory must be initalized")
  
     def run_agent(agent_class: Type[Agent], session: 'Session', user_message: str) -> str|None:
         agent_type = agent_class.__name__
         channel_logger.log_to_logs(f"🤖 Executing {agent_type}")
+        if session.memory_manager is None:
+            raise Exception("Memory must be initalized")
 
         try:
             agent = agent_class(session, channel_logger)

@@ -36,7 +36,7 @@ def process_main_channel(client, session: 'Session'):
     
     if not text:
         response = create_response(channel, "", session_id, message_id)
-        send_response(client, response, session_id, channel, message_id)
+        send_response(client, response, session_id, channel or 0, message_id)
         return
     
     session.client = client
@@ -67,7 +67,7 @@ def process_main_channel(client, session: 'Session'):
         channel_logger.log_to_logs(f"📝 Answer length: {len(final_answer)} characters")
         
         chat_response = create_response(0, final_answer, session_id, message_id)
-        send_response(client, chat_response, session_id, channel, message_id)
+        send_response(client, chat_response, session_id, channel or 0, message_id)
       
     except Exception as e:
         logger.info("!! AGENT PROCESSING ERROR", extra=dict(session_id=session_id, error=str(e)))

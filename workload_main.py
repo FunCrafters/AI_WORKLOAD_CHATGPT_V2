@@ -125,7 +125,6 @@ def create_or_update_session(data: dict):
             session_id=session_id,
             channel=channel,
             message_id=message_id,
-            json_data=None,
             user_message=text,
         )
     
