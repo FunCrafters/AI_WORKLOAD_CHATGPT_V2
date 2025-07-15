@@ -173,7 +173,7 @@ class MemoryManager:
         
         return tool_messages
     
-    def _cleanup_expired_cache(self, channel_logger=None) -> None:
+    def _cleanup_expired_cache(self) -> None:
         """Remove expired tool cache entries and decrement remaining durations at end of exchange"""
         expired_keys = []
         
@@ -187,8 +187,8 @@ class MemoryManager:
         # Remove expired entries
         for key in expired_keys:
             removed_entry = self.memory['tool_cache'].pop(key)
-            if channel_logger:
-                self.channal_logger.log_to_memory(f"🗑️ Expired cache for {removed_entry['tool_name']}")
+
+            self.channal_logger.log_to_memory(f"🗑️ Expired cache for {removed_entry['tool_name']}")
     
     def is_tool_already_in_current_messages(self, messages: List['ChatCompletionMessageParam'], tool_name: str, parameters: Dict[str, Any]) -> bool:
         """Check if tool with same parameters is already in current message list"""
@@ -274,7 +274,19 @@ class MemoryManager:
         except Exception as e:
             self.channal_logger.log_to_memory(f"❌ Failed to cache proactive tools: {str(e)}")
     
-    def finalize_current_cycle(self, user_message: str, final_answer: str, channel_logger=None) -> None:
+    def finalize_current_cycle(self, user_message: str, final_answer: str) -> None:
+        """Update memory with final exchange results"""        
+        # Prepare the current exchange
+        current_exchange = {
+            'question': user_message,
+            'answer': final_answer
+        }
+        
+        # Add to exchanges list, managing max_exchanges
+        self.memory['exchanges'].insert(0, current_exchange)
+        if len(self.memory['exchanges']) > self.max_exchanges:
+            self.memory['exchanges'] = self.memory['exchanges'][:self.max_exchanges]
+        
         """Update memory with final exchange results"""        
         # Prepare the current exchange
         current_exchange = {
@@ -294,7 +306,46 @@ class MemoryManager:
             'final_answer': None
         }
         
-        self._cleanup_expired_cache(channel_logger)
+        self._cleanup_expired_cache()
+
+        while len(self.memory['exchanges']) > self.max_exchanges:
+            # Move oldest exchange to summary
+            oldest = self.memory['exchanges'].pop(0)
+            summary_entry = f"Question: {oldest['question']}. Answer: {oldest['answer']}"
+            
+            # Add to summary
+            if self.memory['summary']:
+                self.memory['summary'] += f"\n\n{summary_entry}"
+            else:
+                self.memory['summary'] = summary_entry
+             
+            # Check summary size after EACH addition
+            if len(self.memory['summary'].encode('utf-8')) > self.max_summary_size:
+                # Compress immediately
+                old_size = len(self.memory['summary'].encode('utf-8'))
+                compressed_summary = self._summarize_text(self.memory['summary'], self.summary_target_after_llm)
+                self.memory['summary'] = compressed_summary
+                new_size = len(compressed_summary.encode('utf-8'))
+                self.llm_summarization_count += 1
+ 
+        # STEP 4: Final check if summary is still too long (> 4000 bytes)
+        if len(self.memory['summary'].encode('utf-8')) > self.max_summary_size:
+            # Use LLM to compress summary
+            old_size = len(self.memory['summary'].encode('utf-8'))
+            compressed_summary = self._summarize_text(self.memory['summary'], self.summary_target_after_llm)
+            self.memory['summary'] = compressed_summary
+            new_size = len(compressed_summary.encode('utf-8'))
+            self.llm_summarization_count += 1  # Track LLM usage
+
+        # Clear current cycle
+        self.memory['current_cycle'] = {
+            'user_question': "",
+            'agent_messages': [],
+            'final_answer': None
+        }
+    
+        
+        self._cleanup_expired_cache()
     
     def _summarize_text(self, text: str, target_size: int) -> str:
         """Summarize text to target size (in bytes) using LLM or simple truncation"""

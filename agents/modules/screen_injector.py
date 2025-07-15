@@ -8,9 +8,7 @@ from proactive_tool_executor import get_proactive_tool_messages
 
 
 class ScreenContextInjector(T3RNModule):
-    def inject_before_user_message(
-        self, session: Session
-    ) -> List[ChatCompletionMessageParam]:
+    def inject_once(self, session: Session)  -> List[ChatCompletionMessageParam]:
         if session.json_data is None:
             return []
 
@@ -33,13 +31,18 @@ class ScreenContextInjector(T3RNModule):
         if proactive_messages:
             injection_messages.extend(proactive_messages)
             
-            # Cache the tool results
-            self._cache_proactive_tool_results(proactive_messages)
+            # self._cache_proactive_tool_results(proactive_messages)
             
             self.channal_logger.log_to_memory(f"🔧 Injected {len(proactive_messages)} proactive tool messages")
     
         
         return injection_messages
+
+
+    def inject_before_user_message(
+        self, session: Session
+    ) -> List[ChatCompletionMessageParam]:
+        return []
 
         
     def inject_after_user_message(

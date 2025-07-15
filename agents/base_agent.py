@@ -44,9 +44,9 @@ class AgentResult:
     @property
     def final_answer(self) -> Optional[str]:
         """Return content of the last assistant message, if any."""
-        for msg in reversed(self.messages):
-            if msg["role"] == "assistant":
-                return chat_completion_to_content_str(msg)
+        if self.messages[-1]['role'] == 'assistant':
+            return chat_completion_to_content_str(self.messages[-1])
+        
         return None
 
     @property

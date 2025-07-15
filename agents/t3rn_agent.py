@@ -49,7 +49,7 @@ class T3RNAgent(Agent):
 
         self.MODULES: List[T3RNModule] = []
 
-        self.MODULES.append(screen_injector.ScreenContextInjector())
+        self.MODULES.append(screen_injector.ScreenContextInjector(self.channel_logger))
         
         try:
             self.champions_list = db_get_champions_list_text()
@@ -284,21 +284,34 @@ class T3RNAgent(Agent):
                 if injection_messages:
                     messages.extend(injection_messages)
                     self.channel_logger.log_to_logs(f"🎯 Screen injection: {len(injection_messages)} messages added")
-                            
         except Exception as e:
             self.channel_logger.log_to_logs(f"⚠️ Screen injection error: {str(e)}")
+
+        if not self.memory_manager.memory['screen_injection_done']:
+            for module in self.MODULES:
+                messages.extend(
+                    module.inject_once(self.session_data)
+                )
+            self.memory_manager.memory['screen_injection_done'] = True
+
+        for module in self.MODULES:
+            messages.extend(
+                module.inject_before_user_message(self.session_data)
+            )
         
         messages.append({
             "role": "user",
             "content": user_message
         })
 
-        # After user.
+        for module in self.MODULES:
+            messages.extend(
+                module.inject_after_user_message(self.session_data)
+            )
         
         self.channel_logger.log_to_logs(f"🧠 Memory: {len(memory_messages)} context messages loaded")
         
-        # TODO global
-        MAX_ITERATIONS = 10
+        MAX_ITERATIONS = 5
         iteration = 0
         
         try:
@@ -335,8 +348,7 @@ class T3RNAgent(Agent):
                     
                     self.channel_logger.log_to_logs(f"✅ T3RNAgent completed after {iteration} iterations")
                                         
-                    result = AgentResult()
-                    result.final_answer = response_content
+                    result = AgentResult(messages)
                     
                     return result
                         
@@ -351,9 +363,7 @@ class T3RNAgent(Agent):
             # T3RNAgent failed - let workload_agent_system handle fallback
             self.channel_logger.log_to_logs(f"🚨 T3RNAgent failed: {str(main_error)}")            
             
-            result = AgentResult()
+            result = AgentResult(messages)
             result.error_content = f"T3RN AGENT ERROR: Failed in iteration {iteration} - {str(main_error)}"
-            
-            result.final_answer = None
             
             return result

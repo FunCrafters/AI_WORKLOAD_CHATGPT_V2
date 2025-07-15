@@ -86,6 +86,42 @@ logger = logging.getLogger("Workload LLM Tools")
 # - db_rag_get_general_knowledge
 # - db_rag_get_gameplay_details (high treshold)
 
+from dataclasses import dataclass, field
+from typing import Callable, Dict, Any
+
+
+@dataclass
+class T3RNTool:
+    name: str
+    function: Callable
+    description: str
+    system_prompt: str
+    parameters: Dict[str, Any] = field(default_factory=dict)
+
+    def get_function_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.description,
+                "parameters": self.parameters or {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
+            }
+        }
+
+    def get_llm_entry(self) -> Dict[str, Any]:
+        return {
+            "function": self.function,
+            "description": self.description
+        }
+
+    def get_system_prompt_entry(self) -> str:
+        return f"- `{self.name}`: {self.description}"
+    
+
 # Available LLM tools for function calling
 available_llm_functions = {
     'db_get_champions_list': {
