@@ -45,9 +45,8 @@ def process_llm_agents(user_message: str,
                 # Finalize memory manager
                 # TODO memory menager could be None, should be checked. / fixed.
                 memory_menager.finalize_current_cycle(
-                    user_message,
+                    result.user_message,
                     result.final_answer,
-                    channel_logger
                 )
 
                 if result.error_content:

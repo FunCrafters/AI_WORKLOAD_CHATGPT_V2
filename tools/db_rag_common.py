@@ -10,6 +10,7 @@ import random
 from typing import List, Dict, Any, Optional
 from workload_embedding import get_embedding_function
 from db_postgres import execute_query
+from cachetools import cached, LRUCache
 
 # Constants
 DEFAULT_RAG_SIMILARITY_THRESHOLD = 0.4
@@ -18,16 +19,10 @@ DEFAULT_RAG_SIMILARITY_LIMIT = 10
 # Logger
 logger = logging.getLogger("DB RAG Common")
 
+query_embedding_cache = LRUCache(maxsize=1024)
+
+@cached(cache=query_embedding_cache)
 def generate_query_embedding(query: str) -> Optional[List[float]]:
-    """
-    Generate embedding for query using Ollama
-    
-    Args:
-        query: Search query string
-        
-    Returns:
-        List of floats representing the embedding, or None if failed
-    """
     try:
         embedding_function = get_embedding_function()
         if not embedding_function:
@@ -40,6 +35,16 @@ def generate_query_embedding(query: str) -> Optional[List[float]]:
         logger.error(f"Error generating embedding: {str(e)}")
         return None
 
+# TODO replace with numpy, 
+# Add EPSILON for query_embedding being in cache. 
+# or remove it completly!
+rag_search_cache = LRUCache(maxsize=512)
+
+@cached(
+    cache=rag_search_cache,
+    key=lambda query_embedding, chunk_section=None, search_qa=False, threshold=DEFAULT_RAG_SIMILARITY_THRESHOLD, limit=DEFAULT_RAG_SIMILARITY_LIMIT:
+        (tuple(query_embedding), chunk_section, search_qa, threshold, limit)
+)
 def execute_rag_search(
     query_embedding: List[float], 
     chunk_section: str|None = None, 

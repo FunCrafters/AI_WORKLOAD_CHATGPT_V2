@@ -20,8 +20,16 @@ class SimpleFallbackAgent(Agent):
     def execute(self, user_message: str) -> AgentResult:                            
         fallback_response = random.choice(T3RN_MALFUNCTION_MESSAGES)
                         
-        result = AgentResult()
-        result.final_answer = fallback_response
+        result = AgentResult([
+            {
+                'role':'user',
+                "content":user_message
+            },
+            {
+                'role':"assistant",
+                "content":fallback_response,
+            }
+        ])
             
         return result
             

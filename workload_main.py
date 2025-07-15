@@ -1,6 +1,5 @@
 from typing import Union, Optional, Dict, List, Any, TYPE_CHECKING
 
-from dataclasses import dataclass
 import os
 import socket
 import json
@@ -18,19 +17,16 @@ from workload_embedding import (
     initialize_embeddings_and_vectorstore
 )
 
-# Import chat functionality
 from workload_chat import (
     process_main_channel
 )
 
-# Import logging functionality
 from workload_logs import (
     build_vectorstore_log,
     build_cache_log,
     build_tools_log
 )
 
-# Import utility functions
 from workload_tools import (
     create_response,
     send_response,

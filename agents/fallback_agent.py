@@ -107,9 +107,7 @@ class FallbackAgent(Agent):
                 "content": response_content
             })
 
-            result = AgentResult()
-            result.final_answer = response_content
-            result.error_content = ""
+            result = AgentResult(messages)
             
             return result
             

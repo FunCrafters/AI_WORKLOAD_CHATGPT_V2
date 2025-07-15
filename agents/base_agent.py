@@ -4,6 +4,7 @@ Base Agent Class
 Foundation for all agents in the agent-based architecture
 """
 
+from dataclasses import dataclass
 import logging
 import json
 import textwrap
@@ -30,18 +31,31 @@ def chat_completion_to_content_str(content: ChatCompletionMessageParam) -> str:
     if isinstance(content_str, str):
         return content_str
     
-    
     return str(''.join([str(x) for x in content_str]))
 
 
 logger = logging.getLogger("Base Agent")
 
+@dataclass
 class AgentResult:
-    def __init__(self):
-        self.final_answer: Optional[str] = None
-        self.user_message: str = ""
-        self.error_content: str = ""
-        self.missing_information: Optional[List[str]] = None
+    messages: List[ChatCompletionMessageParam]
+    error_content: str = ""
+
+    @property
+    def final_answer(self) -> Optional[str]:
+        """Return content of the last assistant message, if any."""
+        if self.messages[-1]['role'] == 'assistant':
+            return chat_completion_to_content_str(self.messages[-1])
+        
+        return None
+
+    @property
+    def user_message(self) -> str:
+        """Return content of the last user message, if any."""
+        for msg in reversed(self.messages):
+            if msg["role"] == "user":
+                return chat_completion_to_content_str(msg)
+        return ""
 
 class Agent(ABC):
     def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
