@@ -110,7 +110,7 @@ Text Snippet: {state_log['text_snippet']}
 === Messages ===
 {json.dumps(short_messages, indent=2)}
 === JSON DATA ===
-{json.dumps(session.json_data, indent=2)}
+{textwrap.shorten(json.dumps(session.json_data, indent=2), width=300)}
 """.strip()
 
             self.channel_logger.log_to_prompts(pretty_log)
