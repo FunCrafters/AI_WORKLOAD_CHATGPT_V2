@@ -46,7 +46,7 @@ WORKLOAD_DESC="T3RN workload model"
 ```
 python3 -m venv .venv
 ```
-If you have vs code python extension it should detect .env and activate it. If you do not have that extention you should activate it manually
+If you have vs code python extension it should detect .venv and activate it. If you do not have that extention you should activate it manually
 ```
 source .venv/bin/activate
 ```
@@ -54,3 +54,6 @@ Now you can pip install all deps!
 ```
 pip install -r requirements.txt 
 ```
+
+### Typing rules
+I recommed to use `Pylance` Language server and typeCheckingMode set to `basic`. Typing settings are set for vs code in `.vscode/settings.json` file. 
