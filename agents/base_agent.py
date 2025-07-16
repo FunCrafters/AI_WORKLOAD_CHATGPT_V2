@@ -78,7 +78,7 @@ class Agent(ABC):
         """Execute the agent with given context"""
         pass
     
-    def _log_state(self, messages: List['ChatCompletionMessageParam']|List[Any]):
+    def _log_state(self, messages: List['ChatCompletionMessageParam']|List[Any], response: str|None=None):
         try:
             agent_name = self.__class__.__name__
 
@@ -108,7 +108,8 @@ class Agent(ABC):
 
                 } if mm else "No memory manager",
                 "messages": messages, 
-                "json_data_keys": session.json_data
+                "json_data_keys": session.json_data,
+                "response": response,
             }
 
             pretty_log = f"""
@@ -123,6 +124,8 @@ Text Snippet: {state_log['text_snippet']}
 
 === Messages ===
 {json.dumps(short_messages, indent=2)}
+=== LLM Response ===
+{state_log['response'] if state_log['response'] else "No response generated"}
 === JSON DATA ===
 {textwrap.shorten(json.dumps(session.json_data, indent=2), width=300)}
 """.strip()

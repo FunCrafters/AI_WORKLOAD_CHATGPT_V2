@@ -32,8 +32,6 @@ def process_llm_agents(user_message: str,
         agent_type = agent_class.__name__
         channel_logger.log_to_logs(f"🤖 Executing {agent_type}")
         
-        memory_menager = session.get_memory()
-
         try:
             agent = agent_class(session, channel_logger)
 
@@ -41,13 +39,6 @@ def process_llm_agents(user_message: str,
 
             if result.final_answer is not None:
                 channel_logger.log_to_logs(f"✅ {agent_type} provided final answer")
-
-                # Finalize memory manager
-                # TODO memory menager could be None, should be checked. / fixed.
-                memory_menager.finalize_current_cycle(
-                    result.user_message,
-                    result.final_answer,
-                )
 
                 if result.error_content:
                     channel_logger.log_error(result.error_content)
@@ -68,12 +59,21 @@ def process_llm_agents(user_message: str,
     # What if T3RN Agents sets context into unrecoverable state that will cause
     # Fallback to fail as well? 
     # Context should be isolated between runs
-    final_answer = run_agent(T3RNAgent, session, user_message)
+    try:
+        final_answer = run_agent(T3RNAgent, session, user_message)
+    except Exception as e:
+        channel_logger.log_to_logs(f"❌ T3RNAgent failed me: {str(e)}")
+        channel_logger.log_error(str(e))
+        final_answer = None
 
     if final_answer is None:
         channel_logger.log_to_logs("🔄 Attempting FallbackAgent due to T3RNAgent failure")
-        final_answer = run_agent(FallbackAgent, session, user_message)
-
+        try:
+            final_answer = run_agent(FallbackAgent, session, user_message)
+        except Exception as e:
+            channel_logger.log_to_logs(f"❌ This moron FallbackAgent failed as well: {str(e)}")
+            channel_logger.log_error(str(e))
+            final_answer = None
     if final_answer is None:
         channel_logger.log_to_logs("⚠️ Using emergency fallback due to FallbackAgent failure")
 
