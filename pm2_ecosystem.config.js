@@ -1,9 +1,9 @@
 module.exports = {
   apps: [{
-    name: "Workload_ChatGPT",
+    name: "Workload_Maciej",
     script: "workload_main.py",
     interpreter: "python3",
-    cwd: "/root/dev/Workload_ChatGPT",
+    cwd: "/root/dev/Workload_Maciej",
     watch: false,
     instance_var: 'INSTANCE_ID',
     log_date_format: 'YYYY-MM-DD HH:mm:ss Z',

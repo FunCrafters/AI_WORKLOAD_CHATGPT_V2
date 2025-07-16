@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*$py.class
+chroma_db/
+.venv/
+venv/
+ENV/
+models/
+chroma_db/
+t3rn_work.log
+build_database.log
+Database/
+generator/log/
+*.BAK
+aa
+.env

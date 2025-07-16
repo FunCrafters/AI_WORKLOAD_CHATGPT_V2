@@ -5,8 +5,7 @@ Game data cache and static data functions
 """
 
 import logging
-from typing import Dict, List, Optional
-from tools.db_rag_get_smalltalk import db_get_smalltalk_text
+from typing import Dict, Optional, Any
 
 # Logger
 logger = logging.getLogger("Workload Game Cache")
@@ -16,7 +15,7 @@ logger = logging.getLogger("Workload Game Cache")
 #######################
 
 # JSON data tracking (still needed)
-CURRENT_JSON_DATA = None
+CURRENT_JSON_DATA: Optional[Dict[str, Any]] = None
 HAS_SCREEN_DATA = False
 
 

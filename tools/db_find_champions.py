@@ -9,7 +9,7 @@ import logging
 from db_postgres import execute_query
 
 # Logger
-logger = logging.getLogger("DB Find Champions")
+logger = logging.getLogger("ChampionsSearch")
 
 
 def db_find_champions(name: str, limit: int = 20) -> str:

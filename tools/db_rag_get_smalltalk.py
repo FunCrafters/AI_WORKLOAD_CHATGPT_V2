@@ -12,14 +12,15 @@ from agents.agent_prompts import SMALLTALK_SPECIALIST_EMBEDDING
 from workload_embedding import get_embedding_function
 
 # Logger
-logger = logging.getLogger("DB Get Smalltalk")
+logger = logging.getLogger("DBSmalltalk")
 
 # Configuration
 SIMILARITY_THRESHOLD = 0.4
-SEARCH_LIMIT = 10  # Get top 10 similar results, then pick random one
+# Get top 10 similar results, then pick random one
+RAG_SMALLTALK_SEARCH_LIMIT = 10 
 
 
-def _generate_query_embedding(query_text: str) -> list:
+def _generate_query_embedding(query_text: str) -> list|None:
     """Generate embedding for query text using Ollama"""
     try:
         embedding_function = get_embedding_function()
@@ -121,7 +122,7 @@ def db_rag_get_smalltalk(query: str = "") -> str:
                 """
                 
                 results = execute_query(similarity_sql, (
-                    embedding_str, embedding_str, SIMILARITY_THRESHOLD, embedding_str, SEARCH_LIMIT
+                    embedding_str, embedding_str, SIMILARITY_THRESHOLD, embedding_str, RAG_SMALLTALK_SEARCH_LIMIT
                 ))
                 
                 if results:
@@ -230,7 +231,7 @@ def db_get_smalltalk_text(query: str = "") -> str:
         str: Smalltalk context information in text format
     """
     # Use the main function and extract text content
-    json_result = db_get_smalltalk(query)
+    json_result = db_rag_get_smalltalk(query)
     
     try:
         result_dict = json.loads(json_result)

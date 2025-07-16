@@ -5,11 +5,67 @@ Unified logging system for multi-channel output
 """
 
 import time
+import logging
 from typing import Optional, Dict, Any, List
+import textwrap
+
 from workload_tools import create_response, send_response
 
+class ChannelLogFormatter(logging.Formatter):
+    
+    CHANNEL_NAMES = {
+        0: "CHAT",
+        1: "DATABASES", 
+        2: "CACHES", 
+        3: "TOOLS", 
+        4: "PROMPTS", 
+        5: "MEMORY", 
+        6: "TOOL_CALLS", 
+        8: "LOGS"
+    }
+    
+    def format(self, record):
+        """
+        Format the log record with additional context
+        
+        Adds:
+        - Channel name
+        - Session ID (if available)
+        - Message ID (if available)
+        """
+        channel_id = getattr(record, 'channel', 'UNKNOWN')
+        
+        if isinstance(channel_id, int):
+            channel_name = self.CHANNEL_NAMES.get(channel_id, f"CHANNEL_{channel_id}")
+        else:
+            channel_name = str(channel_id)
+        
+        record.channel_name = channel_name
+        
+        session_id = getattr(record, 'session_id', '-')
+        message_id = getattr(record, 'message_id', '-')
+        
+        # Customize format
+        log_format = (
+            f"[{channel_name}] "
+            f"[Session: {session_id}] "
+            f"[Message: {message_id}] "
+            f"- {record.getMessage()}"
+        )
+        
+        return log_format
+
+logger = logging.getLogger("ChannelLogger")
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(ChannelLogFormatter())
+logger.addHandler(console_handler)
+
+# I still refuse to belive this is best way to do it
+# for feature - consider creating loggingHandler that does that automatically
+# and instead of passing channel logger everywhere I would create local logger
 class ChannelLogger:
-    """Handles logging to multiple channels in a structured way"""
+    """Handles logging into web server"""
     
     # Channel IDs as constants
     CHAT = 0
@@ -21,7 +77,7 @@ class ChannelLogger:
     TOOL_CALLS = 6  # Previously LLM Tools
     LOGS = 8       # Channel 7 (Errors) is removed
     
-    def __init__(self, client, session_id: str, message_id: str):
+    def __init__(self, client, session_id: int, message_id: int|None):
         """Initialize the channel logger
         
         Args:
@@ -46,7 +102,7 @@ class ChannelLogger:
             self.LOGS: []
         }
     
-    def set_action_id(self, action_id: str):
+    def set_action_id(self, action_id: int):
         """Set the current action ID for all subsequent logs"""
         self.action_id = action_id
     
@@ -57,11 +113,11 @@ class ChannelLogger:
     def log_to_databases(self, content: str):
         """Log to Databases channel (1)"""
         self._send_to_channel(self.DATABASES, content)
-    
+
     def log_to_caches(self, content: str):
         """Log to Caches channel (2)"""
         self._send_to_channel(self.CACHES, content)
-    
+
     def log_to_tools(self, content: str):
         """Log to Tools channel (3)"""
         self._send_to_channel(self.TOOLS, content)
@@ -90,6 +146,8 @@ class ChannelLogger:
             if bracket_end != -1:
                 content = content[bracket_end + 1:].strip()
         
+        logger.info(content)
+        
         self.buffer_log(self.LOGS, content)
     
     def log_error(self, error: str, traceback: Optional[str] = None):
@@ -98,6 +156,7 @@ class ChannelLogger:
         if traceback:
             error_content += f"\n\n=== TRACEBACK ===\n{traceback}"
         self.log_to_logs(error_content)
+        logging.error(f"Logged error: {error}")
     
     def log_exception(self, exception: Exception, traceback_str: str):
         """Log exception details to Logs channel"""
@@ -113,12 +172,7 @@ class ChannelLogger:
         
         # Truncate result to 500 bytes max
         result_str = str(result)
-        if len(result_str.encode('utf-8')) > 500:
-            # Find a safe truncation point (don't cut in the middle of a unicode character)
-            truncated = result_str.encode('utf-8')[:500].decode('utf-8', errors='ignore')
-            result_display = f"{truncated}...\n[Result truncated - showing first 500 bytes]"
-        else:
-            result_display = result_str
+        result_display = textwrap.shorten(result_str, width=500)
         
         # Build tool call info
         tool_info = f"TOOL CALL #{call_number}\n"

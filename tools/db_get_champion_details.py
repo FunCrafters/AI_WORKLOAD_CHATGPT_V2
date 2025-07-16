@@ -3,11 +3,8 @@
 Get Champion Details
 Retrieves detailed champion information from PostgreSQL database
 """
-
-import os
 import logging
 import json
-from typing import Optional
 
 # Import the global PostgreSQL connection
 from db_postgres import execute_query

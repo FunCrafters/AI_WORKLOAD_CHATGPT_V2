@@ -1,19 +1,23 @@
-#!/usr/bin/env python3
-"""
-LLM Workload Configuration
-Configuration parameters for the LLM Workload
-"""
+
+
 
 # Workload configuration constants
-WORKLOAD_HASH = "GPTMW_v2"  # 8-character fixed hash
-SERVER_HOST = "localhost"    # Server address
-SERVER_PORT = 5009           # Server port (can be overridden from env)
+import os
+import dotenv
+
+dotenv.load_dotenv()
+
+WORKLOAD_TITLE = os.getenv('WORKLOAD_TITLE', "DEFAULT AI WORKLOAD GPTMW_v2")
+WORKLOAD_HASH = os.getenv('WORKLOAD_HASH', "GPTMW_v2")
+WORKLOAD_DESC = os.getenv('WORKLOAD_DESC', "Multi-model workload with dynamic model selection, tools and structured output.")  
+SERVER_HOST = "localhost"
+SERVER_PORT = 5009
 
 # Workload configuration
 WORKLOAD_CONFIG = {
-    "title": "ChatGPT Marek v2",
-    "hash_id": WORKLOAD_HASH,
-    "description": "Multi-model workload with dynamic model selection, tools and structured output.",
+    "title": WORKLOAD_TITLE,
+    "hash_id": WORKLOAD_HASH,   
+    "description": WORKLOAD_DESC,
     "channels": {
         "0": {
             "name": "Chat",

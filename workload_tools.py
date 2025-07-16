@@ -6,11 +6,29 @@ Utility functions for the workload
 
 import logging
 import socket
-import time
 import json
 
-# Configure logger
-logger = logging.getLogger("LLM Workload")
+logger = logging.getLogger("WorkloadTools")
+
+class ContextAdapter(logging.LoggerAdapter):
+    LOG_KWARGS = ['exc_info', 'stack_info', 'stacklevel']
+
+    def process(self, msg, kwargs):
+        extra = kwargs.pop('extra', {})
+        preserved_kwargs = {k: kwargs[k] for k in ContextAdapter.LOG_KWARGS if k in kwargs}
+        
+        msg_vars = ', '.join(f'{k}={v}' for k, v in extra.items())
+        
+        if msg_vars:
+            msg = f"{msg} | {msg_vars}"
+        
+        # Restore preserved kwargs and update with extra
+        kwargs.update(preserved_kwargs)
+        kwargs['extra'] = extra
+        
+        return msg, kwargs
+
+logger = ContextAdapter(logger)
 
 def get_local_ip():
     """Get the local IP address of the computer."""
@@ -33,18 +51,8 @@ def is_host_reachable(host, port=11434, timeout=2):
         s.close()
         return True
     except Exception:
-        logger.error(f"Host {host} is not reachable")
+        logger.error(f"Host {host} is not reachable", extra=dict(host=host, port=port))
         return False
-
-def log_message(message, **kwargs):
-    """Helper function for consistent logging with directional indicators."""
-    # Add kwargs as key=value pairs
-    if kwargs:
-        params = ", ".join([f"{k}={v}" for k, v in kwargs.items()])
-        message += f": {params}"
-    
-    # Log the message
-    logger.info(message)
 
 def create_response(channel, result="", session_id=None, message_id=None, extra_data=None):
     """Create a standardized response object"""
@@ -84,7 +92,7 @@ def send_response(client, response, session_id=None, channel=0, message_id=None)
     else:
         log_result = str(result)
         
-    log_message("   RESPONDING", session_id=session_id, channel=channel, message_id=message_id, preview=log_result)
+    logger.info("   RESPONDING", extra=dict(session_id=session_id, channel=channel, message_id=message_id, preview=log_result))
     
     # Use send_message function for reliable sending
     send_message(client, response)
@@ -101,13 +109,13 @@ def send_message(client, message_data):
     message_id = message_data.get('message_id', 'none')
     size = len(encoded_data)
     
-    log_message(f"<< SEND -{message_type.upper()}-", session_id=session_id, message_id=message_id, size=size)
+    logger.info(f"<< SEND -{message_type.upper()}-", extra=dict(session_id=session_id, message_id=message_id, size=size))
     
     # Send with explicit error handling
     try:
         client.sendall(encoded_data)
-        log_message(f"   SUCCESS: ", session_id=session_id)
+        logger.info("   SUCCESS: ", extra=dict(session_id=session_id))
         return True
     except Exception as e:
-        log_message(f"!! ERROR: ", session_id=session_id, error=str(e))
+        logger.error("!! ERROR: ", extra=dict(session_id=session_id, error=str(e)))
         return False

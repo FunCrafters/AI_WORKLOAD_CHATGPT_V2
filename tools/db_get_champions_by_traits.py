@@ -9,7 +9,7 @@ import logging
 from db_postgres import execute_query
 
 # Logger
-logger = logging.getLogger("DB Get Champions by Traits")
+logger = logging.getLogger("ChampionsByTraits")
 
 
 def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
@@ -92,6 +92,7 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
         # Add limit parameter
         query_params.append(limit)
         
+        # TODO Illigal Querry building
         query = f"""
         SELECT ct.id, ct.champion_name, ct.rarity, ct.affinity, ct.class, 
                ct.faction,
@@ -104,6 +105,7 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
         LIMIT %s
         """
         
+        #TODO Typing error
         champions = execute_query(query, query_params)
         
         if not champions:

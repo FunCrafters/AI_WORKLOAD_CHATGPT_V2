@@ -113,9 +113,6 @@ AVAILABLE TOOLS:
     • "List all champions" → use db_get_champions_list
     • "What champions we have?" → use db_get_champions_list
 
-
-
-
 - db_get_screen_context_help: Get information about current screen state and what user can see and do
   Examples: 
     • "What can I do here?" → use db_get_screen_context_help("what to do in the game")
