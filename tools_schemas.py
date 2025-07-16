@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Workload Function Schemas
-Function schemas for LLM tool calling
-"""
-
 def get_function_schemas():
     """
     Returns complete function schemas for all available tools

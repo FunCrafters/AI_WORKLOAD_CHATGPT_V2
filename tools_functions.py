@@ -7,6 +7,7 @@ Main module that imports and exposes all LLM tools
 import logging
 
 # Import new PostgreSQL RAG-based tool functions
+from session import Session
 from tools.db_rag_get_champion_details import db_rag_get_champion_details
 from tools.db_rag_get_boss_details import db_rag_get_boss_details
 from tools.db_rag_get_mechanic_details import db_rag_get_mechanic_details
@@ -87,8 +88,8 @@ logger = logging.getLogger("Workload LLM Tools")
 # - db_rag_get_gameplay_details (high treshold)
 
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Any
-
+from typing import Callable, Dict, Any, Optional
+import inspect
 
 @dataclass
 class T3RNTool:
@@ -119,8 +120,7 @@ class T3RNTool:
         }
 
     def get_system_prompt_entry(self) -> str:
-        return f"- `{self.name}`: {self.description}"
-    
+        return f"# `{self.name}`\n{self.system_prompt}"
 
 # Available LLM tools for function calling
 available_llm_functions = {

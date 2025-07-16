@@ -22,14 +22,3 @@ class ScreenContextInjector(T3RNModule):
         
         return injection_messages
 
-
-    def inject_before_user_message(
-        self, session: Session
-    ) -> List[ChatCompletionMessageParam]:
-        return []
-
-        
-    def inject_after_user_message(
-        self, session: Session
-    ) -> List[ChatCompletionMessageParam]:
-        return []

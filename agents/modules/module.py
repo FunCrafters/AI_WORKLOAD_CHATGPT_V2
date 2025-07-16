@@ -49,14 +49,12 @@ class T3RNModule(ABC):
         """
         return session
     
-    @abstractmethod
     def inject_start(self, session: 'Session') -> List['ChatCompletionMessageParam']:
         """
         Inject on the begining of the session (after system prompt)
         """
-        pass
+        return []
 
-    @abstractmethod
     def inject_before_user_message(
         self, 
         session: 'Session',
@@ -64,9 +62,8 @@ class T3RNModule(ABC):
         """
         Return messages that should be injected *before* user message.
         """
-        pass
+        return []
 
-    @abstractmethod
     def inject_after_user_message(
         self, 
         session: 'Session',
@@ -74,7 +71,7 @@ class T3RNModule(ABC):
         """
         Return messages to be injected *after* the user message.
         """
-        pass
+        return []
 
     def define_tools(self, session: 'Session') -> List['T3RNTool']:  
         return []

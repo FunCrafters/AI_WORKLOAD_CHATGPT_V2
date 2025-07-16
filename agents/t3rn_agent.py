@@ -165,14 +165,12 @@ class T3RNAgent(Agent):
     def process_and_execute_tools(
         self,
         tool_calls: List['ChatCompletionMessageToolCall'],
-        messages: List['ChatCompletionMessageParam']
     ) -> List['ChatCompletionMessageParam']:
         result_messages: List['ChatCompletionMessageParam'] = [] 
         if not tool_calls:
             self.channel_logger.log_to_logs("⚠️ No tool calls provided")
             return []
 
-        # Add complementary tools
         enhanced_tool_calls = self.add_complementary_tools(tool_calls)
         self.channel_logger.log_to_logs(f"🔧 Will execute {len(enhanced_tool_calls)} tools total (including complementary)")
 
@@ -189,17 +187,6 @@ class T3RNAgent(Agent):
                         self.channel_logger.log_to_tools(error_msg)
                         raise Exception(f"Tool execution failed: {error_msg}")
 
-                # if self.memory_manager.is_tool_already_in_current_messages(messages, function_name, function_args):
-                #     self.channel_logger.log_to_logs(f"⚠️ {function_name} already in current messages, skipping")
-                #     continue
-
-                # Check for cached results
-                # cache_entry = self.memory_manager.lookup_tool_in_cache(function_name, function_args)
-
-                # TODO IDK if cache is required at all.
-                # TODO We should decorate tools with cachetools!
-
-                # Execute the tool
                 if function_name not in available_llm_functions:
                     error_msg = f"Unknown tool: {function_name}"
                     raise Exception(f"Tool execution failed: {error_msg}")
@@ -215,19 +202,6 @@ class T3RNAgent(Agent):
 
                 self.channel_logger.log_to_logs(f"🔧 {function_name} executed in {elapsed_time:.3f}s ({len(str(result))} chars)")
                 self.channel_logger.log_tool_call(function_name, function_args, result, idx + 1)
-
-                # Cache the result if configured
-                # TODO split tool cache and memory
-                # try:
-                #     result_json = json.loads(result) if isinstance(result, str) else result
-                #     if isinstance(result_json, dict):
-                #         cache_duration = result_json.get("llm_cache_duration", 0)
-                #         if cache_duration > 0:
-                #             self.memory_manager.add_tool_to_cache(function_name, function_args, result, cache_duration)
-                # except Exception as e:
-                #     self.channel_logger.log_error(f"Cache save failed: {e}")
-        
-                # Add assistant function call to messages
 
                 result_messages.append({
                     "role": "assistant",

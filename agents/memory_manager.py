@@ -65,6 +65,25 @@ class MemoryManager:
         messages.extend(self.memory['running_messages'])
         
         return messages
+
+    def last_exchange(self) -> List['ChatCompletionMessageParam']:
+        if len(self.memory['running_messages']) < 2:
+            return []
+        
+        last_assistant_idx = None
+        for i in range(len(self.memory['running_messages']) - 1, -1, -1):
+            if self.memory['running_messages'][i]['role'] == 'assistant':
+                last_assistant_idx = i
+                break
+        
+        if last_assistant_idx is None:
+            return []
+            
+        for i in range(last_assistant_idx - 1, -1, -1):
+            if self.memory['running_messages'][i]['role'] == 'user':
+                return [self.memory['running_messages'][i], self.memory['running_messages'][last_assistant_idx]]
+            
+        return []
     
     # def _generate_tool_cache_key(self, tool_name: str, parameters: Dict[str, Any]) -> str:
     #     """Generate unique cache key for tool call"""
