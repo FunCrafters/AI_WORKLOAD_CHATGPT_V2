@@ -274,29 +274,16 @@ class T3RNAgent(Agent):
         messages.extend(memory_messages)
         
         # TODO This is crealry 'injection pattern'. It can be generalized.
-        # BEFORE user   
-        try:            
-            # TODO session should be object
-            if CURRENT_JSON_DATA:
-                injection_messages = self.memory_manager.inject_screen_context(CURRENT_JSON_DATA)
-                
-                # TODO Try replace with developer.
-                if injection_messages:
-                    messages.extend(injection_messages)
-                    self.channel_logger.log_to_logs(f"🎯 Screen injection: {len(injection_messages)} messages added")
-        except Exception as e:
-            self.channel_logger.log_to_logs(f"⚠️ Screen injection error: {str(e)}")
-
         if not self.memory_manager.memory['screen_injection_done']:
             for module in self.MODULES:
                 messages.extend(
-                    module.inject_once(self.session_data)
+                    module.inject_once_and_log(self.session_data)
                 )
             self.memory_manager.memory['screen_injection_done'] = True
 
         for module in self.MODULES:
             messages.extend(
-                module.inject_before_user_message(self.session_data)
+                module.inject_before_user_message_and_log(self.session_data)
             )
         
         messages.append({
@@ -306,7 +293,7 @@ class T3RNAgent(Agent):
 
         for module in self.MODULES:
             messages.extend(
-                module.inject_after_user_message(self.session_data)
+                module.inject_after_user_message_and_log(self.session_data)
             )
         
         self.channel_logger.log_to_logs(f"🧠 Memory: {len(memory_messages)} context messages loaded")
@@ -321,7 +308,10 @@ class T3RNAgent(Agent):
                 
                 try:
                     if iteration == MAX_ITERATIONS:
+                        # TODO if we are about to keep this message then will it degenerate 
+                        # TODO performance of chatbot (it will try to answer in next iteration)
                         messages.append({
+                            # TODO maybe change to developer
                             "role": "system",
                             "content": T3RN_FINAL_ITERATION_PROMPT
                         })

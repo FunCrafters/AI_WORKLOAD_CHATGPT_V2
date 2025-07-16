@@ -25,7 +25,7 @@ class ScreenContextInjector(T3RNModule):
                 "content": f"I can see you're currently on a specific screen. Let me provide context: {prompt_injection}"
             })
             
-            self.channal_logger.log_to_memory(f"🎯 Injected screen context: {len(prompt_injection)} chars")
+            self.channel_logger.log_to_memory(f"🎯 Injected screen context: {len(prompt_injection)} chars")
         
         # Add proactive tool results and cache them
         if proactive_messages:
@@ -33,7 +33,7 @@ class ScreenContextInjector(T3RNModule):
             
             # self._cache_proactive_tool_results(proactive_messages)
             
-            self.channal_logger.log_to_memory(f"🔧 Injected {len(proactive_messages)} proactive tool messages")
+            self.channel_logger.log_to_memory(f"🔧 Injected {len(proactive_messages)} proactive tool messages")
     
         
         return injection_messages

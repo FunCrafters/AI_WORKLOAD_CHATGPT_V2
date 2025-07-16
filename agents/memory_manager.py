@@ -10,7 +10,8 @@ import json
 import hashlib
 import uuid
 import textwrap
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, TypedDict
+
 from venv import logger
 from openai.types.chat import ChatCompletionMessageParam
 import markdown
