@@ -9,6 +9,8 @@ from agents.base_agent import Agent, AgentResult
 from agents.agent_prompts import T3RN_MALFUNCTION_MESSAGES
 from channel_logger import ChannelLogger
 from session import Session
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletion, ChatCompletionMessageToolCall
+from typing import List, Optional
 
 class SimpleFallbackAgent(Agent):    
     def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
@@ -19,8 +21,9 @@ class SimpleFallbackAgent(Agent):
     
     def execute(self, user_message: str) -> AgentResult:                            
         fallback_response = random.choice(T3RN_MALFUNCTION_MESSAGES)
-                        
-        result = AgentResult([
+
+        old_messages = self.memory_manager.prepare_messages_for_agent()
+        response: List['ChatCompletionMessageParam'] = [
             {
                 'role':'user',
                 "content":user_message
@@ -29,7 +32,9 @@ class SimpleFallbackAgent(Agent):
                 'role':"assistant",
                 "content":fallback_response,
             }
-        ])
+        ]
+
+        result = AgentResult(old_messages+response)
             
         return result
             

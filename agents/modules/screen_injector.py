@@ -3,12 +3,11 @@ from typing import List
 from openai.types.chat import ChatCompletionMessageParam
 from agents.modules.module import T3RNModule
 from session import Session
-import logging
 from proactive_tool_executor import get_proactive_tool_messages
 
 
 class ScreenContextInjector(T3RNModule):
-    def inject_once(self, session: Session)  -> List[ChatCompletionMessageParam]:
+    def inject_start(self, session: Session)  -> List[ChatCompletionMessageParam]:
         if session.json_data is None:
             return []
 

@@ -46,8 +46,6 @@ def process_main_channel(client, session: 'Session'):
 
     if session.memory_manager is None:
         session.memory_manager = MemoryManager(channel_logger)
-
-    session.memory_manager.prepare_messages_for_agent(text)
         
     # Initial logging
     channel_logger.log_to_logs(f"🚀 Processing with Agent-Based System: \"{text}\"")

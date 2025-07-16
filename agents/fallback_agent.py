@@ -79,13 +79,14 @@ class FallbackAgent(Agent):
             self.channel_logger.log_to_logs(f"🔍 FallbackAgent pre-loaded RAG data for: '{user_message}'")
             
             # Prepare simple messages
-            messages = [{
+            messages: List[ChatCompletionMessageParam] = []
+            system_messages: List[ChatCompletionMessageParam] = [{
                 "role": "system",
                 "content": self.get_system_prompt()
-            }] # type: List[ChatCompletionMessageParam]
+            }]
             
             if general_knowledge:
-                messages.append({
+                system_messages.append({
                     "role": "system", 
                     "content": f"Available knowledge: {general_knowledge}"
                 })
@@ -96,7 +97,7 @@ class FallbackAgent(Agent):
             })
             
             self.channel_logger.log_to_logs("🤖 FallbackAgent calling ChatGPT-4o-mini without tools")
-            response = self.call_llm(messages)
+            response = self.call_llm(system_messages+messages)
             
             response_content = response.choices[0].message.content or "No response generated"
             
