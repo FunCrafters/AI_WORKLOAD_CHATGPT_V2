@@ -6,7 +6,7 @@ Get gameplay information from PostgreSQL rag_vectors table
 
 from tools.db_rag_common import execute_universal_rag
 
-def db_rag_get_gameplay_details(query: str) -> str:
+def db_rag_get_gameplay_details(query: str) -> dict:
     """
     Search gameplay information from PostgreSQL rag_vectors (PostgreSQL version)
     

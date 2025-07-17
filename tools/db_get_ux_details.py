@@ -3,11 +3,8 @@
 Get UX Details
 Retrieves UX information from the ux database
 """
-
-import os
 import logging
 import json
-from typing import Optional
 
 # Import the global PostgreSQL connection
 from db_postgres import execute_query
@@ -16,9 +13,9 @@ from db_postgres import execute_query
 logger = logging.getLogger("UXDetails")
 
 
-def _create_error_response(action: str, message: str, error_details: str, query: str) -> str:
+def _create_error_response(action: str, message: str, error_details: str, query: str) -> dict:
     """Helper function to create consistent error responses"""
-    return json.dumps({
+    return {
         "status": "error",
         "action": action,
         "message": message,
@@ -27,10 +24,10 @@ def _create_error_response(action: str, message: str, error_details: str, query:
             "function_name": "db_get_ux_details",
             "parameters": {"query": query}
         }
-    })
+    }
 
 
-def db_get_ux_details(query: str) -> str:
+def db_get_ux_details(query: str) -> dict:
     """
     Get UX information from the ux database
     
@@ -63,7 +60,7 @@ def db_get_ux_details(query: str) -> str:
                 })
             
             # Return JSON with UX data
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": f"Found {len(ux_results)} UX result(s) for '{query}'",
                 "search_query": query,
@@ -77,7 +74,7 @@ def db_get_ux_details(query: str) -> str:
                     "function_name": "db_get_ux_details",
                     "parameters": {"query": query}
                 }
-            })
+            }
         else:
             return _create_error_response(
                 "UX_NOT_FOUND",

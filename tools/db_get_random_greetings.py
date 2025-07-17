@@ -15,7 +15,7 @@ from db_postgres import execute_query
 logger = logging.getLogger("RndGreetings")
 
 
-def db_get_random_greetings() -> str:
+def db_get_random_greetings() -> dict:
     """
     Get a random greeting from the greetings database (OpenAI Function Calling format)
     
@@ -37,7 +37,7 @@ def db_get_random_greetings() -> str:
             greeting = results[0]["greeting"]
             logger.info(f"Selected greeting: {greeting}")
                 
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": "Random greeting retrieved successfully",
                 "content": {
@@ -47,10 +47,10 @@ def db_get_random_greetings() -> str:
                     "function_name": "db_get_random_greetings",
                     "parameters": {}
                 }
-            })
+            }
         else:
             logger.warning("No greetings found in database")
-            return json.dumps({
+            return {
                 "status": "error",
                 "message": "No greetings available in database",
                 "content": {
@@ -61,11 +61,11 @@ def db_get_random_greetings() -> str:
                     "parameters": {},
                     "fallback": True
                 }
-            })
+            }
             
     except Exception as e:
         logger.error(f"Error in db_get_random_greetings: {str(e)}")
-        return json.dumps({
+        return {
             "status": "error",
             "message": f"Error retrieving greeting: {str(e)}",
             "content": {
@@ -77,7 +77,7 @@ def db_get_random_greetings() -> str:
                 "error": str(e),
                 "fallback": True
             }
-        })
+        }
 
 
 def db_get_random_greetings_text() -> str:
@@ -88,9 +88,5 @@ def db_get_random_greetings_text() -> str:
         str: Greeting text only
     """
     json_result = db_get_random_greetings()
-    
-    try:
-        result_dict = json.loads(json_result)
-        return result_dict["content"]["greeting"]
-    except:
-        return "Greetings, cadet. T-3RN at your service."
+
+    return json_result["content"]["greeting"]

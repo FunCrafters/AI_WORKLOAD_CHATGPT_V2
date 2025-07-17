@@ -9,7 +9,7 @@ import time
 import random
 import json
 import time
-from typing import List, Optional
+from typing import Callable, List, Optional
 from agents.modules import screen_injector
 from agents.modules.module import T3RNModule
 from tools_functions import available_llm_functions
@@ -162,6 +162,7 @@ class T3RNAgent(Agent):
             return isinstance(result_json, dict) and result_json.get("status") == "error"
         except (json.JSONDecodeError, TypeError):
             return result_str.strip().lower().startswith(("error:", "tool execution error:"))
+    
     def process_and_execute_tools(
         self,
         tool_calls: List['ChatCompletionMessageToolCall'],
@@ -185,19 +186,21 @@ class T3RNAgent(Agent):
                     except json.JSONDecodeError as e:
                         error_msg = f"Invalid JSON in arguments: {str(e)}"
                         self.channel_logger.log_to_tools(error_msg)
+                        # TODO more soft error handling
                         raise Exception(f"Tool execution failed: {error_msg}")
 
                 if function_name not in available_llm_functions:
                     error_msg = f"Unknown tool: {function_name}"
+                    # TODO more soft error handling
                     raise Exception(f"Tool execution failed: {error_msg}")
 
-                tool_function = available_llm_functions[function_name]['function']
+                tool_function: Callable[..., dict] = available_llm_functions[function_name]['function']
                 start_time = time.time()
                 try:
                     result = tool_function(**function_args)
                 except Exception as e:
-                    raise Exception(f"Tool execution failed dramaticly: {e}")
-
+                    raise Exception(f"Tool execution failed in dramatic way: {e}")
+                
                 elapsed_time = time.time() - start_time
 
                 self.channel_logger.log_to_logs(f"🔧 {function_name} executed in {elapsed_time:.3f}s ({len(str(result))} chars)")
@@ -214,7 +217,7 @@ class T3RNAgent(Agent):
                 result_messages.append({
                     "role": "function",
                     "name": function_name,
-                    "content": str(result)
+                    "content": str(json.dumps(result)) if isinstance(result, dict) else str(result)
                 })
 
             except Exception as e:
@@ -296,7 +299,7 @@ class T3RNAgent(Agent):
                         tool_calls = response.choices[0].message.tool_calls
                         self.channel_logger.log_to_logs(f"🔧 T3RNAgent requested {len(tool_calls)} tools")
                         
-                        tools_executed = self.process_and_execute_tools(tool_calls, messages)
+                        tools_executed = self.process_and_execute_tools(tool_calls)
 
                         current_messages.extend(tools_executed)
 

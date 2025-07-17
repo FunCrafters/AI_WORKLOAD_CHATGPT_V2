@@ -184,7 +184,7 @@ def create_rag_response(
     qa_content: str = "",
     error_message: str = "",
     error_details: str = ""
-) -> str:
+) -> dict:
     """
     Create standardized JSON response for RAG functions
     
@@ -234,7 +234,7 @@ def create_rag_response(
     if error_details:
         response["internal_info"]["error"] = error_details
     
-    return json.dumps(response)
+    return response
 
 def execute_universal_rag(
     query: str,
@@ -244,7 +244,7 @@ def execute_universal_rag(
     threshold: float = DEFAULT_RAG_SIMILARITY_THRESHOLD,
     limit: int = DEFAULT_RAG_SIMILARITY_LIMIT,
     include_qa: bool = True
-) -> str:
+) -> dict:
     """
     Universal RAG function that handles the complete RAG workflow
     

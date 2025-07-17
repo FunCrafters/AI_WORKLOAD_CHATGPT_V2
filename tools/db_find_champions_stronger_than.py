@@ -12,7 +12,7 @@ from db_postgres import execute_query
 logger = logging.getLogger("ChampionsStrongerThan")
 
 
-def db_find_champions_stronger_than(character_name: str, limit: int = 20, rarity: str|None = None, affinity: str|None = None, class_type: str|None = None) -> str:
+def db_find_champions_stronger_than(character_name: str, limit: int = 20, rarity: str|None = None, affinity: str|None = None, class_type: str|None = None) -> dict:
     """
     Find champions who are stronger than the specified reference champion with optional trait filtering.
     
@@ -44,7 +44,7 @@ def db_find_champions_stronger_than(character_name: str, limit: int = 20, rarity
         ref_result = execute_query(ref_query, (f'%{character_name}%',))
         
         if not ref_result:
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": f"No character found matching '{character_name}'",
                 "reference_character": None,
@@ -63,7 +63,7 @@ def db_find_champions_stronger_than(character_name: str, limit: int = 20, rarity
                     "function_name": "db_find_champions_stronger_than",
                     "parameters": {"character_name": character_name, "limit": limit, "rarity": rarity, "affinity": affinity, "class_type": class_type}
                 }
-            })
+            }
         
         ref_char = ref_result[0]
         ref_power = ref_char['total_power']
@@ -164,7 +164,7 @@ def db_find_champions_stronger_than(character_name: str, limit: int = 20, rarity
         else:
             summary = f"No champions found{filter_text} stronger than {ref_char['champion_name']} (power: {ref_power})"
         
-        return json.dumps({
+        return {
             "status": "success",
             "message": summary,
             "reference_character": {
@@ -197,11 +197,11 @@ def db_find_champions_stronger_than(character_name: str, limit: int = 20, rarity
                 "function_name": "db_find_champions_stronger_than",
                 "parameters": {"character_name": character_name, "limit": limit, "rarity": rarity, "affinity": affinity, "class_type": class_type}
             }
-        })
+        }
         
     except Exception as e:
         logger.error(f"Error in db_find_champions_stronger_than: {str(e)}")
-        return json.dumps({
+        return {
             "status": "error",
             "message": f"Error finding champions stronger than '{character_name}': {str(e)}",
             "reference_character": None,
@@ -216,4 +216,4 @@ def db_find_champions_stronger_than(character_name: str, limit: int = 20, rarity
                 "function_name": "db_find_champions_stronger_than",
                 "parameters": {"character_name": character_name, "limit": limit, "rarity": rarity, "affinity": affinity, "class_type": class_type}
             }
-        })
+        }

@@ -82,7 +82,7 @@ def get_applicable_tools(screen_context: Dict[str, Any]) -> List[Dict[str, Any]]
         "parameters": {}
     }
     tools_to_execute.append(greeting_tool)
-    logger.info(f"✅ Added greeting tool: db_get_random_greetings")
+    logger.info("✅ Added greeting tool: db_get_random_greetings")
     
     # Process screen-specific tools if screen context is available
     if screen_context:
@@ -211,7 +211,7 @@ def prepare_tool_parameters(tool_config: Dict[str, Any]) -> Optional[Dict[str, A
         field_value = tool_config.get("field_value")
         
         if not parameter_name or field_value is None:
-            logger.warning(f"⚠️ Data tool missing parameter_name or field_value")
+            logger.warning("⚠️ Data tool missing parameter_name or field_value")
             return None
         
         return {parameter_name: field_value}
@@ -220,7 +220,7 @@ def prepare_tool_parameters(tool_config: Dict[str, Any]) -> Optional[Dict[str, A
         logger.warning(f"⚠️ Unknown tool type: {tool_type}")
         return None
 
-
+# TODO refactor this system (proactive tools are now in modules)
 def get_proactive_tool_messages(json_data: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], str]:
     """
     Main function to get proactive tool messages and prompt injection for current screen context
@@ -237,12 +237,12 @@ def get_proactive_tool_messages(json_data: Dict[str, Any]) -> Tuple[List[Dict[st
     screen_context = analyze_screen_context(json_data)
     
     # Step 2: Get applicable tools (always includes greeting tool)
-    tools_to_execute = get_applicable_tools(screen_context) # TODO 
+    if screen_context is not None:
+        tools_to_execute = get_applicable_tools(screen_context) # TODO 
+        tool_messages = execute_proactive_tools(tools_to_execute)
     
     # Step 3: Execute tools and get results
     tool_messages = []
-    if tools_to_execute:
-        tool_messages = execute_proactive_tools(tools_to_execute)
     
     # Step 4: Build prompt injection
     prompt_injection = ""

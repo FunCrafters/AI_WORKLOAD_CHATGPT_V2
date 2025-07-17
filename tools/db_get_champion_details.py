@@ -13,7 +13,7 @@ from db_postgres import execute_query
 logger = logging.getLogger("Workload Tools")
 
 
-def db_get_champion_details(champion_name: str) -> str:
+def db_get_champion_details(champion_name: str) -> dict:
     """
     Get detailed information about a specific champion from PostgreSQL database
     
@@ -35,7 +35,7 @@ def db_get_champion_details(champion_name: str) -> str:
         """, (f"%{champion_name}%",))
         
         if not results:
-            return json.dumps({
+            return {
                 "status": "error",
                 "message": f"No champions found matching '{champion_name}'",
                 "champion_name": champion_name,
@@ -44,7 +44,7 @@ def db_get_champion_details(champion_name: str) -> str:
                     "function_name": "db_get_champion_details",
                     "parameters": {"champion_name": champion_name}
                 }
-            })
+            }
         
         if len(results) == 1:
             # Single champion found - return full details
@@ -58,7 +58,7 @@ def db_get_champion_details(champion_name: str) -> str:
                 "summary_json": champion["summary_json"] if champion["summary_json"] else {}
             }
             
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": f"Champion details retrieved for '{champion['champion_name']}'",
                 "champion_name": champion["champion_name"],
@@ -68,7 +68,7 @@ def db_get_champion_details(champion_name: str) -> str:
                     "function_name": "db_get_champion_details",
                     "parameters": {"champion_name": champion_name}
                 }
-            })
+            }
         else:
             # Multiple champions found - return list
             champions_list = []
@@ -78,7 +78,7 @@ def db_get_champion_details(champion_name: str) -> str:
                     "champion_name": champion["champion_name"]
                 })
             
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": f"Found {len(results)} champions matching '{champion_name}'",
                 "champion_name": champion_name,
@@ -89,13 +89,13 @@ def db_get_champion_details(champion_name: str) -> str:
                     "function_name": "db_get_champion_details",
                     "parameters": {"champion_name": champion_name}
                 }
-            })
+            }
             
     except Exception as e:
         logger.error(f"Error getting champion details for '{champion_name}': {str(e)}")
         import traceback
         logger.error(traceback.format_exc())
-        return json.dumps({
+        return {
             "status": "error",
             "message": f"Database error while retrieving champion details for '{champion_name}': {str(e)}",
             "champion_name": champion_name,
@@ -104,5 +104,5 @@ def db_get_champion_details(champion_name: str) -> str:
                 "parameters": {"champion_name": champion_name},
                 "error": str(e)
             }
-        })
+        }
 

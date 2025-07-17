@@ -6,7 +6,7 @@ Get boss information from PostgreSQL rag_vectors table
 
 from tools.db_rag_common import execute_universal_rag
 
-def db_rag_get_boss_details(boss_name: str) -> str:
+def db_rag_get_boss_details(boss_name: str) -> dict:
     """
     Search boss information from PostgreSQL rag_vectors (PostgreSQL version)
     

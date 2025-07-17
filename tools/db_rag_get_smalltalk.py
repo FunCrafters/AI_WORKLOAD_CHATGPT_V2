@@ -3,8 +3,6 @@
 PostgreSQL Database Tool: Get Smalltalk Context
 Search smalltalk vectors for casual conversation topics using Ollama embeddings
 """
-
-import json
 import logging
 import random
 from db_postgres import execute_query
@@ -37,7 +35,7 @@ def _generate_query_embedding(query_text: str) -> list|None:
         return None
 
 
-def db_rag_get_smalltalk(query: str = "") -> str:
+def db_rag_get_smalltalk(query: str = "") -> dict:
     """
     Search smalltalk knowledge base for casual conversation topics using PostgreSQL embedding similarity.
     
@@ -69,9 +67,9 @@ def db_rag_get_smalltalk(query: str = "") -> str:
                 category = result['category']
                 knowledge_text = result['knowledge_text']
                 
-                content = f"### SMLTK: {topic} ({category})\n{knowledge_text}"
+                content = f"### Information from galactic database: {topic} ({category})\n{knowledge_text}"
                 
-                return json.dumps({
+                return {
                     "status": "success",
                     "message": "Selected random smalltalk topic",
                     "search_query": search_query,
@@ -84,9 +82,9 @@ def db_rag_get_smalltalk(query: str = "") -> str:
                         "parameters": {"query": query},
                         "method": "random_selection"
                     }
-                })
+                }
             else:
-                return json.dumps({
+                return {
                     "status": "success",
                     "message": "No smalltalk topics available in database",
                     "search_query": search_query,
@@ -95,7 +93,7 @@ def db_rag_get_smalltalk(query: str = "") -> str:
                         "function_name": "db_rag_get_smalltalk",
                         "parameters": {"query": query}
                     }
-                })
+                }
         
         # Case 2: Query provided - perform embedding similarity search
         else:
@@ -134,9 +132,9 @@ def db_rag_get_smalltalk(query: str = "") -> str:
                     knowledge_text = result['knowledge_text']
                     similarity = result['similarity']
                     
-                    content = f"### SMLTK: {topic} ({category})\n{knowledge_text}"
+                    content = f"### Information in galactic database: {topic} ({category})\n{knowledge_text}"
                     
-                    return json.dumps({
+                    return {
                         "status": "success",
                         "message": f"Found smalltalk context for '{query}' (similarity: {similarity:.3f})",
                         "search_query": search_query,
@@ -152,7 +150,7 @@ def db_rag_get_smalltalk(query: str = "") -> str:
                             "threshold": SIMILARITY_THRESHOLD,
                             "candidates_found": len(results)
                         }
-                    })
+                    }
                 
                 logger.info(f"No embedding match above threshold {SIMILARITY_THRESHOLD}, falling back to random")
             
@@ -177,9 +175,9 @@ def db_rag_get_smalltalk(query: str = "") -> str:
                 category = result['category']
                 knowledge_text = result['knowledge_text']
                 
-                content = f"### SMLTK: {topic} ({category})\n{knowledge_text}"
+                content = f"### Information in galactic database: {topic} ({category})\n{knowledge_text}"
                 
-                return json.dumps({
+                return {
                     "status": "success",
                     "message": f"No specific match for '{query}', selected random smalltalk topic",
                     "search_query": search_query,
@@ -192,9 +190,9 @@ def db_rag_get_smalltalk(query: str = "") -> str:
                         "parameters": {"query": query},
                         "method": "random_fallback"
                     }
-                })
+                }
             else:
-                return json.dumps({
+                return {
                     "status": "success",
                     "message": "No smalltalk topics available in database",
                     "search_query": search_query,
@@ -203,11 +201,11 @@ def db_rag_get_smalltalk(query: str = "") -> str:
                         "function_name": "db_rag_get_smalltalk",
                         "parameters": {"query": query}
                     }
-                })
+                }
                     
     except Exception as e:
         logger.error(f"Error in db_get_smalltalk: {str(e)}")
-        return json.dumps({
+        return {
             "status": "error",
             "message": f"Error searching smalltalk context: {str(e)}",
             "search_query": query if query else "random topic",
@@ -217,7 +215,7 @@ def db_rag_get_smalltalk(query: str = "") -> str:
                 "parameters": {"query": query},
                 "error": str(e)
             }
-        })
+        }
 
 
 def db_get_smalltalk_text(query: str = "") -> str:
@@ -233,11 +231,8 @@ def db_get_smalltalk_text(query: str = "") -> str:
     # Use the main function and extract text content
     json_result = db_rag_get_smalltalk(query)
     
-    try:
-        result_dict = json.loads(json_result)
-        if result_dict.get("status") == "success":
-            return result_dict["content"]["smltk_results"]
-        else:
-            return ""
-    except:
+    result_dict = json_result
+    if result_dict.get("status") == "success":
+        return result_dict["content"]["smltk_results"]
+    else:
         return ""

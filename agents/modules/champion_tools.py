@@ -1,5 +1,4 @@
 from typing import List
-from openai.types.chat import ChatCompletionMessageParam
 from agents.modules.module import T3RNModule
 from session import Session
 from tools.db_get_champion_details import db_get_champion_details
@@ -9,12 +8,13 @@ from tools_functions import T3RNTool
 
 
 def getChampionsDetails(
-    champion_name: str, prefer_lore: bool, session: Session | None = None
-) -> str:
+    champion_name: str, prefer_lore: bool=False, session: Session | None = None
+) -> dict:
     champion = db_get_champion_details(champion_name)
     boss = db_rag_get_boss_details(champion_name)
-    champ_rag = db_rag_get_champion_details(champion_name, prefer_lore)
+    champ_rag = db_rag_get_champion_details(champion_name)
 
+    return dict()
 
 
 class ChampionTools(T3RNModule):

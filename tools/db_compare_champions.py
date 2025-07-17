@@ -11,7 +11,7 @@ from db_postgres import execute_query
 # Logger
 logger = logging.getLogger("ChampionsComparator")
 
-def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
+def db_compare_champions(champion_names: list, detailed: bool = True) -> dict:
     """
     Compare two or more champions with comprehensive analysis including stats, traits, and recommendations.
     
@@ -25,7 +25,7 @@ def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
     try:
         # Validate input
         if not champion_names or len(champion_names) < 2:
-            return json.dumps({
+            return {
                 "status": "error",
                 "message": "At least 2 champion names are required for comparison",
                 "champions": [],
@@ -33,10 +33,10 @@ def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
                     "function_name": "db_compare_champions",
                     "parameters": {"champion_names": champion_names, "detailed": detailed}
                 }
-            })
+            }
         
         if len(champion_names) > 5:
-            return json.dumps({
+            return {
                 "status": "error",
                 "message": "Maximum 5 champions can be compared at once",
                 "champions": [],
@@ -44,7 +44,7 @@ def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
                     "function_name": "db_compare_champions",
                     "parameters": {"champion_names": champion_names, "detailed": detailed}
                 }
-            })
+            }
         
         champions = []
         not_found = []
@@ -73,7 +73,7 @@ def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
                 not_found.append(name)
         
         if not champions:
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": f"None of the provided champions were found: {', '.join(champion_names)}",
                 "champions": [],
@@ -85,11 +85,11 @@ def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
                     "function_name": "db_compare_champions",
                     "parameters": {"champion_names": champion_names, "detailed": detailed}
                 }
-            })
+            }
         
         if len(champions) < 2:
             found_names = [c['champion_name'] for c in champions]
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": f"Only found {len(champions)} champion(s), need at least 2 for comparison",
                 "champions": champions,
@@ -101,7 +101,7 @@ def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
                     "function_name": "db_compare_champions",
                     "parameters": {"champion_names": champion_names, "detailed": detailed}
                 }
-            })
+            }
         
         # Perform comparison analysis
         comparison_analysis = _perform_comparison_analysis(champions)
@@ -117,7 +117,7 @@ def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
         
         found_names = [c['champion_name'] for c in champions]
         
-        return json.dumps({
+        return {
             "status": "success",
             "message": f"Successfully compared {len(champions)} champions",
             "champions": champions,
@@ -135,11 +135,11 @@ def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
                 "function_name": "db_compare_champions",
                 "parameters": {"champion_names": champion_names, "detailed": detailed}
             }
-        })
+        }
         
     except Exception as e:
         logger.error(f"Error in db_compare_champions: {str(e)}")
-        return json.dumps({
+        return {
             "status": "error",
             "message": f"Error comparing champions: {str(e)}",
             "champions": [],
@@ -147,7 +147,7 @@ def db_compare_champions(champion_names: list, detailed: bool = True) -> str:
                 "function_name": "db_compare_champions",
                 "parameters": {"champion_names": champion_names, "detailed": detailed}
             }
-        })
+        }
 
 
 def _perform_comparison_analysis(champions: list) -> dict:

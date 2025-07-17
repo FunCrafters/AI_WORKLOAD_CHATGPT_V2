@@ -6,24 +6,13 @@ Get contextual help based on current screen and user question
 
 import json
 import logging
-from typing import Optional
 from .db_get_ux_details import db_get_ux_details
 
 # Logger
 logger = logging.getLogger("ScreenContext")
 
 
-def db_get_screen_context_help(user_question: str) -> str:
-    """
-    Get contextual help based on current screen and user question
-    Available only when JSON contains screenData section
-    
-    Args:
-        user_question: User's question about the current screen/interface
-        
-    Returns:
-        str: JSON formatted contextual help information
-    """
+def db_get_screen_context_help(user_question: str) -> dict:
     try:
         # Import here to get current values
         from workload_game_cache import HAS_SCREEN_DATA, CURRENT_JSON_DATA
@@ -80,7 +69,7 @@ def db_get_screen_context_help(user_question: str) -> str:
         
         content = "\n".join(content_parts)
         
-        return json.dumps({
+        return {
             "status": "success",
             "message": f"Found screen context help for: {screen_name}",
             "user_question": user_question,
@@ -90,7 +79,7 @@ def db_get_screen_context_help(user_question: str) -> str:
                 "function_name": "db_get_screen_context_help",
                 "parameters": {"user_question": user_question}
             }
-        })
+        }
         
     except Exception as e:
         logger.error(f"Error in screen context help: {str(e)}")
@@ -100,9 +89,9 @@ def db_get_screen_context_help(user_question: str) -> str:
         )
 
 
-def _create_error_response(message: str, user_question: str) -> str:
+def _create_error_response(message: str, user_question: str) -> dict:
     """Single error response creator"""
-    return json.dumps({
+    return {
         "status": "error",
         "message": message,
         "user_question": user_question,
@@ -111,20 +100,16 @@ def _create_error_response(message: str, user_question: str) -> str:
             "function_name": "db_get_screen_context_help",
             "parameters": {"user_question": user_question}
         }
-    })
+    }
 
 
-def _extract_ux_content(result_json: str) -> str:
+def _extract_ux_content(result_data: dict) -> str:
     """Extract content from UX details JSON response"""
-    try:
-        result_data = json.loads(result_json)
-        if result_data.get("status") == "success" and "content" in result_data:
-            if "results" in result_data["content"]:
-                # Format multiple results
-                results = result_data["content"]["results"]
-                return "\n\n".join([f"**{r['ux_name']}**\n{r['ux_content']}" for r in results])
-            else:
-                return str(result_data["content"])
-    except:
-        pass
-    return ""
+    
+    if result_data.get("status") == "success" and "content" in result_data:
+        if "results" in result_data["content"]:
+            results = result_data["content"]["results"]
+            return "\n\n".join([f"**{r['ux_name']}**\n{r['ux_content']}" for r in results])
+        else:
+            return str(result_data["content"])
+    return ""  

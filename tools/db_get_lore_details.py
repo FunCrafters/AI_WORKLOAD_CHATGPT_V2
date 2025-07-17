@@ -3,11 +3,7 @@
 Get Lore Details
 Retrieves lore information from the lore database
 """
-
-import os
 import logging
-import json
-from typing import Optional
 
 # Import the global PostgreSQL connection
 from db_postgres import execute_query
@@ -16,9 +12,9 @@ from db_postgres import execute_query
 logger = logging.getLogger("LoreDetails")
 
 
-def _create_error_response(action: str, message: str, error_details: str, champion_name: str) -> str:
+def _create_error_response(action: str, message: str, error_details: str, champion_name: str) -> dict:
     """Helper function to create consistent error responses"""
-    return json.dumps({
+    return {
         "status": "error",
         "action": action,
         "message": message,
@@ -27,10 +23,10 @@ def _create_error_response(action: str, message: str, error_details: str, champi
             "function_name": "db_get_lore_details",
             "parameters": {"champion_name": champion_name}
         }
-    })
+    }
 
 
-def db_get_lore_details(champion_name: str) -> str:
+def db_get_lore_details(champion_name: str) -> dict:
     """
     Get champion lore report from the lore database
     
@@ -64,7 +60,7 @@ def db_get_lore_details(champion_name: str) -> str:
 *Report generated from Mandalorian Archives - Report Database*"""
             
             # Return JSON with report data and instruction for LLM
-            return json.dumps({
+            return {
                 "status": "success",
                 "action": "DISPLAY_REPORT_FINAL",
                 "message": "Champion lore report retrieved successfully",
@@ -78,7 +74,7 @@ def db_get_lore_details(champion_name: str) -> str:
                     "function_name": "db_get_lore_details",
                     "parameters": {"champion_name": champion_name}
                 }
-            })
+            }
         else:
             return _create_error_response(
                 "REPORT_NOT_FOUND",

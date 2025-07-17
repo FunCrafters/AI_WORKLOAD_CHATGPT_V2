@@ -58,7 +58,7 @@ def initialize_postgres_db():
         return False
 
 
-def execute_query(query: str, params: tuple|None = None) -> List[Dict[str, Any]]:
+def execute_query(query: str, params: tuple|list|None = None) -> List[Dict[str, Any]]:
     """
     Execute a raw SQL query on the PostgreSQL database
     

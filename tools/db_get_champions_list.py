@@ -16,7 +16,7 @@ from db_postgres import execute_query
 logger = logging.getLogger("ChampionsList")
 
 
-def db_get_champions_list() -> str:
+def db_get_champions_list() -> dict:
     """
     Get complete list of all available champions from PostgreSQL database
     
@@ -38,7 +38,7 @@ def db_get_champions_list() -> str:
             # Extract champion names from results
             champions = [result["champion_name"] for result in results]
             
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": f"Found {len(champions)} champions in database",
                 "champions": champions,
@@ -46,10 +46,10 @@ def db_get_champions_list() -> str:
                     "function_name": "db_get_champions_list",
                     "parameters": {}
                 }
-            })
+            }
         else:
             logger.warning("No champions found in database")
-            return json.dumps({
+            return {
                 "status": "error",
                 "message": "No champions data available in database",
                 "champions": [],
@@ -57,13 +57,13 @@ def db_get_champions_list() -> str:
                     "function_name": "db_get_champions_list",
                     "parameters": {}
                 }
-            })
+            }
             
     except Exception as e:
         logger.error(f"Error getting champions list: {str(e)}")
         import traceback
         logger.error(traceback.format_exc())
-        return json.dumps({
+        return {
             "status": "error",
             "message": f"Database error while retrieving champions list: {str(e)}",
             "champions": [],
@@ -72,7 +72,7 @@ def db_get_champions_list() -> str:
                 "parameters": {},
                 "error": str(e)
             }
-        })
+        }
 
 
 def db_get_champions_list_text() -> str:
@@ -83,8 +83,7 @@ def db_get_champions_list_text() -> str:
         str: Comma-separated list of champion names
     """
     try:
-        json_result = db_get_champions_list()
-        result_dict = json.loads(json_result)
+        result_dict = db_get_champions_list()
         
         if result_dict["status"] == "success":
             return ", ".join(result_dict["champions"])

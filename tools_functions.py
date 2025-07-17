@@ -89,12 +89,15 @@ logger = logging.getLogger("Workload LLM Tools")
 
 from dataclasses import dataclass, field
 from typing import Callable, Dict, Any, Optional
-import inspect
 
 @dataclass
 class T3RNTool:
+    """
+    Represents a tool function for the T3RN agent.
+    This tool can be dependent on current session of LLM agent.
+    """
     name: str
-    function: Callable
+    function: Callable[..., dict]
     description: str
     system_prompt: str
     parameters: Dict[str, Any] = field(default_factory=dict)

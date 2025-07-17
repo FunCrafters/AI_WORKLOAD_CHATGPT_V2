@@ -6,7 +6,7 @@ Search entire knowledge base without category filters from PostgreSQL rag_vector
 
 from tools.db_rag_common import execute_universal_rag
 
-def db_rag_get_general_knowledge(query: str) -> str:
+def db_rag_get_general_knowledge(query: str) -> dict:
     """
     Search general knowledge base from PostgreSQL rag_vectors (PostgreSQL version)
     

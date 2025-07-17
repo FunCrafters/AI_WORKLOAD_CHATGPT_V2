@@ -9,7 +9,7 @@ from db_postgres import execute_query
 logger = logging.getLogger("ChampionDetailsById")
 
 
-def db_get_champion_details_byid(champion_id: str) -> str:
+def db_get_champion_details_byid(champion_id: str) -> dict:
     """
     Get detailed information about a specific champion by champion_id from PostgreSQL database
     
@@ -30,7 +30,7 @@ def db_get_champion_details_byid(champion_id: str) -> str:
         """, (champion_id,))
         
         if not results:
-            return json.dumps({
+            return {
                 "status": "error",
                 "message": f"No champion found with ID '{champion_id}'",
                 "champion_id": champion_id,
@@ -38,7 +38,7 @@ def db_get_champion_details_byid(champion_id: str) -> str:
                     "function_name": "db_get_champion_details_byid",
                     "parameters": {"champion_id": champion_id}
                 }
-            })
+            }
         
         # Single champion found (champion_id should be unique)
         champion = results[0]
@@ -51,7 +51,7 @@ def db_get_champion_details_byid(champion_id: str) -> str:
             "summary_json": champion["summary_json"] if champion["summary_json"] else {}
         }
         
-        return json.dumps({
+        return {
             "status": "success",
             "message": f"Champion details retrieved for ID '{champion_id}'",
             "champion_id": champion_id,
@@ -63,13 +63,13 @@ def db_get_champion_details_byid(champion_id: str) -> str:
                 "function_name": "db_get_champion_details_byid",
                 "parameters": {"champion_id": champion_id}
             }
-        })
+        }
             
     except Exception as e:
         logger.error(f"Error getting champion details by ID '{champion_id}': {str(e)}")
         import traceback
         logger.error(traceback.format_exc())
-        return json.dumps({
+        return {
             "status": "error",
             "message": f"Database error while retrieving champion details for ID '{champion_id}': {str(e)}",
             "champion_id": champion_id,
@@ -78,4 +78,4 @@ def db_get_champion_details_byid(champion_id: str) -> str:
                 "parameters": {"champion_id": champion_id},
                 "error": str(e)
             }
-        })
+        }

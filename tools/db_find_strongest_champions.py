@@ -12,7 +12,7 @@ from db_postgres import execute_query
 logger = logging.getLogger("ChampComparator")
 
 
-def db_find_strongest_champions(limit: int = 10, rarity: str|None = None, affinity: str|None = None, class_type: str|None = None) -> str:
+def db_find_strongest_champions(limit: int = 10, rarity: str|None = None, affinity: str|None = None, class_type: str|None = None) -> dict:
     """
     Find the strongest champions based on total power (attack + defense + health) with optional trait filtering.
     
@@ -75,7 +75,7 @@ def db_find_strongest_champions(limit: int = 10, rarity: str|None = None, affini
             filter_text = f" matching {', '.join(trait_filters)}" if trait_filters else ""
             no_results_message = f"No champions found{filter_text}"
             
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": no_results_message,
                 "champions": [],
@@ -95,7 +95,7 @@ def db_find_strongest_champions(limit: int = 10, rarity: str|None = None, affini
                     "function_name": "db_find_strongest_champions",
                     "parameters": {"limit": limit, "rarity": rarity, "affinity": affinity, "class_type": class_type}
                 }
-            })
+            }
         
         # Calculate statistics
         powers = [c['total_power'] for c in champions]
@@ -152,7 +152,7 @@ def db_find_strongest_champions(limit: int = 10, rarity: str|None = None, affini
         
         formatted_list = "\n".join(champion_list)
         
-        return json.dumps({
+        return {
             "status": "success",
             "message": f"Found {len(champions)} strongest champions{filter_text}",
             "analysis_type": "strongest_champions",
@@ -187,11 +187,11 @@ def db_find_strongest_champions(limit: int = 10, rarity: str|None = None, affini
                 "function_name": "db_find_strongest_champions",
                 "parameters": {"limit": limit, "rarity": rarity, "affinity": affinity, "class_type": class_type}
             }
-        })
+        }
         
     except Exception as e:
         logger.error(f"Error in db_find_strongest_champions: {str(e)}")
-        return json.dumps({
+        return {
             "status": "error",
             "message": f"Error finding strongest champions: {str(e)}",
             "champions": [],
@@ -205,4 +205,4 @@ def db_find_strongest_champions(limit: int = 10, rarity: str|None = None, affini
                 "function_name": "db_find_strongest_champions",
                 "parameters": {"limit": limit, "rarity": rarity, "affinity": affinity, "class_type": class_type}
             }
-        })
+        }
