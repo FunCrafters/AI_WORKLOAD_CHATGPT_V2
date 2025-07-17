@@ -241,13 +241,13 @@ def build_prompt_injection(screen_name: str, data_fields: dict) -> str:
                 champion_name = get_champion_name_by_id(data_fields[source_key])
                 substitutions[lookup_key] = champion_name
                 logger.info(
-                    f"🔄 Looked up {source_key}='{data_fields[source_key]}' → {lookup_key}='{champion_name}'"
+                    f"🔄 Looked up {source_key}='{data_fields[source_key]}' -> {lookup_key}='{champion_name}'"
                 )
             elif lookup_key == "battle_name":
                 battle_name = get_battle_name_by_id(data_fields[source_key])
                 substitutions[lookup_key] = battle_name
                 logger.info(
-                    f"🔄 Looked up {source_key}='{data_fields[source_key]}' → {lookup_key}='{battle_name}'"
+                    f"🔄 Looked up {source_key}='{data_fields[source_key]}' -> {lookup_key}='{battle_name}'"
                 )
 
     try:

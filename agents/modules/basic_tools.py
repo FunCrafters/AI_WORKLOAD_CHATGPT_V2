@@ -113,7 +113,7 @@ You should not use this tool when:
 * User asks about interface navigation (use getUXDetails instead)
 * User is engaging in casual conversation
 Examples:
-* "How does combat work?" → use getMechanicDetails("combat mechanics")
+* "How does combat work?" use getMechanicDetails("combat mechanics")
 * "What is the relation between colors?" use getMechanicDetails("color relations")
 """,
                 parameters={

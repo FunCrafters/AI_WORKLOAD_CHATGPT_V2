@@ -17,6 +17,8 @@ def getChampionsDetails(
     boss = db_rag_get_boss_details(champion_name)
     champ_rag = db_rag_get_champion_details(champion_name)
 
+    # TODO championMechanics
+    # TODO make it session-aware
     if session:
         exch = session.get_memory().last_exchange()
 
@@ -56,6 +58,7 @@ class ChampionTools(T3RNModule):
 Tool getChampionsDetails allows the droid to retrieve information about a specific champion in the game.
 It will prioritize providing usefull information about game mechanics, stats abilities.
 If it wont find any information about the champion it will return informations about lore, characters, places or events that are related to the champion.
+You can force more lore related information by setting prefer_lore to true.
 Use the tool when the user asks for:
 * Information about a specific champion, especially if they ask for details about information related to battle, game or mechanics.
 * When user wants to know about champion abilities, stats, lore or any other.
@@ -67,7 +70,7 @@ When to not use this tool:
 Examples:
 * "Tell me everything about Han Solo" use getChampionsDetails("Han Solo")
 * "Get full details for Luke Skywalker"  use getChampionsDetails("Luke Skywalker")
-* "Who is Chewbacca" use getChampionsDetails("Chewbacca")
+* "Who is Chewbacca" use getChampionsDetails("Chewbacca", prefer_lore=True)
 """,
                 parameters={
                     "type": "object",
