@@ -9,7 +9,7 @@ import json
 import os
 import random
 import time
-from typing import Callable, List
+from typing import List
 
 import openai
 from openai import NOT_GIVEN
@@ -23,11 +23,15 @@ from openai.types.chat.chat_completion_message_tool_call import Function
 from agents.agent_prompts import T3RN_FINAL_ITERATION_PROMPT
 from agents.base_agent import Agent, AgentResult
 from agents.modules import basic_tools, champion_tools, screen_injector, summary
-from agents.modules.module import T3RNModule, build_system_instructions_from_tools
+from agents.modules.module import (
+    T3RNModule,
+    build_system_instructions_from_tools,
+    get_tool_by_name,
+)
 from channel_logger import ChannelLogger
 from session import Session
 from tools.db_get_champions_list import db_get_champions_list_text
-from tools_functions import T3RNTool, available_llm_functions
+from tools_functions import T3RNTool
 
 
 class T3RNAgent(Agent):
@@ -196,6 +200,7 @@ class T3RNAgent(Agent):
     def process_and_execute_tools(
         self,
         tool_calls: List["ChatCompletionMessageToolCall"],
+        tools: List["T3RNTool"],
     ) -> List["ChatCompletionMessageParam"]:
         result_messages: List["ChatCompletionMessageParam"] = []
         if not tool_calls:
@@ -221,14 +226,13 @@ class T3RNAgent(Agent):
                         # TODO more soft error handling
                         raise Exception(f"Tool execution failed: {error_msg}")
 
-                if function_name not in available_llm_functions:
+                tool_function = get_tool_by_name(tools, function_name)
+
+                if tool_function is None:
                     error_msg = f"Unknown tool: {function_name}"
                     # TODO more soft error handling
                     raise Exception(f"Tool execution failed: {error_msg}")
 
-                tool_function: Callable[..., dict] = available_llm_functions[
-                    function_name
-                ]["function"]
                 start_time = time.time()
                 try:
                     result = tool_function(**function_args)
@@ -353,7 +357,9 @@ class T3RNAgent(Agent):
                             f"🔧 T3RNAgent requested {len(tool_calls)} tools"
                         )
 
-                        tools_executed = self.process_and_execute_tools(tool_calls)
+                        tools_executed = self.process_and_execute_tools(
+                            tool_calls, tools
+                        )
 
                         current_messages.extend(tools_executed)
 

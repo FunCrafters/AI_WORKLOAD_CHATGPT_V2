@@ -117,3 +117,11 @@ def build_system_instructions_from_tools(tools: List["T3RNTool"]) -> str:
     for tool in tools:
         instructions += f"# {tool.name}:\n{tool.system_prompt}\n"
     return instructions
+
+def get_tool_by_name(
+    tools: List["T3RNTool"], tool_name: str
+) -> "T3RNTool | None":
+    for tool in tools:
+        if tool.name == tool_name:
+            return tool
+    return None

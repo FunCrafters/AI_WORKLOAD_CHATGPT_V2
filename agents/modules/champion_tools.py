@@ -34,7 +34,8 @@ def getChampionsDetails(
         return json.dumps(
             {
                 "status": "error",
-                "message": f"No details found for champion '{champion_name}'. List of available champions: {champ_list}",
+                "message": f"No details found for champion '{champion_name}'. List of available champions: {champ_list}\n Galactic databased found only few snippets about this champion, but it seems to be not a champion: {response}",
+                "llm_guidance": "You can ask if this is mistake, try to use other tool or use available informations.",
                 "champion_name": champion_name,
             }
         )
@@ -47,8 +48,8 @@ class ChampionTools(T3RNModule):
         return [
             T3RNTool(
                 name="getChampionsDetails",
-                function=lambda champ_name, lore: getChampionsDetails(
-                    champ_name, lore, session
+                function=lambda champion_name, prefer_lore=False: getChampionsDetails(
+                    champion_name, prefer_lore, session
                 ),
                 description="Get details about a specific champion from the game. ",
                 system_prompt="""
@@ -64,9 +65,9 @@ When to not use this tool:
 * When the user specifically asks for smalltalk or casual conversation topics related to the champion.
 * Revelant information is already provided in context of the conversation.
 Examples:
-* "Tell me everything about Han Solo" → use getChampionsDetails("Han Solo")
-* "Get full details for Luke Skywalker" → use getChampionsDetails("Luke Skywalker")
-* "Who is Chewbacca" → use getChampionsDetails("Chewbacca")
+* "Tell me everything about Han Solo" use getChampionsDetails("Han Solo")
+* "Get full details for Luke Skywalker"  use getChampionsDetails("Luke Skywalker")
+* "Who is Chewbacca" use getChampionsDetails("Chewbacca")
 """,
                 parameters={
                     "type": "object",
@@ -79,14 +80,14 @@ Examples:
                             "type": "boolean",
                             "description": "If true the tool will prefer to return information about character rather than game mechanics, stats or abilities.",
                         },
-                        "required": ["champion_name"],
                     },
+                    "required": ["champion_name"],
                 },
             ),
             T3RNTool(
                 name="getRAGCharacterDetails",
-                function=lambda champ_name, lore: getChampionsDetails(
-                    champ_name, lore, session
+                function=lambda champion_name: db_rag_get_champion_details(
+                    champion_name
                 ),
                 description="Get lore details about a specific champion from the game using natural language (Questions)",
                 system_prompt="""
@@ -99,12 +100,8 @@ Tool getRAGCharacterDetails allows the droid to retrieve information about a spe
                             "type": "string",
                             "description": "Exact name of the champion to get details for",
                         },
-                        "prefer_lore": {
-                            "type": "boolean",
-                            "description": "If true the tool will prefer to return information about character rather than game mechanics, stats or abilities.",
-                        },
-                        "required": ["champion_name"],
                     },
+                    "required": ["champion_name"],
                 },
             ),
         ]

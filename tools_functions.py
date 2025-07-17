@@ -1,4 +1,9 @@
 import logging
+from dataclasses import dataclass
+from typing import Any, Callable
+
+from openai.types.chat import ChatCompletionToolParam
+from openai.types.shared_params.function_parameters import FunctionParameters
 
 from tools.db_compare_champions import db_compare_champions
 from tools.db_find_champions import db_find_champions
@@ -74,11 +79,6 @@ logger = logging.getLogger("Workload LLM Tools")
 # - db_rag_get_general_knowledge
 # - db_rag_get_gameplay_details (high treshold)
 
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict
-
-from openai.types.chat import ChatCompletionToolParam
-
 
 @dataclass
 class T3RNTool:
@@ -91,7 +91,10 @@ class T3RNTool:
     function: Callable[..., dict | str]
     description: str
     system_prompt: str
-    parameters: Dict[str, Any] = field(default_factory=dict)
+    parameters: FunctionParameters
+
+    def __call__(self, *args: Any, **kwds: Any) -> dict | str:
+        return self.function(*args, **kwds)
 
     def get_function_schema(self) -> "ChatCompletionToolParam":
         return {
@@ -99,8 +102,7 @@ class T3RNTool:
             "function": {
                 "name": self.name,
                 "description": self.description,
-                "parameters": self.parameters
-                or {"type": "object", "properties": {}, "required": []},
+                "parameters": self.parameters,
             },
         }
 
