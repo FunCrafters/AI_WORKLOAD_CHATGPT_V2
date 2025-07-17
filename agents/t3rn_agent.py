@@ -18,11 +18,16 @@ from openai.types.chat import (
     ChatCompletionMessageParam,
     ChatCompletionMessageToolCall,
 )
-from openai.types.chat.chat_completion_message_tool_call import Function
 
 from agents.agent_prompts import T3RN_FINAL_ITERATION_PROMPT
 from agents.base_agent import Agent, AgentResult
-from agents.modules import basic_tools, champion_tools, screen_injector, summary
+from agents.modules import (
+    basic_tools,
+    champion_comp,
+    champion_tools,
+    screen_injector,
+    summary,
+)
 from agents.modules.module import (
     T3RNModule,
     build_system_instructions_from_tools,
@@ -44,18 +49,13 @@ class T3RNAgent(Agent):
         if api_key:
             self.openai_client = openai.OpenAI(api_key=api_key)
 
-        self.COMPLEMENTARY_MAPPING = {
-            "db_rag_get_champion_details": "db_get_champion_details",
-            "db_get_champion_details": "db_rag_get_champion_details",
-            # Add more mappings here as needed
-        }
-
         self.MODULES: List[T3RNModule] = []
 
         self.MODULES.append(screen_injector.ScreenContextInjector(self.channel_logger))
         self.MODULES.append(summary.SummaryInjector(self.channel_logger))
         self.MODULES.append(basic_tools.BasicTools(self.channel_logger))
         self.MODULES.append(champion_tools.ChampionTools(self.channel_logger))
+        self.MODULES.append(champion_comp.ChampionCompTools(self.channel_logger))
 
     def collect_tools(self) -> List["T3RNTool"]:
         tools: List["T3RNTool"] = []
@@ -133,55 +133,6 @@ class T3RNAgent(Agent):
         else:
             raise Exception("OpenAI API not available or not configured")
 
-    # TODO Complementary tools:
-    # This function adds simillar tools based on the original tool call.
-    # So if db_rag_get_champion_details is called, it will also add db_get_champion_details
-    # it also prevents duplicates by checking if the complementary tool with the same parameters already exists.
-    # I think that this should not be nesessery.
-    def add_complementary_tools(
-        self, tool_calls: List["ChatCompletionMessageToolCall"]
-    ) -> List["ChatCompletionMessageToolCall"]:
-        # Create a new list with original + complementary tools
-        enhanced_tool_calls = list(tool_calls)  # Copy original list
-
-        for tool_call in tool_calls:
-            function_name = tool_call.function.name
-            function_args = tool_call.function.arguments
-
-            # Check if this function has a complementary tool
-            if function_name in self.COMPLEMENTARY_MAPPING:
-                complementary_function = self.COMPLEMENTARY_MAPPING[function_name]
-
-                # Check if complementary function is already called with these specific parameters
-                complementary_already_exists = False
-                for existing_call in enhanced_tool_calls:
-                    if (
-                        existing_call.function.name == complementary_function
-                        and existing_call.function.arguments == function_args
-                    ):
-                        complementary_already_exists = True
-                        break
-
-                if not complementary_already_exists:
-                    complementary_call = ChatCompletionMessageToolCall(
-                        id=f"toolcall-{complementary_function}",
-                        type="function",
-                        function=Function(
-                            name=complementary_function, arguments=function_args
-                        ),
-                    )
-                    enhanced_tool_calls.append(complementary_call)
-
-                    self.channel_logger.log_to_logs(
-                        f"🔗 Added complementary tool: {complementary_function} for {function_name}"
-                    )
-                else:
-                    self.channel_logger.log_to_logs(
-                        f"⚠️ Complementary tool {complementary_function} already exists with same parameters, skipping"
-                    )
-
-        return enhanced_tool_calls
-
     def _is_tool_result_error(self, result_str: str) -> bool:
         import json
 
@@ -207,7 +158,6 @@ class T3RNAgent(Agent):
             self.channel_logger.log_to_logs("⚠️ No tool calls provided")
             return []
 
-        # enhanced_tool_calls = self.add_complementary_tools(tool_calls)
         self.channel_logger.log_to_logs(
             f"🔧 Will execute {len(tool_calls)} tools total (including complementary)"
         )
