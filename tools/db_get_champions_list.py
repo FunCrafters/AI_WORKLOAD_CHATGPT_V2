@@ -4,10 +4,7 @@ Get Champions List
 Retrieves list of all champions from PostgreSQL database
 """
 
-import os
 import logging
-import json
-from typing import Optional
 
 # Import the global PostgreSQL connection
 from db_postgres import execute_query
@@ -19,13 +16,13 @@ logger = logging.getLogger("ChampionsList")
 def db_get_champions_list() -> dict:
     """
     Get complete list of all available champions from PostgreSQL database
-    
+
     Returns:
         str: JSON formatted champions list response
     """
     try:
         logger.info("Querying PostgreSQL for champions list")
-        
+
         # Get all champion names from PostgreSQL
         results = execute_query("""
             SELECT champion_name 
@@ -33,19 +30,19 @@ def db_get_champions_list() -> dict:
             WHERE champion_name IS NOT NULL
             ORDER BY champion_name
         """)
-        
+
         if results:
             # Extract champion names from results
             champions = [result["champion_name"] for result in results]
-            
+
             return {
                 "status": "success",
                 "message": f"Found {len(champions)} champions in database",
                 "champions": champions,
                 "internal_info": {
                     "function_name": "db_get_champions_list",
-                    "parameters": {}
-                }
+                    "parameters": {},
+                },
             }
         else:
             logger.warning("No champions found in database")
@@ -55,13 +52,14 @@ def db_get_champions_list() -> dict:
                 "champions": [],
                 "internal_info": {
                     "function_name": "db_get_champions_list",
-                    "parameters": {}
-                }
+                    "parameters": {},
+                },
             }
-            
+
     except Exception as e:
         logger.error(f"Error getting champions list: {str(e)}")
         import traceback
+
         logger.error(traceback.format_exc())
         return {
             "status": "error",
@@ -70,21 +68,21 @@ def db_get_champions_list() -> dict:
             "internal_info": {
                 "function_name": "db_get_champions_list",
                 "parameters": {},
-                "error": str(e)
-            }
+                "error": str(e),
+            },
         }
 
 
 def db_get_champions_list_text() -> str:
     """
     Get champions list as text format for use in prompt building
-    
+
     Returns:
         str: Comma-separated list of champion names
     """
     try:
         result_dict = db_get_champions_list()
-        
+
         if result_dict["status"] == "success":
             return ", ".join(result_dict["champions"])
         else:

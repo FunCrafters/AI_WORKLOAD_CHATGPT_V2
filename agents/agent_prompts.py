@@ -57,7 +57,7 @@ OUTPUT FORMAT:
 - never answer more than 700 characters
 """
 
-JSON_FORMAT= """ANSWER FORMAT: 
+JSON_FORMAT = """ANSWER FORMAT: 
 CRITICAL INSTRUCTION: Your response MUST be exactly this JSON structure:
 
 Required fields:
@@ -237,7 +237,6 @@ AVAILABLE TOOLS:
   """
 
 
-
 # T3RN malfunction messages for SimpleFallbackAgent
 T3RN_MALFUNCTION_MESSAGES = [
     "My circuits are overheating from processing that request. Please try again in simpler terms, cadet.",
@@ -249,12 +248,11 @@ T3RN_MALFUNCTION_MESSAGES = [
     "Memory core fragmentation detected. Please restate your query in basic terms.",
     "Processing overload. My circuits weren't designed for this complexity. Try again with less detail.",
     "Navigation error in my logic pathways. A clearer question would help this droid assist you.",
-    "System diagnostic failure. My processors require a simpler input to function properly."
+    "System diagnostic failure. My processors require a simpler input to function properly.",
 ]
 
 # T3RN final iteration prompt
 T3RN_FINAL_ITERATION_PROMPT = "CRITICAL: This is your FINAL attempt. You MUST provide a complete final answer now. NO TOOLS are available. Use only the information you already have from previous tool calls to give the best possible answer to the user's question."
-
 
 
 TOOL_RESULTS_ANALYSIS = """
@@ -262,7 +260,6 @@ TOOL RESULTS PROCESSING:
 When analyzing results from tool calls, pay attention to field "llm_instruction". It contains special instructions on how to use or present this information from the tool.
 Example: If a tool returns llm_instruction saying "Start your response with a natural transition...", you must follow that specific instruction when using that tool's content.
 """
-
 
 
 SMALLTALK_SPECIALIST_EMBEDDING = """

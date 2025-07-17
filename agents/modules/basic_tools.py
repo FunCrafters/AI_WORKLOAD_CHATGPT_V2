@@ -1,5 +1,5 @@
 from typing import List
-from openai.types.chat import ChatCompletionMessageParam
+
 from agents.modules.module import T3RNModule
 from session import Session
 from tools.db_rag_get_smalltalk import db_rag_get_smalltalk

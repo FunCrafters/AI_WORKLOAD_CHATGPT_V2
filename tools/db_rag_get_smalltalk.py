@@ -1,12 +1,8 @@
-#!/usr/bin/env python3
-"""
-PostgreSQL Database Tool: Get Smalltalk Context
-Search smalltalk vectors for casual conversation topics using Ollama embeddings
-"""
 import logging
 import random
-from db_postgres import execute_query
+
 from agents.agent_prompts import SMALLTALK_SPECIALIST_EMBEDDING
+from db_postgres import execute_query
 from workload_embedding import get_embedding_function
 
 # Logger
@@ -15,21 +11,21 @@ logger = logging.getLogger("DBSmalltalk")
 # Configuration
 SIMILARITY_THRESHOLD = 0.4
 # Get top 10 similar results, then pick random one
-RAG_SMALLTALK_SEARCH_LIMIT = 10 
+RAG_SMALLTALK_SEARCH_LIMIT = 10
 
 
-def _generate_query_embedding(query_text: str) -> list|None:
+def _generate_query_embedding(query_text: str) -> list | None:
     """Generate embedding for query text using Ollama"""
     try:
         embedding_function = get_embedding_function()
         if not embedding_function:
             logger.error("Embedding function not available")
             return None
-        
+
         # Generate embedding using Ollama
         embedding = embedding_function.embed_query(query_text)
         return embedding
-        
+
     except Exception as e:
         logger.error(f"Failed to generate embedding for query: {e}")
         return None
@@ -38,50 +34,48 @@ def _generate_query_embedding(query_text: str) -> list|None:
 def db_rag_get_smalltalk(query: str = "") -> dict:
     """
     Search smalltalk knowledge base for casual conversation topics using PostgreSQL embedding similarity.
-    
+
     Args:
         query: Search query for smalltalk topics. If empty, returns random topic.
-        
+
     Returns:
         str: JSON formatted smalltalk context information
     """
     try:
         search_query = query if query else "random topic"
-        
+
         # Case 1: Empty query - get random topic
         if not query or query.strip() == "":
             logger.info("Empty query received, selecting random smalltalk topic")
-            
+
             random_sql = """
             SELECT topic, category, knowledge_text
             FROM smalltalk_vectors
             ORDER BY RANDOM()
             LIMIT 1
             """
-            
+
             results = execute_query(random_sql)
-            
+
             if results:
                 result = results[0]
-                topic = result['topic']
-                category = result['category']
-                knowledge_text = result['knowledge_text']
-                
+                topic = result["topic"]
+                category = result["category"]
+                knowledge_text = result["knowledge_text"]
+
                 content = f"### Information from galactic database: {topic} ({category})\n{knowledge_text}"
-                
+
                 return {
                     "status": "success",
                     "message": "Selected random smalltalk topic",
                     "search_query": search_query,
-                    "content": {
-                        "smltk_results": content
-                    },
+                    "content": {"smltk_results": content},
                     "llm_instruction": SMALLTALK_SPECIALIST_EMBEDDING,
                     "internal_info": {
                         "function_name": "db_rag_get_smalltalk",
                         "parameters": {"query": query},
-                        "method": "random_selection"
-                    }
+                        "method": "random_selection",
+                    },
                 }
             else:
                 return {
@@ -91,24 +85,24 @@ def db_rag_get_smalltalk(query: str = "") -> dict:
                     "content": {"smltk_results": ""},
                     "internal_info": {
                         "function_name": "db_rag_get_smalltalk",
-                        "parameters": {"query": query}
-                    }
+                        "parameters": {"query": query},
+                    },
                 }
-        
+
         # Case 2: Query provided - perform embedding similarity search
         else:
             logger.info(f"Searching for smalltalk context with query: {query}")
-            
+
             # Generate embedding using Ollama
             query_embedding = _generate_query_embedding(query)
-            
+
             if query_embedding is not None:
                 # Real pgvector similarity search
                 logger.info("Using Ollama embedding-based similarity search")
-                
+
                 # Convert embedding to PostgreSQL vector format
-                embedding_str = '[' + ','.join(map(str, query_embedding)) + ']'
-                
+                embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
+
                 # Get multiple similar results and pick one randomly for variety
                 similarity_sql = """
                 SELECT topic, category, knowledge_text, 
@@ -118,29 +112,36 @@ def db_rag_get_smalltalk(query: str = "") -> dict:
                 ORDER BY embedding <=> %s::vector
                 LIMIT %s
                 """
-                
-                results = execute_query(similarity_sql, (
-                    embedding_str, embedding_str, SIMILARITY_THRESHOLD, embedding_str, RAG_SMALLTALK_SEARCH_LIMIT
-                ))
-                
+
+                results = execute_query(
+                    similarity_sql,
+                    (
+                        embedding_str,
+                        embedding_str,
+                        SIMILARITY_THRESHOLD,
+                        embedding_str,
+                        RAG_SMALLTALK_SEARCH_LIMIT,
+                    ),
+                )
+
                 if results:
                     # Randomly select one from the top similar results for variety
                     result = random.choice(results)
-                    logger.info(f"Selected random result from {len(results)} similar topics")
-                    topic = result['topic']
-                    category = result['category']
-                    knowledge_text = result['knowledge_text']
-                    similarity = result['similarity']
-                    
+                    logger.info(
+                        f"Selected random result from {len(results)} similar topics"
+                    )
+                    topic = result["topic"]
+                    category = result["category"]
+                    knowledge_text = result["knowledge_text"]
+                    similarity = result["similarity"]
+
                     content = f"### Information in galactic database: {topic} ({category})\n{knowledge_text}"
-                    
+
                     return {
                         "status": "success",
                         "message": f"Found smalltalk context for '{query}' (similarity: {similarity:.3f})",
                         "search_query": search_query,
-                        "content": {
-                            "smltk_results": content
-                        },
+                        "content": {"smltk_results": content},
                         "llm_instruction": SMALLTALK_SPECIALIST_EMBEDDING,
                         "internal_info": {
                             "function_name": "db_rag_get_smalltalk",
@@ -148,48 +149,50 @@ def db_rag_get_smalltalk(query: str = "") -> dict:
                             "method": "ollama_embedding_similarity_search",
                             "similarity_score": similarity,
                             "threshold": SIMILARITY_THRESHOLD,
-                            "candidates_found": len(results)
-                        }
+                            "candidates_found": len(results),
+                        },
                     }
-                
-                logger.info(f"No embedding match above threshold {SIMILARITY_THRESHOLD}, falling back to random")
-            
+
+                logger.info(
+                    f"No embedding match above threshold {SIMILARITY_THRESHOLD}, falling back to random"
+                )
+
             else:
                 logger.info("Embedding generation failed, falling back to random")
-            
+
             # No good match found - get random topic instead
-            logger.info(f"No good smalltalk match for query '{query}', selecting random topic")
-            
+            logger.info(
+                f"No good smalltalk match for query '{query}', selecting random topic"
+            )
+
             random_sql = """
             SELECT topic, category, knowledge_text
             FROM smalltalk_vectors
             ORDER BY RANDOM()
             LIMIT 1
             """
-            
+
             results = execute_query(random_sql)
-            
+
             if results:
                 result = results[0]
-                topic = result['topic']
-                category = result['category']
-                knowledge_text = result['knowledge_text']
-                
+                topic = result["topic"]
+                category = result["category"]
+                knowledge_text = result["knowledge_text"]
+
                 content = f"### Information in galactic database: {topic} ({category})\n{knowledge_text}"
-                
+
                 return {
                     "status": "success",
                     "message": f"No specific match for '{query}', selected random smalltalk topic",
                     "search_query": search_query,
-                    "content": {
-                        "smltk_results": content
-                    },
+                    "content": {"smltk_results": content},
                     "llm_instruction": SMALLTALK_SPECIALIST_EMBEDDING,
                     "internal_info": {
                         "function_name": "db_rag_get_smalltalk",
                         "parameters": {"query": query},
-                        "method": "random_fallback"
-                    }
+                        "method": "random_fallback",
+                    },
                 }
             else:
                 return {
@@ -199,10 +202,10 @@ def db_rag_get_smalltalk(query: str = "") -> dict:
                     "content": {"smltk_results": ""},
                     "internal_info": {
                         "function_name": "db_rag_get_smalltalk",
-                        "parameters": {"query": query}
-                    }
+                        "parameters": {"query": query},
+                    },
                 }
-                    
+
     except Exception as e:
         logger.error(f"Error in db_get_smalltalk: {str(e)}")
         return {
@@ -213,24 +216,24 @@ def db_rag_get_smalltalk(query: str = "") -> dict:
             "internal_info": {
                 "function_name": "db_rag_get_smalltalk",
                 "parameters": {"query": query},
-                "error": str(e)
-            }
+                "error": str(e),
+            },
         }
 
 
 def db_get_smalltalk_text(query: str = "") -> str:
     """
     Search smalltalk knowledge base (text format for backward compatibility)
-    
+
     Args:
         query: Search query for smalltalk topics. If empty, returns random topic.
-        
+
     Returns:
         str: Smalltalk context information in text format
     """
     # Use the main function and extract text content
     json_result = db_rag_get_smalltalk(query)
-    
+
     result_dict = json_result
     if result_dict.get("status") == "success":
         return result_dict["content"]["smltk_results"]

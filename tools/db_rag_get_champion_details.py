@@ -6,6 +6,7 @@ Get champion information from PostgreSQL rag_vectors table
 
 from tools.db_rag_common import execute_universal_rag
 
+
 def db_rag_get_champion_details(champion_name: str) -> dict:
     """
     Search champion information from PostgreSQL rag_vectors (PostgreSQL version)

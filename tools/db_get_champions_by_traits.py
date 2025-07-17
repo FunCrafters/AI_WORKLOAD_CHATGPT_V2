@@ -4,6 +4,7 @@ PostgreSQL Database Tool: Get Champions by Traits
 Find champions that match specified traits (rarity, affinity, class, etc.)
 """
 import logging
+
 from db_postgres import execute_query
 
 # Logger

@@ -4,8 +4,8 @@ PostgreSQL Database Tool: Find Champions
 Search for champions by name with basic information from PostgreSQL database
 """
 
-import json
 import logging
+
 from db_postgres import execute_query
 
 # Logger

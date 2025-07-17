@@ -4,8 +4,6 @@ Tool: Get random greetings from database
 Fetch a random greeting from the greetings database
 """
 
-import json
-import os
 import logging
 
 # Import the global PostgreSQL connection
