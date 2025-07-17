@@ -56,4 +56,5 @@ pip install -r requirements.txt
 ```
 
 ### Typing rules
-I recommed to use `Pylance` Language server and typeCheckingMode set to `basic`. Typing settings are set for vs code in `.vscode/settings.json` file. 
+Use `Pylance` Language server and set typeCheckingMode set to `basic`. Typing settings for vs code are in `.vscode/settings.json` file. Install and use `Ruff` Linter.
+  
