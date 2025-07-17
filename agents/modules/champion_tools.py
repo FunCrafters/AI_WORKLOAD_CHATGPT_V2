@@ -18,6 +18,8 @@ def getChampionsDetails(
     if session:
         exch = session.get_memory().last_exchange()
 
+    return {}
+
 
 class ChampionTools(T3RNModule):
     def define_tools(self, session: "Session") -> List["T3RNTool"]:
