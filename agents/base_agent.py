@@ -4,22 +4,30 @@ Base Agent Class
 Foundation for all agents in the agent-based architecture
 """
 
-from dataclasses import dataclass
-import logging
 import json
+import logging
 import textwrap
-from typing import Dict, List, Any, Optional
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
+
 from openai.types.chat import ChatCompletionMessageParam
+
+from agents.agent_prompts import (
+    CHAMPIONS_AND_BOSSES,
+    CHARACTER_BASE_T3RN,
+    CHARACTER_BASE_T4RN,
+    CONTENT_RESTRICTIONS,
+    GAME_CONTEXT,
+    JSON_FORMAT,
+    MOBILE_FORMAT,
+    QUESTION_ANALYZER_INITIAL_TASK,
+    QUESTION_ANALYZER_RULES,
+    T3RN_INTRODUCTION,
+    TOOL_RESULTS_ANALYSIS,
+)
 from channel_logger import ChannelLogger
 from session import Session
-from agents.agent_prompts import (
-    CHARACTER_BASE_T3RN, CHARACTER_BASE_T4RN, GAME_CONTEXT, CONTENT_RESTRICTIONS, T3RN_INTRODUCTION,
-    JSON_FORMAT,MOBILE_FORMAT,
-    QUESTION_ANALYZER_INITIAL_TASK, 
-    QUESTION_ANALYZER_RULES, QUESTION_ANALYZER_TOOLS, CHAMPIONS_AND_BOSSES,
-    TOOL_RESULTS_ANALYSIS
-)
 
 
 def chat_completion_to_content_str(content: ChatCompletionMessageParam) -> str:
@@ -30,11 +38,12 @@ def chat_completion_to_content_str(content: ChatCompletionMessageParam) -> str:
 
     if isinstance(content_str, str):
         return content_str
-    
-    return str(''.join([str(x) for x in content_str]))
+
+    return str("".join([str(x) for x in content_str]))
 
 
 logger = logging.getLogger("Base Agent")
+
 
 @dataclass
 class AgentResult:
@@ -44,9 +53,9 @@ class AgentResult:
     @property
     def final_answer(self) -> Optional[str]:
         """Return content of the last assistant message, if any."""
-        if self.messages[-1]['role'] == 'assistant':
+        if self.messages[-1]["role"] == "assistant":
             return chat_completion_to_content_str(self.messages[-1])
-        
+
         return None
 
     @property
@@ -57,28 +66,34 @@ class AgentResult:
                 return chat_completion_to_content_str(msg)
         return ""
 
+
 class Agent(ABC):
-    def __init__(self, session: 'Session', channel_logger: 'ChannelLogger'):
-        self.tools = []
-        self.session_data: 'Session' = session
-        self.channel_logger: 'ChannelLogger' = channel_logger
+    def __init__(self, session: "Session", channel_logger: "ChannelLogger"):
+        self.session_data: "Session" = session
+        self.channel_logger: "ChannelLogger" = channel_logger
         # TODO is this correct? Trace back to session_data if it can be guaranteed to have memory manager
-        if self.session_data.memory_manager is None: 
+        if self.session_data.memory_manager is None:
             raise ValueError("Session must have a memory manager initialized")
-        
+
         self.memory_manager = self.session_data.memory_manager
 
     @abstractmethod
-    def get_system_prompt(self,) -> str:
+    def get_system_prompt(
+        self,
+    ) -> str:
         """Get system prompt for this agent"""
         pass
-    
+
     @abstractmethod
     def execute(self, context: str) -> AgentResult:
         """Execute the agent with given context"""
         pass
-    
-    def _log_state(self, messages: List['ChatCompletionMessageParam']|List[Any], response: str|None=None):
+
+    def _log_state(
+        self,
+        messages: List["ChatCompletionMessageParam"] | List[Any],
+        response: str | None = None,
+    ):
         try:
             agent_name = self.__class__.__name__
 
@@ -88,7 +103,9 @@ class Agent(ABC):
             short_messages = [
                 {
                     **message,
-                    'content': textwrap.shorten(chat_completion_to_content_str(message), width=500)
+                    "content": textwrap.shorten(
+                        chat_completion_to_content_str(message), width=500
+                    ),
                 }
                 for message in messages
             ]
@@ -102,12 +119,15 @@ class Agent(ABC):
                 "channel": session.channel,
                 "message_id": session.message_id,
                 "action_id": session.action_id,
-                "text_snippet": (session.user_message[:100] + '...') if session.user_message and len(session.user_message) > 100 else session.user_message,
+                "text_snippet": (session.user_message[:100] + "...")
+                if session.user_message and len(session.user_message) > 100
+                else session.user_message,
                 "memory_summary": {
                     "llm_summarization_count": mm.llm_summarization_count
-
-                } if mm else "No memory manager",
-                "messages": messages, 
+                }
+                if mm
+                else "No memory manager",
+                "messages": messages,
                 "json_data_keys": session.json_data,
                 "response": response,
             }
@@ -115,17 +135,17 @@ class Agent(ABC):
             pretty_log = f"""
 === AGENT STATE DUMP ===
 Agent: {agent_name}
-Session ID: {state_log['session_id']}
-Created At: {state_log['created_at']}
-Last Activity: {state_log['last_activity']}
-Msg Count: {state_log['message_count']} | Action ID: {state_log['action_id']}
-Channel: {state_log['channel']} | Msg ID: {state_log['message_id']}
-Text Snippet: {state_log['text_snippet']}
+Session ID: {state_log["session_id"]}
+Created At: {state_log["created_at"]}
+Last Activity: {state_log["last_activity"]}
+Msg Count: {state_log["message_count"]} | Action ID: {state_log["action_id"]}
+Channel: {state_log["channel"]} | Msg ID: {state_log["message_id"]}
+Text Snippet: {state_log["text_snippet"]}
 
 === Messages ===
 {json.dumps(short_messages, indent=2)}
 === LLM Response ===
-{state_log['response'] if state_log['response'] else "No response generated"}
+{state_log["response"] if state_log["response"] else "No response generated"}
 === JSON DATA ===
 {textwrap.shorten(json.dumps(session.json_data, indent=2), width=300)}
 """.strip()
@@ -137,36 +157,32 @@ Text Snippet: {state_log['text_snippet']}
 
     def build_prompt(self, *fragments) -> str:
         fragment_map = {
-            'CHARACTER_BASE_T3RN': CHARACTER_BASE_T3RN,
-            'CHARACTER_BASE_T4RN': CHARACTER_BASE_T4RN,
-            'GAME_CONTEXT': GAME_CONTEXT,
-            'CONTENT_RESTRICTIONS': CONTENT_RESTRICTIONS,
-            'T3RN_INTRODUCTION': T3RN_INTRODUCTION,
-            'JSON_FORMAT': JSON_FORMAT,
-            'MOBILE_FORMAT': MOBILE_FORMAT,
-            'QUESTION_ANALYZER_INITIAL_TASK': QUESTION_ANALYZER_INITIAL_TASK,
-            'CHAMPIONS_AND_BOSSES': CHAMPIONS_AND_BOSSES,
-            'QUESTION_ANALYZER_RULES': QUESTION_ANALYZER_RULES,
-            'QUESTION_ANALYZER_TOOLS': QUESTION_ANALYZER_TOOLS,
-            'TOOL_RESULTS_ANALYSIS': TOOL_RESULTS_ANALYSIS
+            "CHARACTER_BASE_T3RN": CHARACTER_BASE_T3RN,
+            "CHARACTER_BASE_T4RN": CHARACTER_BASE_T4RN,
+            "GAME_CONTEXT": GAME_CONTEXT,
+            "CONTENT_RESTRICTIONS": CONTENT_RESTRICTIONS,
+            "T3RN_INTRODUCTION": T3RN_INTRODUCTION,
+            "JSON_FORMAT": JSON_FORMAT,
+            "MOBILE_FORMAT": MOBILE_FORMAT,
+            "QUESTION_ANALYZER_INITIAL_TASK": QUESTION_ANALYZER_INITIAL_TASK,
+            "CHAMPIONS_AND_BOSSES": CHAMPIONS_AND_BOSSES,
+            "QUESTION_ANALYZER_RULES": QUESTION_ANALYZER_RULES,
+            # "QUESTION_ANALYZER_TOOLS": QUESTION_ANALYZER_TOOLS,
+            "TOOL_RESULTS_ANALYSIS": TOOL_RESULTS_ANALYSIS,
         }
-        
+
         prompt_parts = []
         for fragment in fragments:
             if isinstance(fragment, str):
                 if fragment in fragment_map:
                     prompt_parts.append(fragment_map[fragment])
                 else:
-                    # Treat as custom text
                     prompt_parts.append(fragment)
             else:
                 # Convert to string
                 prompt_parts.append(str(fragment))
-        
-        return '\n\n'.join(prompt_parts)
+
+        return "\n\n".join(prompt_parts)
 
     def get_config(self) -> Dict[str, Any]:
-        return {
-            'class_name': self.__class__.__name__
-        }
-    
+        return {"class_name": self.__class__.__name__}

@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Workload Function Schemas
-Function schemas for LLM tool calling
-"""
-
 def get_function_schemas():
     """
     Returns complete function schemas for all available tools
@@ -15,14 +9,9 @@ def get_function_schemas():
             "function": {
                 "name": "db_get_champions_list",
                 "description": "Get complete list of all available champions in the game",
-                "parameters": {
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                }
-            }
+                "parameters": {"type": "object", "properties": {}, "required": []},
+            },
         },
-        
         {
             "type": "function",
             "function": {
@@ -33,12 +22,12 @@ def get_function_schemas():
                     "properties": {
                         "champion_name": {
                             "type": "string",
-                            "description": "Exact name of the champion to get details for"
+                            "description": "Exact name of the champion to get details for",
                         }
                     },
-                    "required": ["champion_name"]
-                }
-            }
+                    "required": ["champion_name"],
+                },
+            },
         },
         {
             "type": "function",
@@ -50,14 +39,13 @@ def get_function_schemas():
                     "properties": {
                         "boss_name": {
                             "type": "string",
-                            "description": "Exact name of the boss to get details for"
+                            "description": "Exact name of the boss to get details for",
                         }
                     },
-                    "required": ["boss_name"]
-                }
-            }
+                    "required": ["boss_name"],
+                },
+            },
         },
-        
         {
             "type": "function",
             "function": {
@@ -68,12 +56,12 @@ def get_function_schemas():
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "Search query for UX information (e.g., 'interface', 'menu', 'navigation')"
+                            "description": "Search query for UX information (e.g., 'interface', 'menu', 'navigation')",
                         }
                     },
-                    "required": ["query"]
-                }
-            }
+                    "required": ["query"],
+                },
+            },
         },
         {
             "type": "function",
@@ -85,12 +73,12 @@ def get_function_schemas():
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "Search query for mechanics information (e.g., 'combat', 'abilities', 'stats')"
+                            "description": "Search query for mechanics information (e.g., 'combat', 'abilities', 'stats')",
                         }
                     },
-                    "required": ["query"]
-                }
-            }
+                    "required": ["query"],
+                },
+            },
         },
         {
             "type": "function",
@@ -102,12 +90,12 @@ def get_function_schemas():
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "Search query for gameplay information (e.g., 'strategy', 'tactics', 'progression')"
+                            "description": "Search query for gameplay information (e.g., 'strategy', 'tactics', 'progression')",
                         }
                     },
-                    "required": ["query"]
-                }
-            }
+                    "required": ["query"],
+                },
+            },
         },
         {
             "type": "function",
@@ -119,12 +107,12 @@ def get_function_schemas():
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "Search query for location information (e.g., 'Tatooine', 'planet descriptions', 'environments')"
+                            "description": "Search query for location information (e.g., 'Tatooine', 'planet descriptions', 'environments')",
                         }
                     },
-                    "required": ["query"]
-                }
-            }
+                    "required": ["query"],
+                },
+            },
         },
         {
             "type": "function",
@@ -136,14 +124,13 @@ def get_function_schemas():
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "Search query for battle information (e.g., 'famous battles', 'war strategies', 'conflicts')"
+                            "description": "Search query for battle information (e.g., 'famous battles', 'war strategies', 'conflicts')",
                         }
                     },
-                    "required": ["query"]
-                }
-            }
+                    "required": ["query"],
+                },
+            },
         },
-        
         {
             "type": "function",
             "function": {
@@ -154,14 +141,13 @@ def get_function_schemas():
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "Search query for knowledge base"
+                            "description": "Search query for knowledge base",
                         }
                     },
-                    "required": ["query"]
-                }
-            }
+                    "required": ["query"],
+                },
+            },
         },
-        
         # Smalltalk context tool
         {
             "type": "function",
@@ -173,14 +159,13 @@ def get_function_schemas():
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "Search query for smalltalk topics and casual conversation content. If empty, returns a random smalltalk topic."
+                            "description": "Search query for smalltalk topics and casual conversation content. If empty, returns a random smalltalk topic.",
                         }
                     },
-                    "required": []
-                }
-            }
+                    "required": [],
+                },
+            },
         },
-        
         # Screen context help tool
         {
             "type": "function",
@@ -192,15 +177,13 @@ def get_function_schemas():
                     "properties": {
                         "user_question": {
                             "type": "string",
-                            "description": "User's question about the current screen/interface (e.g., 'where am I?', 'what can I do here?', 'how to use this?', 'what is this screen for?')"
+                            "description": "User's question about the current screen/interface (e.g., 'where am I?', 'what can I do here?', 'how to use this?', 'what is this screen for?')",
                         }
                     },
-                    "required": ["user_question"]
-                }
-            }
+                    "required": ["user_question"],
+                },
+            },
         },
-        
-        
         # GCS Database tools
         {
             "type": "function",
@@ -212,12 +195,12 @@ def get_function_schemas():
                     "properties": {
                         "champion_name": {
                             "type": "string",
-                            "description": "Champion name or partial name to search for (e.g., 'Han Solo', 'Luke', 'Vader')"
+                            "description": "Champion name or partial name to search for (e.g., 'Han Solo', 'Luke', 'Vader')",
                         }
                     },
-                    "required": ["champion_name"]
-                }
-            }
+                    "required": ["champion_name"],
+                },
+            },
         },
         {
             "type": "function",
@@ -229,12 +212,12 @@ def get_function_schemas():
                     "properties": {
                         "champion_id": {
                             "type": "string",
-                            "description": "Exact champion ID to search for (e.g., 'champion.sw1.hansolo', 'champion.owk1.taladurith')"
+                            "description": "Exact champion ID to search for (e.g., 'champion.sw1.hansolo', 'champion.owk1.taladurith')",
                         }
                     },
-                    "required": ["champion_id"]
-                }
-            }
+                    "required": ["champion_id"],
+                },
+            },
         },
         {
             "type": "function",
@@ -246,12 +229,12 @@ def get_function_schemas():
                     "properties": {
                         "battle_name": {
                             "type": "string",
-                            "description": "Battle name or partial name to search for (e.g., 'Endor', 'Death Star', 'Hoth')"
+                            "description": "Battle name or partial name to search for (e.g., 'Endor', 'Death Star', 'Hoth')",
                         }
                     },
-                    "required": ["battle_name"]
-                }
-            }
+                    "required": ["battle_name"],
+                },
+            },
         },
         {
             "type": "function",
@@ -263,12 +246,12 @@ def get_function_schemas():
                     "properties": {
                         "battle_id": {
                             "type": "string",
-                            "description": "Exact battle ID to search for (e.g., 'D1_M1_B1', 'D2_M3_B7')"
+                            "description": "Exact battle ID to search for (e.g., 'D1_M1_B1', 'D2_M3_B7')",
                         }
                     },
-                    "required": ["battle_id"]
-                }
-            }
+                    "required": ["battle_id"],
+                },
+            },
         },
         {
             "type": "function",
@@ -280,24 +263,22 @@ def get_function_schemas():
                     "properties": {
                         "traits": {
                             "type": "array",
-                            "items": {
-                                "type": "string"
-                            },
+                            "items": {"type": "string"},
                             "description": "List of trait values to filter by (e.g., ['legendary', 'red'], ['epic', 'support']). Available: rarity (legendary/epic/rare/uncommon/common), affinity (red/blue/green/yellow/purple), class (attacker/defender/support)",
                             "minItems": 1,
-                            "maxItems": 3
+                            "maxItems": 3,
                         },
                         "limit": {
                             "type": "integer",
                             "description": "Maximum number of champions to return (default: 50, max: 100)",
                             "default": 50,
                             "minimum": 1,
-                            "maximum": 100
-                        }
+                            "maximum": 100,
+                        },
                     },
-                    "required": ["traits"]
-                }
-            }
+                    "required": ["traits"],
+                },
+            },
         },
         {
             "type": "function",
@@ -309,22 +290,20 @@ def get_function_schemas():
                     "properties": {
                         "champion_names": {
                             "type": "array",
-                            "items": {
-                                "type": "string"
-                            },
+                            "items": {"type": "string"},
                             "description": "List of champion names to compare (minimum 2 required, maximum 5, e.g., ['Han Solo', 'Luke Skywalker'])",
                             "minItems": 2,
-                            "maxItems": 5
+                            "maxItems": 5,
                         },
                         "detailed": {
                             "type": "boolean",
                             "description": "Whether to include detailed analysis (default: true)",
-                            "default": True
-                        }
+                            "default": True,
+                        },
                     },
-                    "required": ["champion_names"]
-                }
-            }
+                    "required": ["champion_names"],
+                },
+            },
         },
         {
             "type": "function",
@@ -336,12 +315,12 @@ def get_function_schemas():
                     "properties": {
                         "champion_name": {
                             "type": "string",
-                            "description": "Name of the champion"
+                            "description": "Name of the champion",
                         }
                     },
-                    "required": ["champion_name"]
-                }
-            }
+                    "required": ["champion_name"],
+                },
+            },
         },
         {
             "type": "function",
@@ -356,27 +335,27 @@ def get_function_schemas():
                             "description": "Number of top champions to return (default: 10, max: 50)",
                             "default": 10,
                             "minimum": 1,
-                            "maximum": 50
+                            "maximum": 50,
                         },
                         "rarity": {
                             "type": "string",
                             "description": "Filter by rarity (legendary, epic, rare, uncommon, common)",
-                            "enum": ["legendary", "epic", "rare", "uncommon", "common"]
+                            "enum": ["legendary", "epic", "rare", "uncommon", "common"],
                         },
                         "affinity": {
                             "type": "string",
                             "description": "Filter by affinity (red, blue, green, yellow, purple)",
-                            "enum": ["red", "blue", "green", "yellow", "purple"]
+                            "enum": ["red", "blue", "green", "yellow", "purple"],
                         },
                         "class_type": {
                             "type": "string",
                             "description": "Filter by class type (attacker, defender, support)",
-                            "enum": ["attacker", "defender", "support"]
-                        }
+                            "enum": ["attacker", "defender", "support"],
+                        },
                     },
-                    "required": []
-                }
-            }
+                    "required": [],
+                },
+            },
         },
         {
             "type": "function",
@@ -388,34 +367,34 @@ def get_function_schemas():
                     "properties": {
                         "character_name": {
                             "type": "string",
-                            "description": "Name of the reference champion to compare against (e.g., 'Han Solo', 'Luke', 'Vader')"
+                            "description": "Name of the reference champion to compare against (e.g., 'Han Solo', 'Luke', 'Vader')",
                         },
                         "limit": {
                             "type": "integer",
                             "description": "Maximum number of stronger champions to return (default: 20, max: 50)",
                             "default": 20,
                             "minimum": 1,
-                            "maximum": 50
+                            "maximum": 50,
                         },
                         "rarity": {
                             "type": "string",
                             "description": "Filter by rarity (legendary, epic, rare, uncommon, common)",
-                            "enum": ["legendary", "epic", "rare", "uncommon", "common"]
+                            "enum": ["legendary", "epic", "rare", "uncommon", "common"],
                         },
                         "affinity": {
                             "type": "string",
                             "description": "Filter by affinity (red, blue, green, yellow, purple)",
-                            "enum": ["red", "blue", "green", "yellow", "purple"]
+                            "enum": ["red", "blue", "green", "yellow", "purple"],
                         },
                         "class_type": {
                             "type": "string",
                             "description": "Filter by class type (attacker, defender, support)",
-                            "enum": ["attacker", "defender", "support"]
-                        }
+                            "enum": ["attacker", "defender", "support"],
+                        },
                     },
-                    "required": ["character_name"]
-                }
-            }
+                    "required": ["character_name"],
+                },
+            },
         },
         {
             "type": "function",
@@ -427,26 +406,26 @@ def get_function_schemas():
                     "properties": {
                         "name": {
                             "type": "string",
-                            "description": "Champion name or partial name to search for (e.g., 'Luke', 'Han Solo', 'Vader')"
+                            "description": "Champion name or partial name to search for (e.g., 'Luke', 'Han Solo', 'Vader')",
                         },
                         "limit": {
                             "type": "integer",
                             "description": "Maximum number of champions to return (default: 20, max: 100)",
                             "default": 20,
                             "minimum": 1,
-                            "maximum": 100
-                        }
+                            "maximum": 100,
+                        },
                     },
-                    "required": ["name"]
-                }
-            }
-        }
+                    "required": ["name"],
+                },
+            },
+        },
     ]
+
 
 def get_function_schemas_by_id():
     """
     Returns function schemas for tools that use internal IDs (temporarily disabled)
     These tools require internal database IDs instead of character names
     """
-    return [
-    ]
+    return []

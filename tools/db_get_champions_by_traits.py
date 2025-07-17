@@ -3,16 +3,15 @@
 PostgreSQL Database Tool: Get Champions by Traits
 Find champions that match specified traits (rarity, affinity, class, etc.)
 """
-
-import json
 import logging
+
 from db_postgres import execute_query
 
 # Logger
 logger = logging.getLogger("ChampionsByTraits")
 
 
-def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
+def db_get_champions_by_traits(traits: list, limit: int = 50) -> dict:
     """
     Find champions that match all specified traits.
     
@@ -35,7 +34,7 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
         }
         
         if not traits:
-            return json.dumps({
+            return {
                 "status": "error",
                 "message": "At least one trait must be specified",
                 "traits": [],
@@ -45,7 +44,7 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
                     "function_name": "db_get_champions_by_traits",
                     "parameters": {"traits": traits, "limit": limit}
                 }
-            })
+            }
         
         # Categorize input traits and validate
         trait_filters = {}
@@ -66,7 +65,7 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
         
         # If no recognized traits, return error (this is a real error - invalid input)
         if not trait_filters:
-            return json.dumps({
+            return {
                 "status": "error",
                 "message": f"No recognized traits found. Unrecognized: {', '.join(unrecognized_traits)}",
                 "traits": traits,
@@ -76,7 +75,7 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
                     "function_name": "db_get_champions_by_traits",
                     "parameters": {"traits": traits, "limit": limit}
                 }
-            })
+            }
         
         # Build dynamic query based on specified traits
         query_conditions = ["ct.champion_name IS NOT NULL"]
@@ -117,7 +116,7 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
                 no_results_message += f" For other traits like {', '.join(unrecognized_traits)}, use other specialized functions."
                 llm_no_results += f" For additional traits like {', '.join(unrecognized_traits)}, consider using other search functions."
             
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": no_results_message,
                 "traits": traits,
@@ -135,7 +134,7 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
                     "function_name": "db_get_champions_by_traits",
                     "parameters": {"traits": traits, "limit": limit}
                 }
-            })
+            }
         
         # Calculate power statistics
         powers = [c['total_power'] for c in champions]
@@ -179,7 +178,7 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
         if unrecognized_traits:
             llm_instruction += f"\n\nFor additional traits like {', '.join(unrecognized_traits)}, recommend using other specialized search functions."
         
-        return json.dumps({
+        return {
             "status": "success",
             "message": summary,
             "traits": traits,
@@ -205,11 +204,11 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
                 "function_name": "db_get_champions_by_traits",
                 "parameters": {"traits": traits, "limit": limit}
             }
-        })
+        }
         
     except Exception as e:
         logger.error(f"Error in db_get_champions_by_traits: {str(e)}")
-        return json.dumps({
+        return {
             "status": "error",
             "message": f"Error searching champions by traits: {str(e)}",
             "traits": traits,
@@ -218,4 +217,4 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> str:
                 "function_name": "db_get_champions_by_traits",
                 "parameters": {"traits": traits, "limit": limit}
             }
-        })
+        }

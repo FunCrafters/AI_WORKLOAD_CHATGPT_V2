@@ -1,35 +1,25 @@
 from typing import List
+
 from openai.types.chat import ChatCompletionMessageParam
+
 from agents.modules.module import T3RNModule
 from session import Session
-import logging
 
 
-class ScreenContextInjector(T3RNModule):
-    def inject_start(self, session: Session)  -> List[ChatCompletionMessageParam]:
-        
+class SummaryInjector(T3RNModule):
+    def inject_start(self, session: Session) -> List[ChatCompletionMessageParam]:
         summary = session.get_memory().memory["summary"]
-                    
+
         injection_messages = []
-        
+
         if summary:
-            injection_messages.append({
-                "role": "developer", 
-                "content": f"Previous conversation summary: {summary}"
-            })
+            injection_messages.append(
+                {
+                    "role": "developer",
+                    "content": f"Previous conversation summary: {summary}",
+                }
+            )
 
-            self.channel_logger.log_to_memory(f"🎯 Injected Summary of the conversation")
-        
+            self.channel_logger.log_to_memory("🎯 Injected Summary of the conversation")
+
         return injection_messages
-
-
-    def inject_before_user_message(
-        self, session: Session
-    ) -> List[ChatCompletionMessageParam]:
-        return []
-
-        
-    def inject_after_user_message(
-        self, session: Session
-    ) -> List[ChatCompletionMessageParam]:
-        return []

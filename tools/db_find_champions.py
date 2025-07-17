@@ -4,15 +4,15 @@ PostgreSQL Database Tool: Find Champions
 Search for champions by name with basic information from PostgreSQL database
 """
 
-import json
 import logging
+
 from db_postgres import execute_query
 
 # Logger
 logger = logging.getLogger("ChampionsSearch")
 
 
-def db_find_champions(name: str, limit: int = 20) -> str:
+def db_find_champions(name: str, limit: int = 20) -> dict:
     """
     Search for champions by name with basic information from PostgreSQL database.
     
@@ -43,7 +43,7 @@ def db_find_champions(name: str, limit: int = 20) -> str:
         search_results = execute_query(search_query, (search_param, limit))
         
         if not search_results:
-            return json.dumps({
+            return {
                 "status": "success",
                 "message": f"No champions found matching '{name}'",
                 "search_term": name,
@@ -54,7 +54,7 @@ def db_find_champions(name: str, limit: int = 20) -> str:
                     "function_name": "db_find_champions",
                     "parameters": {"name": name, "limit": limit}
                 }
-            })
+            }
         
         # Convert results to list of dictionaries
         champions = []
@@ -71,7 +71,7 @@ def db_find_champions(name: str, limit: int = 20) -> str:
                 "side_of_force": result["side_of_force"]
             })
         
-        return json.dumps({
+        return {
             "status": "success",
             "message": f"Found {len(champions)} champions matching '{name}'",
             "search_term": name,
@@ -83,11 +83,11 @@ def db_find_champions(name: str, limit: int = 20) -> str:
                 "function_name": "db_find_champions",
                 "parameters": {"name": name, "limit": limit}
             }
-        })
+        }
         
     except Exception as e:
         logger.error(f"Error in db_find_champions: {str(e)}")
-        return json.dumps({
+        return {
             "status": "error",
             "message": f"Error searching for champions: {str(e)}",
             "search_term": name,
@@ -97,4 +97,4 @@ def db_find_champions(name: str, limit: int = 20) -> str:
                 "function_name": "db_find_champions",
                 "parameters": {"name": name, "limit": limit}
             }
-        })
+        }

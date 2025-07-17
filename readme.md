@@ -55,5 +55,11 @@ Now you can pip install all deps!
 pip install -r requirements.txt 
 ```
 
+### Install required extensions
+For this project you should install recommended vs code extensions. 
+VS code should showup popup and it will ask if it can install recommended extensions.
+You can find them in `.vscode/extensions.json`.
+
 ### Typing rules
-I recommed to use `Pylance` Language server and typeCheckingMode set to `basic`. Typing settings are set for vs code in `.vscode/settings.json` file. 
+Use `Pylance` Language server and set typeCheckingMode set to `basic`. Typing settings for vs code are in `.vscode/settings.json` file. Install and use `Ruff` Linter.
+
