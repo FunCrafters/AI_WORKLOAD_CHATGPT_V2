@@ -42,11 +42,7 @@ def db_get_champion_details(champion_name: str) -> dict:
                 "status": "error",
                 "message": f"No champions found matching '{champion_name}'",
                 "champion_name": champion_name,
-                "champions": [],
-                "internal_info": {
-                    "function_name": "db_get_champion_details",
-                    "parameters": {"champion_name": champion_name},
-                },
+                "champions": []
             }
 
         if len(results) == 1:
@@ -68,11 +64,6 @@ def db_get_champion_details(champion_name: str) -> dict:
                 "message": f"Champion details retrieved for '{champion['champion_name']}'",
                 "champion_name": champion["champion_name"],
                 "champion_details": champion_details,
-                "llm_cache_duration": 3,
-                "internal_info": {
-                    "function_name": "db_get_champion_details",
-                    "parameters": {"champion_name": champion_name},
-                },
             }
         else:
             # Multiple champions found - return list
@@ -92,10 +83,6 @@ def db_get_champion_details(champion_name: str) -> dict:
                 "multiple_champions": champions_list,
                 "total_found": len(results),
                 "guidance": "Multiple champions found. Use db_get_champion_details with specific champion name for detailed analysis.",
-                "internal_info": {
-                    "function_name": "db_get_champion_details",
-                    "parameters": {"champion_name": champion_name},
-                },
             }
 
     except Exception as e:

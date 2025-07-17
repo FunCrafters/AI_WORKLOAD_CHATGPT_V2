@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Common functions for RAG operations
-Shared utilities for all db_rag_get_* functions
-"""
-
 import logging
 import random
 from typing import Any, Dict, List, Optional
@@ -15,7 +9,7 @@ from workload_embedding import get_embedding_function
 
 # Constants
 DEFAULT_RAG_SIMILARITY_THRESHOLD = 0.4
-DEFAULT_RAG_SIMILARITY_LIMIT = 10
+DEFAULT_RAG_SIMILARITY_LIMIT = 4
 
 # Logger
 logger = logging.getLogger("DB RAG Common")
@@ -38,19 +32,34 @@ def generate_query_embedding(query: str) -> Optional[List[float]]:
         return None
 
 
-# TODO replace with numpy,
-# Add EPSILON for query_embedding being in cache.
-# or remove it completly!
+def generate_embedding_from_conv(
+    conversation: List[Dict[str, Any]],
+) -> Optional[List[float]]:
+    embedding_function = get_embedding_function()
+    if not embedding_function:
+        logger.error("Failed to get embedding function")
+        return None
+
+    messages = []
+    for message in conversation:
+        if message["role"] in ["user", "assistant"]:
+            messages.append(message)
+
+    if not messages:
+        return None
+
+    combined_text = "\n".join(f"{msg['role']}: {msg['content']}" for msg in messages)
+
+    return embedding_function.embed_query(combined_text)
+
+
 rag_search_cache = LRUCache(maxsize=512)
 
 
+# TODO query_embedding should have EPS for cache.
 @cached(
     cache=rag_search_cache,
-    key=lambda query_embedding,
-    chunk_section=None,
-    search_qa=False,
-    threshold=DEFAULT_RAG_SIMILARITY_THRESHOLD,
-    limit=DEFAULT_RAG_SIMILARITY_LIMIT: (
+    key=lambda query_embedding, chunk_section, search_qa, threshold, limit: (
         tuple(query_embedding),
         chunk_section,
         search_qa,

@@ -185,7 +185,7 @@ AVAILABLE TOOLS:
   
 - db_get_lore_details: Get lore information from database. Use when user asks about character lore, background, or detailed information.
   Examples: 
-     •"Give me a report on Luke Skywalker" → use db_get_lore_details("Luke Skywalker")
+    • "Give me a report on Luke Skywalker" → use db_get_lore_details("Luke Skywalker")
     • "I want a report about Darth Vader" → use db_get_lore_details("Darth Vader")
     • "Create a report for Han Solo" → use db_get_lore_details("Han Solo")
     • "Generate a lore report on Princess Leia" → use db_get_lore_details("Princess Leia")

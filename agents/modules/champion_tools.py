@@ -1,8 +1,10 @@
+import json
 from typing import List
 
 from agents.modules.module import T3RNModule
 from session import Session
 from tools.db_get_champion_details import db_get_champion_details
+from tools.db_get_champions_list import db_get_champions_list_text
 from tools.db_rag_get_boss_details import db_rag_get_boss_details
 from tools.db_rag_get_champion_details import db_rag_get_champion_details
 from tools_functions import T3RNTool
@@ -10,7 +12,7 @@ from tools_functions import T3RNTool
 
 def getChampionsDetails(
     champion_name: str, prefer_lore: bool = False, session: Session | None = None
-) -> dict:
+) -> str:
     champion = db_get_champion_details(champion_name)
     boss = db_rag_get_boss_details(champion_name)
     champ_rag = db_rag_get_champion_details(champion_name)
@@ -18,7 +20,26 @@ def getChampionsDetails(
     if session:
         exch = session.get_memory().last_exchange()
 
-    return {}
+    response = ""
+
+    if champion["status"] == "success":
+        response += f"{json.dumps(champion)}\n"
+    if boss["status"] == "success":
+        response += f"{json.dumps(boss)}\n"
+    if champ_rag["status"] == "success":
+        response += f"{json.dumps(champ_rag)}\n"
+
+    if champion["status"] != "success":
+        champ_list = db_get_champions_list_text()
+        return json.dumps(
+            {
+                "status": "error",
+                "message": f"No details found for champion '{champion_name}'. List of available champions: {champ_list}",
+                "champion_name": champion_name,
+            }
+        )
+    else:
+        return response
 
 
 class ChampionTools(T3RNModule):
@@ -42,6 +63,10 @@ When to not use this tool:
 * When the character is not an champion in the game.
 * When the user specifically asks for smalltalk or casual conversation topics related to the champion.
 * Revelant information is already provided in context of the conversation.
+Examples:
+* "Tell me everything about Han Solo" → use getChampionsDetails("Han Solo")
+* "Get full details for Luke Skywalker" → use getChampionsDetails("Luke Skywalker")
+* "Who is Chewbacca" → use getChampionsDetails("Chewbacca")
 """,
                 parameters={
                     "type": "object",

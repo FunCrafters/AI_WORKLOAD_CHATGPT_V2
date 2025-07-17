@@ -6,7 +6,7 @@ from agents.modules.module import T3RNModule
 from session import Session
 
 
-class ScreenContextInjector(T3RNModule):
+class SummaryInjector(T3RNModule):
     def inject_start(self, session: Session) -> List[ChatCompletionMessageParam]:
         summary = session.get_memory().memory["summary"]
 

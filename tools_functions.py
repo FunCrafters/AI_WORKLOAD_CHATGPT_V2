@@ -77,6 +77,8 @@ logger = logging.getLogger("Workload LLM Tools")
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict
 
+from openai.types.chat import ChatCompletionToolParam
+
 
 @dataclass
 class T3RNTool:
@@ -86,12 +88,12 @@ class T3RNTool:
     """
 
     name: str
-    function: Callable[..., dict]
+    function: Callable[..., dict | str]
     description: str
     system_prompt: str
     parameters: Dict[str, Any] = field(default_factory=dict)
 
-    def get_function_schema(self) -> Dict[str, Any]:
+    def get_function_schema(self) -> "ChatCompletionToolParam":
         return {
             "type": "function",
             "function": {
@@ -101,12 +103,6 @@ class T3RNTool:
                 or {"type": "object", "properties": {}, "required": []},
             },
         }
-
-    def get_llm_entry(self) -> Dict[str, Any]:
-        return {"function": self.function, "description": self.description}
-
-    def get_system_prompt_entry(self) -> str:
-        return f"# `{self.name}`\n{self.system_prompt}"
 
 
 # Available LLM tools for function calling

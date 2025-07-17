@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import List
+from typing import Iterable, List
 
 from openai.types.chat import (
     ChatCompletionMessageParam,
@@ -15,7 +15,25 @@ class T3RNModule(ABC):
     This is an abstraction over T3RN modules. It can be used to inject messages into the chat session at various points.
     It is designed to be used with the T3RN agent system, allowing for modular message injection into the chat flow.
 
+    # Callbacks order
+    The order of injection is important:
+    1. `before_user_message` - it is called on the beginning of execution
+    2. `define_tools` - it is called to define tools available for the agent
+    2. `inject_start` - it collects messages that will be injected at the start of the every session
+    3. `inject_before_user_message` - it collects messages that will be injected before the user message
+    4. `inject_after_user_message` - it collects messages that will be injected after the user message
+    5. `after_user_message` - it is called after the user message is processed, allowing for modifications to the session.
 
+    # Prompt structure
+    ```
+    <SYSTEM_PROMPT>
+    <inject_start>
+    <MESSAGE_HISTORY>
+    <inject_before_user_message>
+    <USER_MESSAGE>
+    <inject_after_user_message>
+    <LLM_RESPONSES>
+    ```
     """
 
     def __init__(self, channel_logger: ChannelLogger):
@@ -81,5 +99,21 @@ class T3RNModule(ABC):
         """
         return []
 
-    def define_tools(self, session: "Session") -> List["T3RNTool"]:
+    def define_tools(self, session: "Session") -> Iterable["T3RNTool"]:
+        """
+        Should define tools that are available for the agent.
+        """
         return []
+
+
+def build_system_instructions_from_tools(tools: List["T3RNTool"]) -> str:
+    """
+    Build system instructions from the tools.
+    """
+    if not tools:
+        return ""
+
+    instructions = "You have access to the following tools:\n"
+    for tool in tools:
+        instructions += f"# {tool.name}:\n{tool.system_prompt}\n"
+    return instructions

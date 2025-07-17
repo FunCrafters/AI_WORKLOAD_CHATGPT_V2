@@ -23,7 +23,6 @@ from agents.agent_prompts import (
     MOBILE_FORMAT,
     QUESTION_ANALYZER_INITIAL_TASK,
     QUESTION_ANALYZER_RULES,
-    QUESTION_ANALYZER_TOOLS,
     T3RN_INTRODUCTION,
     TOOL_RESULTS_ANALYSIS,
 )
@@ -70,7 +69,6 @@ class AgentResult:
 
 class Agent(ABC):
     def __init__(self, session: "Session", channel_logger: "ChannelLogger"):
-        self.tools = []
         self.session_data: "Session" = session
         self.channel_logger: "ChannelLogger" = channel_logger
         # TODO is this correct? Trace back to session_data if it can be guaranteed to have memory manager
@@ -169,7 +167,7 @@ Text Snippet: {state_log["text_snippet"]}
             "QUESTION_ANALYZER_INITIAL_TASK": QUESTION_ANALYZER_INITIAL_TASK,
             "CHAMPIONS_AND_BOSSES": CHAMPIONS_AND_BOSSES,
             "QUESTION_ANALYZER_RULES": QUESTION_ANALYZER_RULES,
-            "QUESTION_ANALYZER_TOOLS": QUESTION_ANALYZER_TOOLS,
+            # "QUESTION_ANALYZER_TOOLS": QUESTION_ANALYZER_TOOLS,
             "TOOL_RESULTS_ANALYSIS": TOOL_RESULTS_ANALYSIS,
         }
 
@@ -179,7 +177,6 @@ Text Snippet: {state_log["text_snippet"]}
                 if fragment in fragment_map:
                     prompt_parts.append(fragment_map[fragment])
                 else:
-                    # Treat as custom text
                     prompt_parts.append(fragment)
             else:
                 # Convert to string

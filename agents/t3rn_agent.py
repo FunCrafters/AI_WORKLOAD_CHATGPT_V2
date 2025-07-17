@@ -9,7 +9,7 @@ import json
 import os
 import random
 import time
-from typing import Callable, List, Optional
+from typing import Callable, List
 
 import openai
 from openai import NOT_GIVEN
@@ -22,19 +22,17 @@ from openai.types.chat.chat_completion_message_tool_call import Function
 
 from agents.agent_prompts import T3RN_FINAL_ITERATION_PROMPT
 from agents.base_agent import Agent, AgentResult
-from agents.modules import screen_injector
-from agents.modules.module import T3RNModule
+from agents.modules import basic_tools, champion_tools, screen_injector, summary
+from agents.modules.module import T3RNModule, build_system_instructions_from_tools
 from channel_logger import ChannelLogger
 from session import Session
 from tools.db_get_champions_list import db_get_champions_list_text
-from tools_functions import available_llm_functions
-from tools_schemas import get_function_schemas
+from tools_functions import T3RNTool, available_llm_functions
 
 
 class T3RNAgent(Agent):
     def __init__(self, session: "Session", channel_logger: "ChannelLogger"):
         super().__init__(session, channel_logger)
-        self.tools = get_function_schemas()
 
         self.openai_client = None
 
@@ -51,14 +49,20 @@ class T3RNAgent(Agent):
         self.MODULES: List[T3RNModule] = []
 
         self.MODULES.append(screen_injector.ScreenContextInjector(self.channel_logger))
+        self.MODULES.append(summary.SummaryInjector(self.channel_logger))
+        self.MODULES.append(basic_tools.BasicTools(self.channel_logger))
+        self.MODULES.append(champion_tools.ChampionTools(self.channel_logger))
 
-        try:
-            self.champions_list = db_get_champions_list_text()
-        except Exception:
-            self.champions_list = "Champions list not available"
+    def collect_tools(self) -> List["T3RNTool"]:
+        tools: List["T3RNTool"] = []
+        for module in self.MODULES:
+            tools.extend(module.define_tools(self.session_data))
+        return tools
 
-    def get_system_prompt(self) -> str:
-        champions_and_bosses = f"""CHAMPIONS LIST: {self.champions_list}"""
+    def get_system_prompt(self, tools: List["T3RNTool"]) -> str:
+        self.champions_list = db_get_champions_list_text()
+        champions_and_bosses = f"""# CHAMPIONS LIST:\n{self.champions_list}"""
+        tool_prompts = build_system_instructions_from_tools(tools)
 
         character_prompt = random.choice(["CHARACTER_BASE_T3RN", "CHARACTER_BASE_T4RN"])
 
@@ -75,7 +79,7 @@ class T3RNAgent(Agent):
             "CHAMPIONS_AND_BOSSES",
             champions_and_bosses,
             "CONTENT_RESTRICTIONS",
-            "QUESTION_ANALYZER_TOOLS",
+            tool_prompts,
             "TOOL_RESULTS_ANALYSIS",
             "MOBILE_FORMAT",
         )
@@ -83,7 +87,8 @@ class T3RNAgent(Agent):
     def call_llm(
         self,
         messages: List["ChatCompletionMessageParam"],
-        tools: Optional[List] = None,
+        tools: List["T3RNTool"],
+        use_tools: bool = True,
         use_json: bool = False,
     ) -> "ChatCompletion":
         if self.openai_client is not None:
@@ -94,8 +99,8 @@ class T3RNAgent(Agent):
                     messages=messages,
                     temperature=0.3,
                     max_completion_tokens=8000,
-                    tools=tools if tools else NOT_GIVEN,
-                    tool_choice="auto" if tools else NOT_GIVEN,
+                    tools=[tool.get_function_schema() for tool in tools],
+                    tool_choice="auto" if tools else "none",
                     response_format={"type": "json_object"} if use_json else NOT_GIVEN,
                 )
 
@@ -197,12 +202,12 @@ class T3RNAgent(Agent):
             self.channel_logger.log_to_logs("⚠️ No tool calls provided")
             return []
 
-        enhanced_tool_calls = self.add_complementary_tools(tool_calls)
+        # enhanced_tool_calls = self.add_complementary_tools(tool_calls)
         self.channel_logger.log_to_logs(
-            f"🔧 Will execute {len(enhanced_tool_calls)} tools total (including complementary)"
+            f"🔧 Will execute {len(tool_calls)} tools total (including complementary)"
         )
 
-        for idx, tool_call in enumerate(enhanced_tool_calls):
+        for idx, tool_call in enumerate(tool_calls):
             function_name = tool_call.function.name
             function_args = tool_call.function.arguments
 
@@ -276,6 +281,8 @@ class T3RNAgent(Agent):
         for module in self.MODULES:
             self.session_data = module.before_user_message(self.session_data)
 
+        tools = self.collect_tools()
+
         memory_messages = self.memory_manager.prepare_messages_for_agent()
 
         # Messages added to the beginning of the conversation
@@ -284,7 +291,7 @@ class T3RNAgent(Agent):
         current_messages: List["ChatCompletionMessageParam"] = []
 
         # system messages are always on the begining of the conv.
-        system_prompt = self.get_system_prompt()
+        system_prompt = self.get_system_prompt(tools)
         system_messages.append({"role": "system", "content": system_prompt})
 
         for module in self.MODULES:
@@ -318,6 +325,7 @@ class T3RNAgent(Agent):
                     if iteration == MAX_ITERATIONS:
                         # TODO if we are about to keep this message then will it degenerate
                         # TODO performance of chatbot (it will try to answer in next iteration)
+                        # TODO Maybe forcing LLM with use_tool=False is enough? Check that later.
                         messages = (
                             system_messages
                             + memory_messages
@@ -330,10 +338,10 @@ class T3RNAgent(Agent):
                             ]
                         )
 
-                        response = self.call_llm(messages, tools=None)
+                        response = self.call_llm(messages, tools=tools, use_tools=False)
                     else:
                         messages = system_messages + memory_messages + current_messages
-                        response = self.call_llm(messages, tools=self.tools)
+                        response = self.call_llm(messages, tools=tools, use_tools=True)
 
                     if (
                         iteration < MAX_ITERATIONS
