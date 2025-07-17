@@ -13,7 +13,6 @@ from agents.memory_manager import MemoryManager
 # Import channel logger
 from channel_logger import ChannelLogger
 from session import Session
-from tools_functions import available_llm_functions
 from workload_agent_system import process_llm_agents
 from workload_tools import ContextAdapter, create_response, send_response
 
@@ -49,9 +48,6 @@ def process_main_channel(client, session: "Session"):
     # Initial logging
     channel_logger.log_to_logs(f'🚀 Processing with Agent-Based System: "{text}"')
     channel_logger.log_to_logs(f"💬 Session ID: {session_id}")
-    channel_logger.log_to_logs(
-        f"🔧 Available tools: {len(available_llm_functions)} tools"
-    )
 
     logger.info("   AGENT-BASED PROCESSING", extra=dict(session_id=session_id))
 
@@ -65,6 +61,7 @@ def process_main_channel(client, session: "Session"):
             f"✅ Agent processing completed in {process_time:.2f} seconds"
         )
         channel_logger.log_to_logs(f"📝 Answer length: {len(final_answer)} characters")
+        session.memory_manager.log_memory()
 
         chat_response = create_response(0, final_answer, session_id, message_id)
         send_response(client, chat_response, session_id, channel or 0, message_id)

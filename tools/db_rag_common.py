@@ -3,6 +3,7 @@ import random
 from typing import Any, Dict, List, Optional
 
 from cachetools import LRUCache, cached
+from openai.types.chat import ChatCompletionMessageParam
 
 from db_postgres import execute_query
 from workload_embedding import get_embedding_function
@@ -33,7 +34,7 @@ def generate_query_embedding(query: str) -> Optional[List[float]]:
 
 
 def generate_embedding_from_conv(
-    conversation: List[Dict[str, Any]],
+    conversation: List["ChatCompletionMessageParam"],
 ) -> Optional[List[float]]:
     embedding_function = get_embedding_function()
     if not embedding_function:
@@ -357,3 +358,45 @@ def execute_universal_rag(
             error_message=f"Database error while searching for {category} '{query}'",
             error_details=str(e),
         )
+
+
+def search_qa_similarity(
+    query_embedding: List[float],
+    limit: int = DEFAULT_RAG_SIMILARITY_LIMIT,
+) -> List[Dict[str, Any]]:
+    """
+    Search QA vectors table for similar content using embeddings
+
+    Args:
+        query_embedding: Vector embedding to compare against
+        threshold: Minimum similarity threshold
+        limit: Maximum number of results
+
+    Returns:
+        List of dictionaries with similarity score and QA content
+    """
+    try:
+        query = """
+            SELECT 
+                1 - (embedding <=> %s::vector) as similarity,
+                chunk_text,
+                embedding
+            FROM rag_qa_vectors
+            ORDER BY similarity DESC
+            LIMIT %s
+        """
+        params = (query_embedding, limit)
+
+        results = execute_query(query, params)
+        return [
+            {
+            "similarity": float(r["similarity"]),
+            "content": r["chunk_text"],
+            "embedding": [float(x) for x in r["embedding"].strip('[]').split(',')],
+            }
+            for r in results
+        ]
+
+    except Exception as e:
+        logger.error(f"Error searching QA vectors: {str(e)}")
+        return []

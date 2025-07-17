@@ -13,7 +13,6 @@ from session import Session
 from workload_chat import process_main_channel
 from workload_config import SERVER_HOST, SERVER_PORT, WORKLOAD_CONFIG
 from workload_embedding import initialize_embeddings_and_vectorstore
-from workload_logs import build_cache_log, build_tools_log, build_vectorstore_log
 from workload_tools import create_response, send_message, send_response
 
 # Load environment variables from .env file
@@ -364,34 +363,6 @@ def process_json_data_message(client, session: Session, data: dict):
                 session_id=session.session_id, channel=2, message_id=session.message_id
             ),
         )
-
-        # TODO Why sleep?
-        time.sleep(0.1)
-        # Send the response
-        send_message(client, response)
-        time.sleep(0.1)
-
-        # Send database information to Database channel (1)
-        build_vectorstore_log(client, session.session_id, f"init_{int(time.time())}")
-        time.sleep(0.1)
-
-        # Send cache information to Caches channel (2)
-        build_cache_log(client, session.session_id, f"init_{int(time.time())}")
-        time.sleep(0.1)
-
-        # Send tools information to Tools channel (3)
-        build_tools_log(client, session.session_id, f"init_{int(time.time())}")
-        time.sleep(0.1)
-
-        # Send model preload log to Logs channel (8) if available
-        # TODO what is model_preload_log?
-        # global model_preload_log
-        # if 'model_preload_log' in globals() and model_preload_log:
-        #     preload_text = "\n".join(model_preload_log)
-        #     preload_response = create_response(8, preload_text, session.session_id, f"init_{int(time.time())}_preload")
-        #     send_response(client, preload_response, session.session_id, 8, f"init_{int(time.time())}_preload")
-        #     time.sleep(0.1)
-        #     logger.info("   MODEL PRELOAD LOG SENT", extra=dict(session_id=session.session_id, channel=8))
     else:
         # Log error and send error response
         logger.info(
@@ -548,7 +519,7 @@ def reconnect_loop():
                     try:
                         # Try to send a heartbeat message
                         client.sendall(b"")
-                    except:
+                    except socket.error:
                         # If it fails, socket is disconnected
                         logger.error("CONNECTION_BROKEN: socket disconnected")
                         break
@@ -565,8 +536,8 @@ def reconnect_loop():
             if client:
                 try:
                     client.close()
-                except:
-                    pass
+                except socket.error:
+                    logger.error("CLOSE_ERROR: failed to close socket")
                 logger.info("CONNECTION_CLOSED")
 
         logger.info(f"CONNECTION_LOST: retry in {retry_interval} seconds")

@@ -25,6 +25,8 @@ from agents.modules import (
     basic_tools,
     champion_comp,
     champion_tools,
+    proactive_smalltalk,
+    random_greetings,
     screen_injector,
     summary,
 )
@@ -56,6 +58,8 @@ class T3RNAgent(Agent):
         self.MODULES.append(basic_tools.BasicTools(self.channel_logger))
         self.MODULES.append(champion_tools.ChampionTools(self.channel_logger))
         self.MODULES.append(champion_comp.ChampionCompTools(self.channel_logger))
+        self.MODULES.append(random_greetings.RandomGreetings(self.channel_logger))
+        self.MODULES.append(proactive_smalltalk.ProactiveSmalltalk(self.channel_logger))
 
     def collect_tools(self) -> List["T3RNTool"]:
         tools: List["T3RNTool"] = []
@@ -231,6 +235,8 @@ class T3RNAgent(Agent):
 
         if self.memory_manager is None:
             raise Exception("MemoryManager not set - should be passed from session")
+
+        self.memory_manager.memory["last_user_message"] = user_message
 
         for module in self.MODULES:
             self.session_data = module.before_user_message(self.session_data)

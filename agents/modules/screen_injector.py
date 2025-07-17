@@ -3,7 +3,6 @@ from typing import List
 from openai.types.chat import ChatCompletionMessageParam
 
 from agents.modules.module import T3RNModule
-from proactive_tool_executor import get_proactive_tool_messages
 from session import Session
 
 
@@ -12,33 +11,15 @@ class ScreenContextInjector(T3RNModule):
         if session.json_data is None:
             return []
 
-        json_data = session.json_data
-
-        proactive_messages, prompt_injection = get_proactive_tool_messages(json_data)
+        _json_data = session.json_data
 
         injection_messages = []
 
-        # Add screen context as assistant message if we have prompt injection
-        if prompt_injection:
-            injection_messages.append(
-                {
-                    "role": "assistant",
-                    "content": f"I can see you're currently on a specific screen. Let me provide context: {prompt_injection}",
-                }
-            )
-
-            self.channel_logger.log_to_memory(
-                f"🎯 Injected screen context: {len(prompt_injection)} chars"
-            )
-
-        # Add proactive tool results and cache them
-        if proactive_messages:
-            injection_messages.extend(proactive_messages)
-
-            # self._cache_proactive_tool_results(proactive_messages)
-
-            self.channel_logger.log_to_memory(
-                f"🔧 Injected {len(proactive_messages)} proactive tool messages"
-            )
+        injection_messages.append(
+            {
+                "role": "assistant",
+                "content": "I can see you're currently on a specific screen.",
+            }
+        )
 
         return injection_messages

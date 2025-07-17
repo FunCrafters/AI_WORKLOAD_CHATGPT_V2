@@ -1,5 +1,6 @@
 import logging
 import random
+from typing import List
 
 from db_postgres import execute_query
 from workload_embedding import get_embedding_function
@@ -233,6 +234,60 @@ def db_rag_get_smalltalk(query: str = "") -> dict:
                 "error": str(e),
             },
         }
+
+
+def db_rag_get_smalltalk_from_embedding(
+    embeddings: List[float],
+    RAG_SMALLTALK_SEARCH_LIMIT: int = 2,
+) -> List[dict]:
+    """
+    Search smalltalk knowledge base using embeddings
+
+    Args:
+        embeddings: List of floats representing the query embedding
+        SIMILARITY_THRESHOLD: Minimum similarity score to consider a match
+        RAG_SMALLTALK_SEARCH_LIMIT: Number of results to return
+
+    Returns:
+        dict: Search results with status and content
+    """
+    if not embeddings:
+        return []
+
+    # Convert embedding to PostgreSQL vector format
+    embedding_str = "[" + ",".join(map(str, embeddings)) + "]"
+
+    # Perform similarity search
+    similarity_sql = """
+    SELECT topic, category, knowledge_text, embedding,
+           1 - (embedding <=> %s::vector) as similarity
+    FROM smalltalk_vectors
+    ORDER BY similarity DESC
+    LIMIT %s
+    """
+
+    results = execute_query(
+        similarity_sql,
+        (
+            embedding_str,
+            RAG_SMALLTALK_SEARCH_LIMIT,
+        ),
+    )
+
+    if not results:
+        return []
+
+    # Format results in same structure as search_qa_similarity
+    formatted_results = [
+        {
+            "similarity": float(r["similarity"]),
+            "content": f"### {r['topic']} ({r['category']})\n{r['knowledge_text']}",
+            "embedding": [float(x) for x in r["embedding"].strip("[]").split(",")],
+        }
+        for r in results
+    ]
+
+    return formatted_results
 
 
 def db_get_smalltalk_text(query: str = "") -> str:

@@ -4,6 +4,7 @@ Simple Memory Manager
 Follows user-defined simple rules for conversation memory management
 """
 
+import json
 import os
 import textwrap
 from typing import List, TypedDict
@@ -21,16 +22,15 @@ from channel_logger import ChannelLogger
 class ConversationMemory(TypedDict):
     summary: str | None
     running_messages: List["ChatCompletionMessageParam"]
-    all_messages: List["ChatCompletionMessageParam"]
+    old_messages: List["ChatCompletionMessageParam"]
+    last_user_message: str | None
 
 
 # TODO test diffrent summarization heuristics
 # TODO split into MemoryMenger, CacheManager and MessageInjector
 class MemoryManager:
     def __init__(self, channel_logger: "ChannelLogger"):
-        self.max_exchanges = (
-            20  # Max exchanges in list (including agent messages and tool calls)
-        )
+        self.max_exchanges = 20  # Max exchanges in list (including agent messages)
         self.max_summary_size = 4000  # Max summary size before LLM compression
         self.summary_target_after_llm = 1000  # Target size after LLM summarization
 
@@ -59,8 +59,9 @@ class MemoryManager:
         """Initialize simple conversation memory structure"""
         return {
             "running_messages": [],
-            "all_messages": [],
+            "old_messages": [],
             "summary": "",
+            "last_user_message": None,
         }
 
     def prepare_messages_for_agent(self) -> List["ChatCompletionMessageParam"]:
@@ -73,12 +74,23 @@ class MemoryManager:
         return messages
 
     def last_exchange(self) -> List["ChatCompletionMessageParam"]:
-        if len(self.memory["running_messages"]) < 2:
-            return []
+        messages = (
+            self.memory["old_messages"]
+            + self.memory["running_messages"]
+            + [
+                {
+                    "role": "user",
+                    "content": self.memory["last_user_message"] or "",
+                }
+            ]
+        )
+
+        if len(messages) == 1:
+            return [messages[0]]
 
         last_assistant_idx = None
-        for i in range(len(self.memory["running_messages"]) - 1, -1, -1):
-            if self.memory["running_messages"][i]["role"] == "assistant":
+        for i in range(len(messages) - 1, -1, -1):
+            if messages[i]["role"] == "assistant":
                 last_assistant_idx = i
                 break
 
@@ -86,161 +98,18 @@ class MemoryManager:
             return []
 
         for i in range(last_assistant_idx - 1, -1, -1):
-            if self.memory["running_messages"][i]["role"] == "user":
+            if messages[i]["role"] == "user":
                 return [
-                    self.memory["running_messages"][i],
-                    self.memory["running_messages"][last_assistant_idx],
+                    messages[i],
+                    messages[last_assistant_idx],
                 ]
 
         return []
 
-    # def _generate_tool_cache_key(self, tool_name: str, parameters: Dict[str, Any]) -> str:
-    #     """Generate unique cache key for tool call"""
-    #     # Create a deterministic hash from tool name and parameters
-    #     params_json = json.dumps(parameters, sort_keys=True)
-    #     hash_input = f"{tool_name}:{params_json}"
-    #     return hashlib.md5(hash_input.encode()).hexdigest()
-
-    # def add_tool_to_cache(self, tool_name: str, parameters: Dict[str, Any],
-    #                      result: str, llm_cache_duration: int) -> None:
-    #     """Add tool result to cache with specified duration"""
-    #     if llm_cache_duration <= 0:
-    #         return  # Don't cache if duration is 0
-
-    #     cache_key = self._generate_tool_cache_key(tool_name, parameters)
-
-    #     call_id = f"call_cached_{uuid.uuid4().hex[:8]}"
-
-    #     cache_entry = {
-    #         'tool_name': tool_name,
-    #         'parameters': parameters,
-    #         'result': result,
-    #         'remaining_duration': llm_cache_duration,
-    #         'original_duration': llm_cache_duration,
-    #         'call_id': call_id,
-    #         'cached_at': time.time()
-    #     }
-
-    #     self.memory['tool_cache'][cache_key] = cache_entry
-
-    #     self.channal_logger.log_to_memory(f"🗄️ Cached tool {tool_name} for {llm_cache_duration} exchanges")
-
-    # # TODO check what this function is doing and what is cache all about., Why it is with memory?
-    # def lookup_tool_in_cache(self, tool_name: str, parameters: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    #     """Look up tool result in cache and refresh duration if found"""
-    #     cache_key = self._generate_tool_cache_key(tool_name, parameters)
-
-    #     if cache_key in self.memory['tool_cache']:
-    #         cache_entry = self.memory['tool_cache'][cache_key]
-
-    #         # Refresh the duration to original value
-    #         cache_entry['remaining_duration'] = cache_entry['original_duration']
-
-    #         self.channal_logger.log_to_memory(f"♻️ Cache hit for {tool_name}, refreshed duration to {cache_entry['original_duration']}")
-    #         return cache_entry
-
-    #     return None
-
-    # # TODO seems like this is used at the end of exchange, but why?
-    # def _get_cached_tool_messages(self) -> List[Dict[str, Any]]:
-    #     """Get all cached tool results as OpenAI messages"""
-    #     tool_messages = []
-
-    #     for cache_entry in self.memory['tool_cache'].values():
-    #         if cache_entry['remaining_duration'] > 0:
-    #             # Add assistant message with tool call
-    #             assistant_message = {
-    #                 "role": "assistant",
-    #                 "content": None,
-    #                 "tool_calls": [
-    #                     {
-    #                         "id": cache_entry['call_id'],
-    #                         "type": "function",
-    #                         "function": {
-    #                             "name": cache_entry['tool_name'],
-    #                             "arguments": json.dumps(cache_entry['parameters'])
-    #                         }
-    #                     }
-    #                 ]
-    #             }
-
-    #             # Add tool result message
-    #             tool_message = {
-    #                 "role": "tool",
-    #                 "tool_call_id": cache_entry['call_id'],
-    #                 "name": cache_entry['tool_name'],
-    #                 "content": cache_entry['result']
-    #             }
-
-    #             tool_messages.extend([assistant_message, tool_message])
-
-    #     return tool_messages
-
-    # def _cleanup_expired_cache(self) -> None:
-    #     """Remove expired tool cache entries and decrement remaining durations at end of exchange"""
-    #     expired_keys = []
-
-    #     for cache_key, cache_entry in self.memory['tool_cache'].items():
-    #         # Decrement duration for all cached tools at end of exchange
-    #         cache_entry['remaining_duration'] -= 1
-
-    #         if cache_entry['remaining_duration'] <= 0:
-    #             expired_keys.append(cache_key)
-
-    #     # Remove expired entries
-    #     for key in expired_keys:
-    #         removed_entry = self.memory['tool_cache'].pop(key)
-
-    #         self.channal_logger.log_to_memory(f"🗑️ Expired cache for {removed_entry['tool_name']}")
-
-    # def is_tool_already_in_current_messages(self, messages: List['ChatCompletionMessageParam'], tool_name: str, parameters: Dict[str, Any]) -> bool:
-    #     """Check if tool with same parameters is already in current message list"""
-    #     target_args = json.dumps(parameters, sort_keys=True)
-
-    #     for message in messages:
-    #         if message['role'] == 'assistant' and 'tool_calls' in message:
-    #             for tool_call in message['tool_calls']:
-    #                 if (tool_call['function']['name'] == tool_name and
-    #                     tool_call['function']['arguments'] == target_args):
-    #                     return True
-    #     return False
-
-    # def _cache_proactive_tool_results(self, proactive_messages: List[Dict[str, Any]]) -> None:
-    #     try:
-    #         # Process pairs of assistant + tool messages
-    #         for i in range(0, len(proactive_messages), 2):
-    #             if i + 1 < len(proactive_messages):
-    #                 assistant_msg = proactive_messages[i]
-    #                 tool_msg = proactive_messages[i + 1]
-
-    #                 if (assistant_msg.get('role') == 'assistant' and
-    #                     tool_msg.get('role') == 'tool' and
-    #                     assistant_msg.get('tool_calls')):
-
-    #                     tool_call = assistant_msg['tool_calls'][0]
-    #                     tool_name = tool_call['function']['name']
-    #                     parameters = json.loads(tool_call['function']['arguments'])
-    #                     result = tool_msg['content']
-
-    #                     # Get cache duration from result JSON (default 0 if not present)
-    #                     llm_cache_duration = 0
-    #                     try:
-    #                         result_json = json.loads(result) if isinstance(result, str) else result
-    #                         if isinstance(result_json, dict):
-    #                             llm_cache_duration = result_json.get('llm_cache_duration', 0)
-    #                     except:
-    #                         pass
-
-    #                     if llm_cache_duration > 0:
-    #                         self.add_tool_to_cache(tool_name, parameters, result, llm_cache_duration)
-
-    #     except Exception as e:
-    #         self.channal_logger.log_to_memory(f"❌ Failed to cache proactive tools: {str(e)}")
-
-    # self._cleanup_expired_cache()
     def finalize_current_cycle(
         self, messages: List["ChatCompletionMessageParam"]
     ) -> None:
+        # Update running messages with current state
         self.memory["running_messages"] = messages
 
         total_size = sum(len(str(msg)) for msg in messages)
@@ -264,6 +133,8 @@ class MemoryManager:
             self.memory["summary"] = compressed_summary
 
             self.memory["running_messages"] = remaining_messages
+            self.memory["old_messages"].extend(messages_to_summarize)
+
             messages = remaining_messages
 
             total_size = sum(len(str(msg)) for msg in messages)
@@ -312,3 +183,20 @@ class MemoryManager:
     def _clean_markdown(self, text: str) -> str:
         html = markdown.markdown(text)
         return BeautifulSoup(html, features="html.parser").get_text()
+
+    def log_memory(self):
+        try:
+            messages = self.prepare_messages_for_agent()
+            old_messages = self.memory["old_messages"]
+            summary = self.memory["summary"]
+
+            self.channal_logger.log_to_memory(
+                f"Memory Summary: {summary}\n"
+                f"Running Messages: {len(messages)}\n"
+                f"All Messages: {len(old_messages)}\n"
+                "Messages:\n"
+                f"{json.dumps(messages, indent=2)}\n"
+                f"Old Messages:\n{json.dumps(old_messages, indent=2)}"
+            )
+        except Exception as e:
+            self.channal_logger.log_to_logs(f"❌ Failed to log memory: {str(e)}")
