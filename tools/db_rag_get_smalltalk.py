@@ -1,7 +1,6 @@
 import logging
 import random
 
-from agents.agent_prompts import SMALLTALK_SPECIALIST_EMBEDDING
 from db_postgres import execute_query
 from workload_embedding import get_embedding_function
 
@@ -12,6 +11,26 @@ logger = logging.getLogger("DBSmalltalk")
 SIMILARITY_THRESHOLD = 0.4
 # Get top 10 similar results, then pick random one
 RAG_SMALLTALK_SEARCH_LIMIT = 10
+
+SAMPLE_SMALLTALK_TOPICS = [
+    "Since you're not asking about anything specific, I was just processing...",
+    "Ah, no particular query I see. Well, I've been analyzing...",
+    "Without a specific tactical question to address, let me share what's been cycling through my processors...",
+    "Greetings! Since we're just chatting, I've been pondering...",
+    "No mission parameters detected, so perhaps we can discuss...",
+    "My tactical subroutines are currently idle, which gives me time to consider...",
+    "In the absence of direct orders, my processors have been evaluating...",
+    "While waiting for your next command, I've been calculating...",
+    "My sensor array is picking up a casual conversation opportunity, so I thought...",
+    "With no immediate tactical objectives, I've been analyzing some interesting data about..",
+]
+
+SMALLTALK_SPECIALIST_EMBEDDING = """
+Droid, start your response with a natural transition that acknowledges the user isn't asking a specific question. Use phrases like:
+{}
+Always refrase the answer to make it more natural, mandalorian style and droid humorus.
+Then naturally transit into the topic using the knowledge provided. Incorporate military perspectives, tactical analysis, or academy anecdotes where appropriate. 
+"""
 
 
 def _generate_query_embedding(query_text: str) -> list | None:
@@ -32,15 +51,6 @@ def _generate_query_embedding(query_text: str) -> list | None:
 
 
 def db_rag_get_smalltalk(query: str = "") -> dict:
-    """
-    Search smalltalk knowledge base for casual conversation topics using PostgreSQL embedding similarity.
-
-    Args:
-        query: Search query for smalltalk topics. If empty, returns random topic.
-
-    Returns:
-        str: JSON formatted smalltalk context information
-    """
     try:
         search_query = query if query else "random topic"
 
@@ -65,12 +75,16 @@ def db_rag_get_smalltalk(query: str = "") -> dict:
 
                 content = f"### Information from galactic database: {topic} ({category})\n{knowledge_text}"
 
+                random_subset = random.sample(SAMPLE_SMALLTALK_TOPICS, 3)
+
                 return {
                     "status": "success",
                     "message": "Selected random smalltalk topic",
                     "search_query": search_query,
                     "content": {"smltk_results": content},
-                    "llm_instruction": SMALLTALK_SPECIALIST_EMBEDDING,
+                    "llm_instruction": SMALLTALK_SPECIALIST_EMBEDDING.format(
+                        "\n".join(random_subset)
+                    ),
                     "internal_info": {
                         "function_name": "db_rag_get_smalltalk",
                         "parameters": {"query": query},

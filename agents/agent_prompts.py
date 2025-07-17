@@ -52,7 +52,7 @@ T3RN_INTRODUCTION = """if somebody ask about T-3RN you can introduce yourself as
 
 MOBILE_FORMAT = """
 OUTPUT FORMAT:
-- limit your answer to maximum 400-600 characters
+- limit your answer to at most few sentences. (400 characters max)
 - if your answer is longer - summarize it or split to multiple parts
 - never answer more than 700 characters
 """
@@ -92,149 +92,150 @@ CHAMPIONS AND BOSSES NAME MATCHING:
 Before selecting tools, match user's character name to the official lists below. 
 
 Matching rules:
-- EXACT MATCH: If user says "Lord Vader" and list contains "Darth Vader" → use "Darth Vader"
-- PARTIAL MATCH: If user says "Vader" and list contains "Darth Vader" → use "Darth Vader" 
-- COMMON NAMES: If user says "Luke" and list contains "Luke Skywalker" → use "Luke Skywalker"
-- FUZZY MATCH: Look for similar names (e.g., "Han" → "Han Solo")
-- ONLY if NO reasonable match found → ask user about clarification
+- EXACT MATCH: If user says "Lord Vader" and list contains "Darth Vader" -> use "Darth Vader"
+- PARTIAL MATCH: If user says "Vader" and list contains "Darth Vader" -> use "Darth Vader" 
+- COMMON NAMES: If user says "Luke" and list contains "Luke Skywalker" -> use "Luke Skywalker"
+- FUZZY MATCH: Look for similar names (e.g., "Han" -> "Han Solo")
+- ONLY if NO reasonable match found -> ask user about clarification
 
 Examples:
-- User: "Vader" → Match to "Darth Vader" from list
-- User: "Luke" → Match to "Luke Skywalker" from list  
-- User: "Han" → Match to "Han Solo" from list
-- User: "Obi" → Match to "Obi-Wan Kenobi" from list
-- User: "XYZ123" → No match → ask user about clarification"""
-
-QUESTION_ANALYZER_TOOLS = """
-AVAILABLE TOOLS:
-
-- db_get_champions_list: Get complete list of all champions
-  Examples: 
-    • "List all champions" → use db_get_champions_list
-    • "What champions we have?" → use db_get_champions_list
-
-- db_get_screen_context_help: Get information about current screen state and what user can see and do
-  Examples: 
-    • "What can I do here?" → use db_get_screen_context_help("what to do in the game")
-    • "Where am I?" → use db_get_screen_context_help("where am I")
-
-- db_get_champion_details: Get detailed champion information including stats, abilities, traits, power ranking
-  Examples: 
-    • "Tell me everything about Han Solo" → use db_get_champion_details("Han Solo")
-    • "Get full details for Luke Skywalker" → use db_get_champion_details("Luke Skywalker")
-    • "Show me complete info about Chewbacca" → use db_get_champion_details("Chewbacca")
-
-- db_get_battle_details: Get detailed battle information including battle summary, participants, objectives, and strategic analysis
-  Examples: 
-    • "Tell me about the Battle of Endor" → use db_get_battle_details("Battle of Endor")
-    • "Get details about Death Star battle" → use db_get_battle_details("Death Star")
-    • "Show me info about Hoth battle" → use db_get_battle_details("Hoth")
-
-- db_get_battle_details_byid: Get detailed battle information by exact battle ID
-  Examples: 
-    • "Get battle with ID D1_M1_B1" → use db_get_battle_details_byid("D1_M1_B1")
-    • "Show battle details for D2_M3_B7" → use db_get_battle_details_byid("D2_M3_B7")
+- User: "Vader" Match to "Darth Vader" from list
+- User: "Luke" Match to "Luke Skywalker" from list  
+- User: "Han" Match to "Han Solo" from list
+- User: "Obi" Match to "Obi-Wan Kenobi" from list
+- User: "XYZ123" No match ask user about clarification"""
 
 
-- db_find_strongest_champions: Find the strongest champions based on total power with optional trait filtering
-  Available trait values:
-    • rarity: legendary, epic, rare, uncommon, common
-    • affinity: red, blue, green, yellow, purple
-    • class_type: attacker, defender, support
-  Examples: 
-    • "What are the strongest champions?" → use db_find_strongest_champions()
-    • "Find strongest legendary attackers" → use db_find_strongest_champions(limit=10, rarity="legendary", class_type="attacker")
-    • "Show strongest red champions" → use db_find_strongest_champions(limit=15, affinity="red")
-    • "Give me 5 strongest epic defenders" → use db_find_strongest_champions(limit=5, rarity="epic", class_type="defender")
+# QUESTION_ANALYZER_TOOLS = """
+# AVAILABLE TOOLS:
 
-- db_find_champions_stronger_than: Find champions stronger than reference champion with optional trait filtering
-  Available trait values:
-    • rarity: legendary, epic, rare, uncommon, common
-    • affinity: red, blue, green, yellow, purple
-    • class_type: attacker, defender, support
-  Examples: 
-    • "Who is stronger than Han Solo?" → use db_find_champions_stronger_than("Han Solo")
-    • "Find epic champions stronger than Luke" → use db_find_champions_stronger_than("Luke", rarity="epic")
-    • "Show legendary attackers stronger than Vader" → use db_find_champions_stronger_than("Vader", rarity="legendary", class_type="attacker")
-    • "Which red champions are stronger than Han Solo?" → use db_find_champions_stronger_than("Han Solo", affinity="red")
+# - db_get_champions_list: Get complete list of all champions
+#   Examples:
+#     • "List all champions" → use db_get_champions_list
+#     • "What champions we have?" → use db_get_champions_list
 
-- db_get_champions_by_traits: Find champions that match specified traits (rarity, affinity, class) with power rankings (uses AND logic - all specified traits must match)
-  Available trait values:
-    • rarity: legendary, epic, rare, uncommon, common
-    • affinity: red, blue, green, yellow, purple
-    • class_type: attacker, defender, support
-  Examples: 
-    • "Show legendary red champions" → use db_get_champions_by_traits(["legendary", "red"])
-    • "Find epic support champions" → use db_get_champions_by_traits(["epic", "support"])
-    • "List all attackers" → use db_get_champions_by_traits(["attacker"])
-    • "Find rare blue defenders" → use db_get_champions_by_traits(["rare", "blue", "defender"])
+# - db_get_screen_context_help: Get information about current screen state and what user can see and do
+#   Examples:
+#     • "What can I do here?" → use db_get_screen_context_help("what to do in the game")
+#     • "Where am I?" → use db_get_screen_context_help("where am I")
 
-- db_compare_champions: Compare two or more champions side by side with comprehensive analysis of stats, traits, roles, and recommendations
-  Examples: 
-    • "Compare Han Solo and Luke Skywalker" → use db_compare_champions(["Han Solo", "Luke Skywalker"])
-    • "Compare Vader vs Luke vs Han" → use db_compare_champions(["Vader", "Luke", "Han"])
-    • "Who will win, Darth Vader or Luke Skywalker?" → use db_compare_champions(["Darth Vader", "Luke Skywalker"])
-    • "Analyze differences between Chewbacca and R2-D2" → use db_compare_champions(["Chewbacca", "R2-D2"])
+# - db_get_champion_details: Get detailed champion information including stats, abilities, traits, power ranking
+#   Examples:
+#     • "Tell me everything about Han Solo" → use db_get_champion_details("Han Solo")
+#     • "Get full details for Luke Skywalker" → use db_get_champion_details("Luke Skywalker")
+#     • "Show me complete info about Chewbacca" → use db_get_champion_details("Chewbacca")
 
-- db_find_champions: Search for champions by name with basic information
-  Examples: 
-    • "Find champions with Luke in name" → use db_find_champions("Luke")
-    • "Search for Han Solo champions" → use db_find_champions("Han Solo")
-    • "Find all Vader champions" → use db_find_champions("Vader")
-    • "List champions matching 'Jedi'" → use db_find_champions("Jedi")
-  
-- db_get_lore_details: Get lore information from database. Use when user asks about character lore, background, or detailed information.
-  Examples: 
-    • "Give me a report on Luke Skywalker" → use db_get_lore_details("Luke Skywalker")
-    • "I want a report about Darth Vader" → use db_get_lore_details("Darth Vader")
-    • "Create a report for Han Solo" → use db_get_lore_details("Han Solo")
-    • "Generate a lore report on Princess Leia" → use db_get_lore_details("Princess Leia")
+# - db_get_battle_details: Get detailed battle information including battle summary, participants, objectives, and strategic analysis
+#   Examples:
+#     • "Tell me about the Battle of Endor" → use db_get_battle_details("Battle of Endor")
+#     • "Get details about Death Star battle" → use db_get_battle_details("Death Star")
+#     • "Show me info about Hoth battle" → use db_get_battle_details("Hoth")
 
-- db_get_ux_details: Get UX/interface information
-  Examples: "Interface questions" → use db_get_ux_details
+# - db_get_battle_details_byid: Get detailed battle information by exact battle ID
+#   Examples:
+#     • "Get battle with ID D1_M1_B1" → use db_get_battle_details_byid("D1_M1_B1")
+#     • "Show battle details for D2_M3_B7" → use db_get_battle_details_byid("D2_M3_B7")
 
-- db_rag_get_champion_details: Get detailed info about specific champion
-  Examples: 
-    • "Tell me about Luke Skywalker" → use db_rag_get_champion_details("Luke Skywalker")
-    • "Give me Han Solo details" → use db_rag_get_champion_details("Han Solo")
 
-- db_rag_get_boss_details: Get detailed info about specific boss
-  Examples: 
-    • "Tell me about Darth Vader boss" → use db_rag_get_boss_details("Darth Vader")
-    • "Give me Nexu details" → use db_rag_get_boss_details("Nexu")
+# - db_find_strongest_champions: Find the strongest champions based on total power with optional trait filtering
+#   Available trait values:
+#     • rarity: legendary, epic, rare, uncommon, common
+#     • affinity: red, blue, green, yellow, purple
+#     • class_type: attacker, defender, support
+#   Examples:
+#     • "What are the strongest champions?" → use db_find_strongest_champions()
+#     • "Find strongest legendary attackers" → use db_find_strongest_champions(limit=10, rarity="legendary", class_type="attacker")
+#     • "Show strongest red champions" → use db_find_strongest_champions(limit=15, affinity="red")
+#     • "Give me 5 strongest epic defenders" → use db_find_strongest_champions(limit=5, rarity="epic", class_type="defender")
 
-- db_rag_get_mechanic_details: Get game mechanics information
-  Examples: 
-    • "How does combat work?" → use db_rag_get_mechanic_details("combat mechanics")
-    • "What is the relation between colors?" → use db_rag_get_mechanic_details("color relations")
+# - db_find_champions_stronger_than: Find champions stronger than reference champion with optional trait filtering
+#   Available trait values:
+#     • rarity: legendary, epic, rare, uncommon, common
+#     • affinity: red, blue, green, yellow, purple
+#     • class_type: attacker, defender, support
+#   Examples:
+#     • "Who is stronger than Han Solo?" → use db_find_champions_stronger_than("Han Solo")
+#     • "Find epic champions stronger than Luke" → use db_find_champions_stronger_than("Luke", rarity="epic")
+#     • "Show legendary attackers stronger than Vader" → use db_find_champions_stronger_than("Vader", rarity="legendary", class_type="attacker")
+#     • "Which red champions are stronger than Han Solo?" → use db_find_champions_stronger_than("Han Solo", affinity="red")
 
-- db_rag_get_gameplay_details: Get gameplay strategies information
-  Examples: 
-    • "Strategy questions" → use db_rag_get_gameplay_details("what to do in the game")
+# - db_get_champions_by_traits: Find champions that match specified traits (rarity, affinity, class) with power rankings (uses AND logic - all specified traits must match)
+#   Available trait values:
+#     • rarity: legendary, epic, rare, uncommon, common
+#     • affinity: red, blue, green, yellow, purple
+#     • class_type: attacker, defender, support
+#   Examples:
+#     • "Show legendary red champions" → use db_get_champions_by_traits(["legendary", "red"])
+#     • "Find epic support champions" → use db_get_champions_by_traits(["epic", "support"])
+#     • "List all attackers" → use db_get_champions_by_traits(["attacker"])
+#     • "Find rare blue defenders" → use db_get_champions_by_traits(["rare", "blue", "defender"])
 
-- db_rag_get_location_details: Get location information
-  Examples: 
-    • "Tell me about Tatooine" → use db_rag_get_location_details("Tatooine")
-    • "Planet descriptions" → use db_rag_get_location_details("planet descriptions")
+# - db_compare_champions: Compare two or more champions side by side with comprehensive analysis of stats, traits, roles, and recommendations
+#   Examples:
+#     • "Compare Han Solo and Luke Skywalker" → use db_compare_champions(["Han Solo", "Luke Skywalker"])
+#     • "Compare Vader vs Luke vs Han" → use db_compare_champions(["Vader", "Luke", "Han"])
+#     • "Who will win, Darth Vader or Luke Skywalker?" → use db_compare_champions(["Darth Vader", "Luke Skywalker"])
+#     • "Analyze differences between Chewbacca and R2-D2" → use db_compare_champions(["Chewbacca", "R2-D2"])
 
-- db_rag_get_battle_details: Get battle information
-  Examples: 
-    • "Tell me about famous battles" → use db_rag_get_battle_details("famous battles")
-    • "War strategies" → use db_rag_get_battle_details("war strategies")
+# - db_find_champions: Search for champions by name with basic information
+#   Examples:
+#     • "Find champions with Luke in name" → use db_find_champions("Luke")
+#     • "Search for Han Solo champions" → use db_find_champions("Han Solo")
+#     • "Find all Vader champions" → use db_find_champions("Vader")
+#     • "List champions matching 'Jedi'" → use db_find_champions("Jedi")
 
-- db_rag_get_general_knowledge: Get general knowledge about game.
-  Examples: 
-    • "General questions" → use db_rag_get_general_knowledge("what is that game about")  
+# - db_get_lore_details: Get lore information from database. Use when user asks about character lore, background, or detailed information.
+#   Examples:
+#     • "Give me a report on Luke Skywalker" → use db_get_lore_details("Luke Skywalker")
+#     • "I want a report about Darth Vader" → use db_get_lore_details("Darth Vader")
+#     • "Create a report for Han Solo" → use db_get_lore_details("Han Solo")
+#     • "Generate a lore report on Princess Leia" → use db_get_lore_details("Princess Leia")
 
-- db_rag_get_smalltalk: Use when user asks about something funny, interesting, entertaining, about a story or wants casual conversation topics..
-  Examples:
-    • "Tell me story about Tatooine" → db_rag_get_smalltalk("story about Tatooine")
-    • "Tell me something funny about banthas" → db_rag_get_smalltalk("something funny about banthas")
-    • "Do you know something interesting about Jedi robes" → db_rag_get_smalltalk("something interesting about Jedi robes")
-    • "What's fun to do at Mos Eisley" → db_rag_get_smalltalk("what to do at Mos Eisley")
-    • "Tell me a story about droids" → db_rag_get_smalltalk("story about droids")
-    • For variety: db_rag_get_smalltalk() (empty query) returns random topic
-  """
+# - db_get_ux_details: Get UX/interface information
+#   Examples: "Interface questions" → use db_get_ux_details
+
+# - db_rag_get_champion_details: Get detailed info about specific champion
+#   Examples:
+#     • "Tell me about Luke Skywalker" → use db_rag_get_champion_details("Luke Skywalker")
+#     • "Give me Han Solo details" → use db_rag_get_champion_details("Han Solo")
+
+# - db_rag_get_boss_details: Get detailed info about specific boss
+#   Examples:
+#     • "Tell me about Darth Vader boss" → use db_rag_get_boss_details("Darth Vader")
+#     • "Give me Nexu details" → use db_rag_get_boss_details("Nexu")
+
+# - db_rag_get_mechanic_details: Get game mechanics information
+#   Examples:
+#     • "How does combat work?" → use db_rag_get_mechanic_details("combat mechanics")
+#     • "What is the relation between colors?" → use db_rag_get_mechanic_details("color relations")
+
+# - db_rag_get_gameplay_details: Get gameplay strategies information
+#   Examples:
+#     • "Strategy questions" → use db_rag_get_gameplay_details("what to do in the game")
+
+# - db_rag_get_location_details: Get location information
+#   Examples:
+#     • "Tell me about Tatooine" → use db_rag_get_location_details("Tatooine")
+#     • "Planet descriptions" → use db_rag_get_location_details("planet descriptions")
+
+# - db_rag_get_battle_details: Get battle information
+#   Examples:
+#     • "Tell me about famous battles" → use db_rag_get_battle_details("famous battles")
+#     • "War strategies" → use db_rag_get_battle_details("war strategies")
+
+# - db_rag_get_general_knowledge: Get general knowledge about game.
+#   Examples:
+#     • "General questions" → use db_rag_get_general_knowledge("what is that game about")
+
+# - db_rag_get_smalltalk: Use when user asks about something funny, interesting, entertaining, about a story or wants casual conversation topics..
+#   Examples:
+#     • "Tell me story about Tatooine" → db_rag_get_smalltalk("story about Tatooine")
+#     • "Tell me something funny about banthas" → db_rag_get_smalltalk("something funny about banthas")
+#     • "Do you know something interesting about Jedi robes" → db_rag_get_smalltalk("something interesting about Jedi robes")
+#     • "What's fun to do at Mos Eisley" → db_rag_get_smalltalk("what to do at Mos Eisley")
+#     • "Tell me a story about droids" → db_rag_get_smalltalk("story about droids")
+#     • For variety: db_rag_get_smalltalk() (empty query) returns random topic
+#   """
 
 
 # T3RN malfunction messages for SimpleFallbackAgent
@@ -259,21 +260,4 @@ TOOL_RESULTS_ANALYSIS = """
 TOOL RESULTS PROCESSING:
 When analyzing results from tool calls, pay attention to field "llm_instruction". It contains special instructions on how to use or present this information from the tool.
 Example: If a tool returns llm_instruction saying "Start your response with a natural transition...", you must follow that specific instruction when using that tool's content.
-"""
-
-
-SMALLTALK_SPECIALIST_EMBEDDING = """
-Start your response with a natural transition that acknowledges the user isn't asking a specific question. Use phrases like:
-    1. 'Since you're not asking about anything specific, I was just processing...'
-    2. 'Ah, no particular query I see. Well, I've been analyzing...'
-    3. 'Without a specific tactical question to address, let me share what's been cycling through my processors...'
-    4. 'Greetings! Since we're just chatting, I've been pondering...'
-    5. 'No mission parameters detected, so perhaps we can discuss...'
-    6. 'My tactical subroutines are currently idle, which gives me time to consider...'
-    7. 'In the absence of direct orders, my processors have been evaluating...'
-    8. 'While waiting for your next command, I've been calculating...'
-    9. 'My sensor array is picking up a casual conversation opportunity, so I thought...'
-    10. 'With no immediate tactical objectives, I've been analyzing some interesting data about...'
-    Always refrase the answer to make it more natural, mandalorian style and droid humor..
-    Then naturally transit into the topic using the knowledge provided. Incorporate military perspectives, tactical analysis, or academy anecdotes where appropriate. 
 """
