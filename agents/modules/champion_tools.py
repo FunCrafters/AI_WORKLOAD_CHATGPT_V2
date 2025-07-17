@@ -20,7 +20,7 @@ def getChampionsDetails(
     # TODO championMechanics
     # TODO make it session-aware
     if session:
-        exch = session.get_memory().last_exchange()
+        _exch = session.get_memory().last_exchange()
 
     response = ""
 

@@ -22,6 +22,7 @@ from tools.db_get_champions_list import db_get_champions_list
 
 # Import lore report tool function
 from tools.db_get_lore_details import db_get_lore_details
+from tools.db_get_random_greetings import db_get_random_greetings
 from tools.db_get_screen_context_help import db_get_screen_context_help
 from tools.db_get_ux_details import db_get_ux_details
 from tools.db_rag_get_battle_details import db_rag_get_battle_details
@@ -197,9 +198,6 @@ available_llm_functions = {
 
 # Available LLM tools by ID (temporarily disabled - use internal IDs instead of names)
 available_llm_functions_by_id = {}
-
-# Import internal/proactive tools that are not exposed to LLM
-from tools.db_get_random_greetings import db_get_random_greetings
 
 # Available proactive/internal tools for system use (not exposed to LLM)
 available_proactive_tools = {
