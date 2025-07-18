@@ -22,7 +22,8 @@ class ProactiveSmalltalk(T3RNModule):
     INJECT_MAX = 3
     INJECT_MAX_SIZE = 3000
     INJECTION_COOLDOWN = 5
-    USE_QA = False
+    USE_QA = True
+    USE_SMALLTALK = False
 
     def __init__(self, channel_logger):
         super().__init__(channel_logger)
@@ -126,12 +127,15 @@ class ProactiveSmalltalk(T3RNModule):
             )
             return []
 
-        smalltalks = db_rag_get_smalltalk_from_embedding(
-            embedding,
-            RAG_SMALLTALK_SEARCH_LIMIT=4,
-        )
-        for smalltalk in smalltalks:
-            smalltalk["id"] = "st" + str(smalltalk["id"])
+        if self.USE_SMALLTALK:
+            smalltalks = db_rag_get_smalltalk_from_embedding(
+                embedding,
+                RAG_SMALLTALK_SEARCH_LIMIT=4,
+            )
+            for smalltalk in smalltalks:
+                smalltalk["id"] = "st" + str(smalltalk["id"])
+        else:
+            smalltalks = []
 
         if self.USE_QA:
             questions_answers = search_qa_similarity(
