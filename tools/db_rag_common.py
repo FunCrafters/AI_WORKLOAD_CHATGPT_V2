@@ -2,6 +2,7 @@ import logging
 import random
 from typing import Any, Dict, List, Optional
 
+import numpy as np
 from cachetools import LRUCache, cached
 from openai.types.chat import ChatCompletionMessageParam
 
@@ -378,6 +379,7 @@ def search_qa_similarity(
     try:
         query = """
             SELECT 
+                id, 
                 1 - (embedding <=> %s::vector) as similarity,
                 chunk_text,
                 embedding
@@ -390,9 +392,12 @@ def search_qa_similarity(
         results = execute_query(query, params)
         return [
             {
-            "similarity": float(r["similarity"]),
-            "content": r["chunk_text"],
-            "embedding": [float(x) for x in r["embedding"].strip('[]').split(',')],
+                "id": r["id"],
+                "similarity": float(r["similarity"]),
+                "content": r["chunk_text"],
+                "embedding": np.array(
+                    [float(x) for x in r["embedding"].strip("[]").split(",")]
+                ),
             }
             for r in results
         ]

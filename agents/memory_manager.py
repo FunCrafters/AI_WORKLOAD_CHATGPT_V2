@@ -31,7 +31,7 @@ class ConversationMemory(TypedDict):
 class MemoryManager:
     def __init__(self, channel_logger: "ChannelLogger"):
         self.max_exchanges = 20  # Max exchanges in list (including agent messages)
-        self.max_summary_size = 4000  # Max summary size before LLM compression
+        self.max_summary_size = 10_000  # Max summary size before LLM compression
         self.summary_target_after_llm = 1000  # Target size after LLM summarization
 
         self.llm_summarization_count = 0

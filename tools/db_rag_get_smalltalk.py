@@ -2,6 +2,8 @@ import logging
 import random
 from typing import List
 
+import numpy as np
+
 from db_postgres import execute_query
 from workload_embedding import get_embedding_function
 
@@ -259,7 +261,7 @@ def db_rag_get_smalltalk_from_embedding(
 
     # Perform similarity search
     similarity_sql = """
-    SELECT topic, category, knowledge_text, embedding,
+    SELECT id, topic, category, knowledge_text, embedding,
            1 - (embedding <=> %s::vector) as similarity
     FROM smalltalk_vectors
     ORDER BY similarity DESC
@@ -280,9 +282,12 @@ def db_rag_get_smalltalk_from_embedding(
     # Format results in same structure as search_qa_similarity
     formatted_results = [
         {
+            "id": r["id"],
             "similarity": float(r["similarity"]),
             "content": f"### {r['topic']} ({r['category']})\n{r['knowledge_text']}",
-            "embedding": [float(x) for x in r["embedding"].strip("[]").split(",")],
+            "embedding": np.array(
+                [float(x) for x in r["embedding"].strip("[]").split(",")]
+            ),
         }
         for r in results
     ]
