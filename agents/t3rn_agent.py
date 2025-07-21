@@ -20,7 +20,12 @@ from openai.types.chat import (
 )
 
 from agents.agent_prompts import T3RN_FINAL_ITERATION_PROMPT
-from agents.base_agent import Agent, AgentResult
+from agents.base_agent import (
+    Agent,
+    AgentResult,
+    chat_response_to_str,
+    chat_response_toolcalls,
+)
 from agents.modules import (
     basic_tools,
     champion_comp,
@@ -163,7 +168,7 @@ class T3RNAgent(Agent):
 
                 self._log_state(
                     messages,
-                    response.choices[0].message.content if response.choices else None,
+                    chat_response_to_str(response),
                 )
 
                 return response
@@ -320,9 +325,6 @@ class T3RNAgent(Agent):
 
                 try:
                     if iteration == MAX_ITERATIONS:
-                        # TODO if we are about to keep this message then will it degenerate
-                        # TODO performance of chatbot (it will try to answer in next iteration)
-                        # TODO Maybe forcing LLM with use_tool=False is enough? Check that later.
                         messages = (
                             system_messages
                             + memory_messages
@@ -340,12 +342,9 @@ class T3RNAgent(Agent):
                         messages = system_messages + memory_messages + current_messages
                         response = self.call_llm(messages, tools=tools, use_tools=True)
 
-                    if (
-                        iteration < MAX_ITERATIONS
-                        and hasattr(response.choices[0].message, "tool_calls")
-                        and response.choices[0].message.tool_calls
-                    ):
-                        tool_calls = response.choices[0].message.tool_calls
+                    tool_calls = chat_response_toolcalls(response)
+
+                    if iteration < MAX_ITERATIONS and len(tool_calls) > 0:
                         self.channel_logger.log_to_logs(
                             f"🔧 T3RNAgent requested {len(tool_calls)} tools"
                         )
@@ -358,7 +357,7 @@ class T3RNAgent(Agent):
 
                         continue
 
-                    response_content = response.choices[0].message.content or ""
+                    response_content = chat_response_to_str(response, content_only=True)
 
                     current_messages.append(
                         {"role": "assistant", "content": response_content}

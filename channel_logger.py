@@ -61,11 +61,9 @@ console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(ChannelLogFormatter())
 logger.addHandler(console_handler)
+logger.propagate = False
 
 
-# I still refuse to belive this is best way to do it
-# for feature - consider creating loggingHandler that does that automatically
-# and instead of passing channel logger everywhere I would create local logger
 class ChannelLogger:
     """Handles logging into web server"""
 

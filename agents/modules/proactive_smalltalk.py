@@ -203,7 +203,7 @@ class ProactiveSmalltalk(T3RNModule):
         response = f"""
 System found some interesting information in your memory banks that might be relevant to this conversation:
 {summaries}
-Droid, you can use this to enrich the conversation or ask follow-up questions. Ignore and use tools if not relevant.
+Droid, you can use this to enrich the conversation. System recommends to use tools if user asks about specific topics.
 """
 
         injection_messages: List[ChatCompletionMessageParam] = [
