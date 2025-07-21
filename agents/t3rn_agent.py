@@ -9,7 +9,7 @@ import json
 import os
 import random
 import time
-from typing import List
+from typing import List, Type
 
 import openai
 from openai import NOT_GIVEN
@@ -39,6 +39,7 @@ from channel_logger import ChannelLogger
 from session import Session
 from tools.db_get_champions_list import db_get_champions_list_text
 from tools_functions import T3RNTool
+from workload_config import AGENT_CONFIG
 
 
 class T3RNAgent(Agent):
@@ -53,13 +54,35 @@ class T3RNAgent(Agent):
 
         self.MODULES: List[T3RNModule] = []
 
-        self.MODULES.append(screen_injector.ScreenContextInjector(self.channel_logger))
-        self.MODULES.append(summary.SummaryInjector(self.channel_logger))
-        self.MODULES.append(basic_tools.BasicTools(self.channel_logger))
-        self.MODULES.append(champion_tools.ChampionTools(self.channel_logger))
-        self.MODULES.append(champion_comp.ChampionCompTools(self.channel_logger))
-        self.MODULES.append(random_greetings.RandomGreetings(self.channel_logger))
-        self.MODULES.append(proactive_smalltalk.ProactiveSmalltalk(self.channel_logger))
+        self.add_module(screen_injector.ScreenContextInjector)
+        self.add_module(summary.SummaryInjector)
+        self.add_module(basic_tools.BasicTools)
+        self.add_module(champion_tools.ChampionTools)
+        self.add_module(champion_comp.ChampionCompTools)
+        self.add_module(random_greetings.RandomGreetings)
+        self.add_module(proactive_smalltalk.ProactiveSmalltalk)
+
+    def add_module(self, module_class: Type[T3RNModule]) -> None:
+        module = module_class(self.channel_logger)
+        module_name = module.__class__.__name__
+
+        if module_name not in AGENT_CONFIG:
+            self.channel_logger.log_to_logs(
+                f"⚠️ Module {module_name} not defined in AGENT_CONFIG, disabling it"
+            )
+            return
+
+        if not AGENT_CONFIG.getboolean(module_name, "enabled", fallback=True):
+            self.channel_logger.log_to_logs(
+                f"⚠️ Module {module_name} is disabled in AGENT_CONFIG"
+            )
+            return
+
+        for key, value in AGENT_CONFIG[module_name].items():
+            setattr(module, key, value)
+
+        self.MODULES.append(module)
+        self.channel_logger.log_to_logs(f"✅ Module {module_name} is loaded")
 
     def collect_tools(self) -> List["T3RNTool"]:
         tools: List["T3RNTool"] = []
@@ -67,12 +90,24 @@ class T3RNAgent(Agent):
             tools.extend(module.define_tools(self.session_data))
         return tools
 
+    def _get_character(self):
+        t3rn_weight = AGENT_CONFIG.getfloat(
+            "T3RNAgent", "t3rn_character_weight", fallback=0.5
+        )
+        t4rn_weight = 1.0 - t3rn_weight
+
+        character_prompt = random.choices(
+            ["CHARACTER_BASE_T3RN", "CHARACTER_BASE_T4RN"],
+            weights=[t3rn_weight, t4rn_weight],
+        )[0]
+        return character_prompt
+
     def get_system_prompt(self, tools: List["T3RNTool"]) -> str:
         self.champions_list = db_get_champions_list_text()
         champions_and_bosses = f"""# CHAMPIONS LIST:\n{self.champions_list}"""
         tool_prompts = build_system_instructions_from_tools(tools)
 
-        character_prompt = random.choice(["CHARACTER_BASE_T3RN", "CHARACTER_BASE_T4RN"])
+        character_prompt = self._get_character()
 
         if hasattr(self, "channel_logger") and self.channel_logger:
             self.channel_logger.log_to_logs(
@@ -105,10 +140,12 @@ class T3RNAgent(Agent):
                 response = self.openai_client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=messages,
-                    temperature=0.3,
-                    max_completion_tokens=8000,
+                    temperature=AGENT_CONFIG.getfloat("T3RNAgent", "agent_temperature"),
+                    max_completion_tokens=AGENT_CONFIG.getint(
+                        "T3RNAgent", "max_completion_tokens"
+                    ),
                     tools=[tool.get_function_schema() for tool in tools],
-                    tool_choice="auto" if tools else "none",
+                    tool_choice="auto" if use_tools else "none",
                     response_format={"type": "json_object"} if use_json else NOT_GIVEN,
                 )
 
@@ -273,7 +310,7 @@ class T3RNAgent(Agent):
             f"🧠 Memory: {len(memory_messages)} context messages loaded"
         )
 
-        MAX_ITERATIONS = 4
+        MAX_ITERATIONS = AGENT_CONFIG.getint("T3RNAgent", "max_iterations")
         iteration = 0
 
         try:

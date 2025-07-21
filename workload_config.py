@@ -1,9 +1,13 @@
 # Workload configuration constants
+import configparser
 import os
 
 import dotenv
 
 dotenv.load_dotenv()
+
+AGENT_CONFIG = configparser.ConfigParser()
+AGENT_CONFIG.read("config.ini")
 
 WORKLOAD_TITLE = os.getenv("WORKLOAD_TITLE", "DEFAULT AI WORKLOAD GPTMW_v2")
 WORKLOAD_HASH = os.getenv("WORKLOAD_HASH", "GPTMW_v2")
@@ -14,7 +18,6 @@ WORKLOAD_DESC = os.getenv(
 SERVER_HOST = "localhost"
 SERVER_PORT = 5009
 
-# Workload configuration
 WORKLOAD_CONFIG = {
     "title": WORKLOAD_TITLE,
     "hash_id": WORKLOAD_HASH,
@@ -23,42 +26,42 @@ WORKLOAD_CONFIG = {
         "0": {
             "name": "Chat",
             "data_type": "text",
-            "history_mode": "append",  # Show conversation history
+            "history_mode": "append",
         },
         "1": {
             "name": "Databases",
             "data_type": "text",
-            "history_mode": "replace",  # Show only the latest database info
+            "history_mode": "replace",
         },
         "2": {
             "name": "Caches",
             "data_type": "text",
-            "history_mode": "replace",  # Show only the latest cache info
+            "history_mode": "replace",
         },
         "3": {
             "name": "Tools",
             "data_type": "text",
-            "history_mode": "replace",  # Show only the latest tools info
+            "history_mode": "replace",
         },
         "4": {
             "name": "Prompts",
             "data_type": "text",
-            "history_mode": "append",  # Show LLM prompts and messages history
+            "history_mode": "append",
         },
         "5": {
             "name": "Memory",
             "data_type": "text",
-            "history_mode": "append",  # Show current memory state (replaced each time)
+            "history_mode": "append",
         },
         "6": {
             "name": "Tool Calls",
             "data_type": "text",
-            "history_mode": "append",  # Show tool results history
+            "history_mode": "append",
         },
         "8": {
             "name": "Logs",
             "data_type": "text",
-            "history_mode": "append",  # Show system logs
+            "history_mode": "append",
         },
     },
     "settings": {},

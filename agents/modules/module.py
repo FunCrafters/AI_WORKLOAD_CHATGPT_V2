@@ -35,6 +35,10 @@ class T3RNModule(ABC):
     <inject_after_user_message>
     <LLM_RESPONSES>
     ```
+    # How to add module to the agent
+    1) create new class that inherits from `T3RNModule`
+    2) add module def in agent constructor
+    3) add section in .ini file for the module
     """
 
     def __init__(self, channel_logger: ChannelLogger):

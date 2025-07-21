@@ -10,9 +10,7 @@ from workload_embedding import get_embedding_function
 # Logger
 logger = logging.getLogger("DBSmalltalk")
 
-# Configuration
 SIMILARITY_THRESHOLD = 0.4
-# Get top 10 similar results, then pick random one
 RAG_SMALLTALK_SEARCH_LIMIT = 10
 
 SAMPLE_SMALLTALK_TOPICS = [

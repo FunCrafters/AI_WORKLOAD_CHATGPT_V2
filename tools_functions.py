@@ -1,12 +1,8 @@
-import logging
 from dataclasses import dataclass
 from typing import Any, Callable
 
 from openai.types.chat import ChatCompletionToolParam
 from openai.types.shared_params.function_parameters import FunctionParameters
-
-# Logger
-logger = logging.getLogger("Workload LLM Tools")
 
 #######################
 # Available Functions Dictionary
