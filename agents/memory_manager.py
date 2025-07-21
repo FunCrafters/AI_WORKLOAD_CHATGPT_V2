@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Simple Memory Manager
-Follows user-defined simple rules for conversation memory management
-"""
-
 import json
 import os
 import textwrap
@@ -17,6 +11,7 @@ from openai.types.chat import ChatCompletionMessageParam
 
 from agents.base_agent import chat_completion_to_content_str
 from channel_logger import ChannelLogger
+from workload_config import AGENT_CONFIG
 
 
 class ConversationMemory(TypedDict):
@@ -26,13 +21,16 @@ class ConversationMemory(TypedDict):
     last_user_message: str | None
 
 
-# TODO test diffrent summarization heuristics
-# TODO split into MemoryMenger, CacheManager and MessageInjector
 class MemoryManager:
     def __init__(self, channel_logger: "ChannelLogger"):
-        self.max_exchanges = 20  # Max exchanges in list (including agent messages)
-        self.max_summary_size = 10_000  # Max summary size before LLM compression
-        self.summary_target_after_llm = 1000  # Target size after LLM summarization
+        self.max_exchanges = AGENT_CONFIG.getint("MemoryManager", "max_exchanges")
+        self.max_summary_size = AGENT_CONFIG.getint("MemoryManager", "max_summary_size")
+        self.summary_target_after_llm = AGENT_CONFIG.getint(
+            "MemoryManager", "summary_target_after_llm"
+        )
+        self.summary_temperature = AGENT_CONFIG.getfloat(
+            "MemoryManager", "summary_temperature"
+        )
 
         self.llm_summarization_count = 0
 
@@ -161,8 +159,7 @@ class MemoryManager:
                     },
                     {"role": "user", "content": prompt},
                 ],
-                # TODO, add param for TEMP of summary
-                temperature=0.0,
+                temperature=self.summary_temperature,
                 max_completion_tokens=int(target_chars / 2),
             )
 

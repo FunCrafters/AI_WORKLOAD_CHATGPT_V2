@@ -16,7 +16,7 @@ from channel_logger import ChannelLogger
 from session import Session
 
 # Logger
-logger = logging.getLogger("Agent System")
+logger = logging.getLogger("AgentSystem")
 
 
 def process_llm_agents(

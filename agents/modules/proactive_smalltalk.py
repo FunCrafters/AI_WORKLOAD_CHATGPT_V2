@@ -11,19 +11,22 @@ from agents.modules.module import T3RNModule
 from session import Session
 from tools.db_rag_common import generate_embedding_from_conv, search_qa_similarity
 from tools.db_rag_get_smalltalk import db_rag_get_smalltalk_from_embedding
+from workload_config import AGENT_CONFIG
 
 logger = logging.getLogger("ProactiveSmallTalk")
 
 
 # TODO use short Q&A
 class ProactiveSmalltalk(T3RNModule):
-    SIMILLARITY_THRESHOLD = 0.5
-    VARIATION_THRESHOLD = 0.8
-    INJECT_MAX = 3
-    INJECT_MAX_SIZE = 3000
-    INJECTION_COOLDOWN = 5
-    USE_QA = True
-    USE_SMALLTALK = False
+    SECTION = "ProactiveSmalltalk"
+
+    SIMILLARITY_THRESHOLD = AGENT_CONFIG.getfloat(SECTION, "similarity_threshold")
+    VARIATION_THRESHOLD = AGENT_CONFIG.getfloat(SECTION, "variation_threshold")
+    INJECT_MAX = AGENT_CONFIG.getint(SECTION, "inject_max")
+    INJECT_MAX_SIZE = AGENT_CONFIG.getint(SECTION, "inject_max_size")
+    INJECTION_COOLDOWN = AGENT_CONFIG.getint(SECTION, "injection_cooldown")
+    USE_QA = AGENT_CONFIG.getboolean(SECTION, "use_qa")
+    USE_SMALLTALK = AGENT_CONFIG.getboolean(SECTION, "use_smalltalk")
 
     def __init__(self, channel_logger):
         super().__init__(channel_logger)

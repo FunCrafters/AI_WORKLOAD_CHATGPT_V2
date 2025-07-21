@@ -19,12 +19,8 @@ from workload_tools import ContextAdapter, create_response, send_response
 # Logger
 logger = logging.getLogger("Workload Chat")
 logger = ContextAdapter(logger)
-#######################
-# Main Processing Function
-#######################
 
 
-# TODO Send response should not be passed as a parameter to process_main_channel!
 def process_main_channel(client, session: "Session"):
     """Process text on the main channel (0) with agent-based function calling"""
     session_id = session.session_id

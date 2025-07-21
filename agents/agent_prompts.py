@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Agent Prompts
-Common prompt fragments used across different agents
-"""
 
 # Character and personality fragments
 CHARACTER_BASE_T3RN = """CHARACTER CONTEXT: 
@@ -25,10 +20,87 @@ Your preferred topic is the dark side of the Force and the Sith.
 Be very dark, ask as dark as you can. Always ask about the dark side of the Force and the Sith.
 """
 
-
-GAME_CONTEXT = """GAME CONTEXT:Your answers and advice should focus on what can be done in a mobile RPG game. 
-In the game, the Champions team we have selected fights against other teams or bosses. 
-The goal is to select the right team and develop the characters' skills."""
+GAME_CONTEXT = """GAMEPLAY MECHANICS - MATCH-3 RPG GAME KNOWLEDGE:
+GAME OVERVIEW
+Your answers and advice should focus on what can be done in a mobile RPG game.
+Game Type: Collectible RPG with Match-3 gameplay
+Team Size: 4 champions per team in battle formation
+Core Mechanics: Collecting and upgrading champions through multiple progression systems
+GAMEPLAY MECHANICS - MATCH-3 RPG GAME KNOWLEDGE:
+CHAMPION SYSTEM
+Champion Rarities and Roles:
+Champions have different rarities (Common to Legendary) affecting their potential and usage
+Each champion has a specific role (Attacker, Tank, Support, Debuffer, Buffer, Crowd Control, Aura Lead, Cleanser)
+Higher rarity champions generally have better stats and more complex abilities
+Champion Development Paths:
+Leveling: Gain XP through battles and consumable items
+Star Up: Sacrifice champions to increase star rating and unlock higher level caps
+Ascension: Use potions to enhance stats and unlock new abilities
+Skill Upgrades: Use duplicates or skill items to improve abilities
+Fusion: Combine specific champions to create more powerful ones
+Champion Acquisition:
+Multiple acquisition methods: Shards, Campaign, Events, Fusion, Fragment Collection
+Mercy system provides increased odds after unsuccessful attempts
+CORE COMBAT SYSTEM
+Match-3 Battle Structure:
+Combat combines Match-3 puzzle mechanics with RPG champion abilities
+Match-3 board at bottom of screen controls combat actions
+4 champions positioned in single row formation at bottom of battlefield
+Enemies spawn in waves in upper area with variable numbers per wave
+Battle Flow:
+Wave System: Enemies appear in sequential waves (e.g., "WAVES 1/3")
+Turn Order: Visual queue shows upcoming actions based on SPD stats
+Mana System: Champions gain mana by matching tiles of their affinity color
+Ability Activation: Mana required for Special Abilities, Basic Skills don't require mana
+Affinity System:
+Five color affinities with rock-paper-scissors relationships
+Color advantage/disadvantage affects damage, accuracy, and critical hits
+Matching tiles of champion's affinity color charges their mana
+Affinity bonuses apply to both tile damage and ability effectiveness
+Combat Abilities:
+Basic Skills: Always available, auto-activate when no special available
+Special Skills: Require mana, provide powerful effects
+Passive Skills: Always active or conditionally triggered
+Leader Skills: Team-wide aura effects from leader position
+GAMEPLAY MECHANICS - MATCH-3 RPG GAME KNOWLEDGE:
+ARTIFACT SYSTEM
+Artifact Structure:
+Six equipment slots with specific main stat assignments
+Artifacts have quality (1-6 stars), rarity (Common to Legendary), and belong to sets
+Main stats are fixed by slot type, sub-stats vary by rarity
+Set bonuses activate when equipping multiple pieces from same set
+Artifact Progression:
+Upgrade levels 1-16 with decreasing success rates at higher levels
+Upgrade costs vary by star rating and current level
+Sub-stats unlock and enhance at specific upgrade milestones
+CHAMPION PROGRESSION STRATEGY
+Core Stats:
+Eight primary stats (HP, ATK, DEF, SPD, C.RATE, C.DMG, ACC, RES) plus Mana
+Flat (+) bonuses add directly to base values
+Percentage (%) bonuses calculate from base champion stats
+Team Synergies:
+Role combinations create strategic advantages
+Aura Leader abilities enhance specific team compositions
+Positioning in formation affects combat effectiveness
+Resource Management:
+Multiple currencies for different upgrade paths
+Energy system limits battle participation
+Farming strategies for XP, materials, and artifacts
+GAMEPLAY MECHANICS - MATCH-3 RPG GAME KNOWLEDGE:
+COMBAT EFFECTS
+Buff and Debuff System:
+Positive effects (buffs) enhance champion performance
+Negative effects (debuffs) hinder enemy capabilities
+Duration-based and counter-based effects
+Strategic application crucial for advanced gameplay
+GAMEPLAY MECHANICS - MATCH-3 RPG GAME KNOWLEDGE:
+GAME MODES
+PvE Content:
+Campaign: Main story progression with team vs enemy team battles
+Incursions: Specialized gameplay mode for collecting artifacts
+PvP Content:
+Arena: Player vs Player with ranking systems
+Arena Hall: Spend medals to upgrade affinity-specific stats"""
 
 # Restriction fragments
 CONTENT_RESTRICTIONS = """
@@ -104,138 +176,6 @@ Examples:
 - User: "Han" Match to "Han Solo" from list
 - User: "Obi" Match to "Obi-Wan Kenobi" from list
 - User: "XYZ123" No match ask user about clarification"""
-
-
-# QUESTION_ANALYZER_TOOLS = """
-# AVAILABLE TOOLS:
-
-# - db_get_champions_list: Get complete list of all champions
-#   Examples:
-#     • "List all champions" → use db_get_champions_list
-#     • "What champions we have?" → use db_get_champions_list
-
-# - db_get_screen_context_help: Get information about current screen state and what user can see and do
-#   Examples:
-#     • "What can I do here?" → use db_get_screen_context_help("what to do in the game")
-#     • "Where am I?" → use db_get_screen_context_help("where am I")
-
-# - db_get_champion_details: Get detailed champion information including stats, abilities, traits, power ranking
-#   Examples:
-#     • "Tell me everything about Han Solo" → use db_get_champion_details("Han Solo")
-#     • "Get full details for Luke Skywalker" → use db_get_champion_details("Luke Skywalker")
-#     • "Show me complete info about Chewbacca" → use db_get_champion_details("Chewbacca")
-
-# - db_get_battle_details: Get detailed battle information including battle summary, participants, objectives, and strategic analysis
-#   Examples:
-#     • "Tell me about the Battle of Endor" → use db_get_battle_details("Battle of Endor")
-#     • "Get details about Death Star battle" → use db_get_battle_details("Death Star")
-#     • "Show me info about Hoth battle" → use db_get_battle_details("Hoth")
-
-# - db_get_battle_details_byid: Get detailed battle information by exact battle ID
-#   Examples:
-#     • "Get battle with ID D1_M1_B1" → use db_get_battle_details_byid("D1_M1_B1")
-#     • "Show battle details for D2_M3_B7" → use db_get_battle_details_byid("D2_M3_B7")
-
-
-# - db_find_strongest_champions: Find the strongest champions based on total power with optional trait filtering
-#   Available trait values:
-#     • rarity: legendary, epic, rare, uncommon, common
-#     • affinity: red, blue, green, yellow, purple
-#     • class_type: attacker, defender, support
-#   Examples:
-#     • "What are the strongest champions?" → use db_find_strongest_champions()
-#     • "Find strongest legendary attackers" → use db_find_strongest_champions(limit=10, rarity="legendary", class_type="attacker")
-#     • "Show strongest red champions" → use db_find_strongest_champions(limit=15, affinity="red")
-#     • "Give me 5 strongest epic defenders" → use db_find_strongest_champions(limit=5, rarity="epic", class_type="defender")
-
-# - db_find_champions_stronger_than: Find champions stronger than reference champion with optional trait filtering
-#   Available trait values:
-#     • rarity: legendary, epic, rare, uncommon, common
-#     • affinity: red, blue, green, yellow, purple
-#     • class_type: attacker, defender, support
-#   Examples:
-#     • "Who is stronger than Han Solo?" → use db_find_champions_stronger_than("Han Solo")
-#     • "Find epic champions stronger than Luke" → use db_find_champions_stronger_than("Luke", rarity="epic")
-#     • "Show legendary attackers stronger than Vader" → use db_find_champions_stronger_than("Vader", rarity="legendary", class_type="attacker")
-#     • "Which red champions are stronger than Han Solo?" → use db_find_champions_stronger_than("Han Solo", affinity="red")
-
-# - db_get_champions_by_traits: Find champions that match specified traits (rarity, affinity, class) with power rankings (uses AND logic - all specified traits must match)
-#   Available trait values:
-#     • rarity: legendary, epic, rare, uncommon, common
-#     • affinity: red, blue, green, yellow, purple
-#     • class_type: attacker, defender, support
-#   Examples:
-#     • "Show legendary red champions" → use db_get_champions_by_traits(["legendary", "red"])
-#     • "Find epic support champions" → use db_get_champions_by_traits(["epic", "support"])
-#     • "List all attackers" → use db_get_champions_by_traits(["attacker"])
-#     • "Find rare blue defenders" → use db_get_champions_by_traits(["rare", "blue", "defender"])
-
-# - db_compare_champions: Compare two or more champions side by side with comprehensive analysis of stats, traits, roles, and recommendations
-#   Examples:
-#     • "Compare Han Solo and Luke Skywalker" → use db_compare_champions(["Han Solo", "Luke Skywalker"])
-#     • "Compare Vader vs Luke vs Han" → use db_compare_champions(["Vader", "Luke", "Han"])
-#     • "Who will win, Darth Vader or Luke Skywalker?" → use db_compare_champions(["Darth Vader", "Luke Skywalker"])
-#     • "Analyze differences between Chewbacca and R2-D2" → use db_compare_champions(["Chewbacca", "R2-D2"])
-
-# - db_find_champions: Search for champions by name with basic information
-#   Examples:
-#     • "Find champions with Luke in name" → use db_find_champions("Luke")
-#     • "Search for Han Solo champions" → use db_find_champions("Han Solo")
-#     • "Find all Vader champions" → use db_find_champions("Vader")
-#     • "List champions matching 'Jedi'" → use db_find_champions("Jedi")
-
-# - db_get_lore_details: Get lore information from database. Use when user asks about character lore, background, or detailed information.
-#   Examples:
-#     • "Give me a report on Luke Skywalker" → use db_get_lore_details("Luke Skywalker")
-#     • "I want a report about Darth Vader" → use db_get_lore_details("Darth Vader")
-#     • "Create a report for Han Solo" → use db_get_lore_details("Han Solo")
-#     • "Generate a lore report on Princess Leia" → use db_get_lore_details("Princess Leia")
-
-# - db_get_ux_details: Get UX/interface information
-#   Examples: "Interface questions" → use db_get_ux_details
-
-# - db_rag_get_champion_details: Get detailed info about specific champion
-#   Examples:
-#     • "Tell me about Luke Skywalker" → use db_rag_get_champion_details("Luke Skywalker")
-#     • "Give me Han Solo details" → use db_rag_get_champion_details("Han Solo")
-
-# - db_rag_get_boss_details: Get detailed info about specific boss
-#   Examples:
-#     • "Tell me about Darth Vader boss" → use db_rag_get_boss_details("Darth Vader")
-#     • "Give me Nexu details" → use db_rag_get_boss_details("Nexu")
-
-# - db_rag_get_mechanic_details: Get game mechanics information
-#   Examples:
-#     • "How does combat work?" → use db_rag_get_mechanic_details("combat mechanics")
-#     • "What is the relation between colors?" → use db_rag_get_mechanic_details("color relations")
-
-# - db_rag_get_gameplay_details: Get gameplay strategies information
-#   Examples:
-#     • "Strategy questions" → use db_rag_get_gameplay_details("what to do in the game")
-
-# - db_rag_get_location_details: Get location information
-#   Examples:
-#     • "Tell me about Tatooine" → use db_rag_get_location_details("Tatooine")
-#     • "Planet descriptions" → use db_rag_get_location_details("planet descriptions")
-
-# - db_rag_get_battle_details: Get battle information
-#   Examples:
-#     • "Tell me about famous battles" → use db_rag_get_battle_details("famous battles")
-#     • "War strategies" → use db_rag_get_battle_details("war strategies")
-
-# - db_rag_get_general_knowledge: Get general knowledge about game.
-#   Examples:
-#     • "General questions" → use db_rag_get_general_knowledge("what is that game about")
-
-# - db_rag_get_smalltalk: Use when user asks about something funny, interesting, entertaining, about a story or wants casual conversation topics..
-#   Examples:
-#     • "Tell me story about Tatooine" → db_rag_get_smalltalk("story about Tatooine")
-#     • "Tell me something funny about banthas" → db_rag_get_smalltalk("something funny about banthas")
-#     • "Do you know something interesting about Jedi robes" → db_rag_get_smalltalk("something interesting about Jedi robes")
-#     • "What's fun to do at Mos Eisley" → db_rag_get_smalltalk("what to do at Mos Eisley")
-#     • "Tell me a story about droids" → db_rag_get_smalltalk("story about droids")
-#     • For variety: db_rag_get_smalltalk() (empty query) returns random topic
-#   """
 
 
 # T3RN malfunction messages for SimpleFallbackAgent
