@@ -11,7 +11,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from openai.types.chat import ChatCompletionMessageParam
+from openai.types.chat import ChatCompletion, ChatCompletionMessageParam
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+    Function,
+)
 
 from agents.agent_prompts import (
     CHAMPIONS_AND_BOSSES,
@@ -40,6 +44,53 @@ def chat_completion_to_content_str(content: ChatCompletionMessageParam) -> str:
         return content_str
 
     return str("".join([str(x) for x in content_str]))
+
+
+def format_toolcall(tool_call: Function):
+    """Format a tool call for logging."""
+    return f"{tool_call.name}({tool_call.arguments})"
+
+
+def chat_response_toolcalls(
+    response: "ChatCompletion",
+) -> List[ChatCompletionMessageToolCall]:
+    if not response.choices:
+        return []
+
+    message = response.choices[0].message
+
+    if not message.tool_calls:
+        return []
+
+    return message.tool_calls
+
+
+def chat_response_to_str(response: "ChatCompletion", content_only=False) -> str:
+    choices = response.choices
+
+    if not choices:
+        return ""
+
+    message = choices[0].message
+
+    if message.content is not None:
+        return message.content
+
+    if message.refusal is not None:
+        return message.refusal
+
+    if content_only:
+        return ""
+
+    if message.tool_calls:
+        output = []
+
+        for tool_call in message.tool_calls:
+            output.append(format_toolcall(tool_call.function))
+
+        return "\n".join(output)
+
+    return ""
 
 
 logger = logging.getLogger("Base Agent")

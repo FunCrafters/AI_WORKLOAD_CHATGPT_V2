@@ -240,28 +240,32 @@ def db_rag_get_smalltalk_from_embedding(
     embeddings: List[float],
     RAG_SMALLTALK_SEARCH_LIMIT: int = 2,
 ) -> List[dict]:
-    """
-    Search smalltalk knowledge base using embeddings
-
-    Args:
-        embeddings: List of floats representing the query embedding
-        SIMILARITY_THRESHOLD: Minimum similarity score to consider a match
-        RAG_SMALLTALK_SEARCH_LIMIT: Number of results to return
-
-    Returns:
-        dict: Search results with status and content
-    """
     if not embeddings:
         return []
 
     # Convert embedding to PostgreSQL vector format
     embedding_str = "[" + ",".join(map(str, embeddings)) + "]"
 
-    # Perform similarity search
+    # Combined similarity search using both embedding types
     similarity_sql = """
-    SELECT id, topic, category, knowledge_text, embedding,
-           1 - (embedding <=> %s::vector) as similarity
-    FROM smalltalk_vectors
+    WITH combined_results AS (
+        SELECT id, topic, category, knowledge_text, short_knowledge_text, embedding,
+                1 - (embedding <=> %s::vector) as similarity,
+                'embedding' as search_type
+        FROM smalltalk_vectors
+        
+        UNION ALL
+        
+        SELECT id, topic, category, knowledge_text, short_knowledge_text, topic_embedding as embedding,
+                1 - (topic_embedding <=> %s::vector) as similarity,
+                'topic_embedding' as search_type  
+        FROM smalltalk_vectors
+    )
+    SELECT * FROM (
+        SELECT DISTINCT ON (id) id, topic, category, knowledge_text, short_knowledge_text, embedding, similarity, search_type
+        FROM combined_results
+        ORDER BY id, similarity DESC
+    ) t
     ORDER BY similarity DESC
     LIMIT %s
     """
@@ -269,6 +273,7 @@ def db_rag_get_smalltalk_from_embedding(
     results = execute_query(
         similarity_sql,
         (
+            embedding_str,
             embedding_str,
             RAG_SMALLTALK_SEARCH_LIMIT,
         ),
@@ -282,10 +287,12 @@ def db_rag_get_smalltalk_from_embedding(
         {
             "id": r["id"],
             "similarity": float(r["similarity"]),
-            "content": f"### {r['topic']} ({r['category']})\n{r['knowledge_text']}",
+            "long_content": f"### {r['topic']} ({r['category']})\n{r['knowledge_text']}",
+            "content": f"### {r['topic']}\n{r['short_knowledge_text']}",
             "embedding": np.array(
                 [float(x) for x in r["embedding"].strip("[]").split(",")]
             ),
+            "search_type": r["search_type"],
         }
         for r in results
     ]

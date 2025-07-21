@@ -91,16 +91,8 @@ def execute_query(
         else:
             cursor.execute(query)
 
-        # Check if this is a SELECT query
-        if query.strip().upper().startswith("SELECT"):
-            rows = cursor.fetchall()
-            # Convert RealDictRow to regular dict
-            result = [dict(row) for row in rows]
-        else:
-            # For non-SELECT queries, commit the transaction
-            POSTGRES_CONNECTION.commit()
-            result = []
-
+        rows = cursor.fetchall()
+        result = [dict(row) for row in rows]
         cursor.close()
         return result
 
