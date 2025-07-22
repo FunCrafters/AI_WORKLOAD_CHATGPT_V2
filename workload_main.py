@@ -38,12 +38,12 @@ def connect_to_server():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
-        logger.info(f"<< CONNECTING: host={SERVER_HOST}, port={socket_port}")
+        logger.info(f"CONNECTING: host={SERVER_HOST}, port={socket_port}")
         client.connect((SERVER_HOST, socket_port))
-        logger.info("   SUCCESS: connected to RathTAR server")
+        logger.info("SUCCESS: connected to RathTAR server")
         return client
     except Exception as e:
-        logger.error(f"!!  ERROR: error={e}")
+        logger.error(f"ERROR: error={e}")
         return None
 
 
@@ -61,7 +61,7 @@ def register_workload(client):
     try:
         # Send registration data
         logger.info(
-            f"<< REGISTERING: title={registration['title']}, hash_id={registration['hash_id']}"
+            f"REGISTERING: title={registration['title']}, hash_id={registration['hash_id']}"
         )
         reg_data = json.dumps(registration).encode("utf-8")
         client.sendall(reg_data)
@@ -85,7 +85,6 @@ def register_workload(client):
         return None
 
 
-# TODO Session handling?
 def create_or_update_session(data: dict):
     session_id = data["session_id"]
     message_type = data["type"]
@@ -154,16 +153,16 @@ def process_message(client, message):
         logger.info("PREVIEW", extra=dict(preview=preview_text))
 
         # Handle message based on its type
-        #  DEBUG - {'type': 'initialization', 'text': '', 'channel': 0, 'session_id': '5YG83K'}
+        #   - {'type': 'initialization', 'text': '', 'channel': 0, 'session_id': '5YG83K'}
         if message_type == "initialization":
             process_initialization_message(client, session)
         elif message_type == "process":
-            # DEBUG - {'type': 'process', 'text': 'Hello friend', 'channel': 0, 'session_id': '5YG83K', 'message_id': 1752050086246}
+            #  - {'type': 'process', 'text': 'Hello friend', 'channel': 0, 'session_id': '5YG83K', 'message_id': 1752050086246}
             process_text_message(client, session)
         elif message_type == "settings":
             process_settings_message(client, session, data)
         elif message_type == "data":
-            # DEBUG - {'type': 'data', 'data':
+            #  - {'type': 'data', 'data':
             # {'main': {'media_id': 'screenshot_1752049288153',
             # 'media_type': 'image', 'filename': 'screenshot_2025-07-09T08-21-25.506Z.png',
             # 'user_id': '108336033121275716906', 'user_name': 'Maciej Kołodziejczyk',
@@ -210,7 +209,11 @@ def process_settings_message(client, session: Session, data: dict):
     # Extract settings
     settings_data = data.get("settings", {})
     if settings_data:
-        # TODO
+        # TODO THAT IS UNSAFE, WHat is going on here? Check what it is doing
+        logger.info(
+            "   PROCESS_SETTINGS",
+            extra=dict(session_id=session.session_id, keys=list(settings_data.keys())),
+        )
         # Store settings directly in session
         for key, value in settings_data.items():
             session.__dict__[key] = value
@@ -297,11 +300,9 @@ def process_json_data_message(client, session: Session, data: dict):
 
         # IMPORTANT: Set current JSON data in game cache for screen context tool
         try:
-            from workload_game_cache import set_current_json_data
 
             # Only set if json_data is a dictionary (required for screen context)
             if isinstance(json_data, dict):
-                set_current_json_data(json_data)
                 logger.info(
                     "   JSON DATA SET IN CACHE",
                     extra=dict(session_id=session.session_id, success=True),
