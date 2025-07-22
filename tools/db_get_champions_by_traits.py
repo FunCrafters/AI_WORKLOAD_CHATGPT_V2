@@ -104,7 +104,6 @@ def db_get_champions_by_traits(traits: list, limit: int = 50) -> dict:
         LIMIT %s
         """
         
-        #TODO Typing error
         champions = execute_query(query, query_params)
         
         if not champions:

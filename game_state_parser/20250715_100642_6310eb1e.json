@@ -1,0 +1,2602 @@
+{
+  "main": {
+    "media_id": "screenshot_1752574000975",
+    "media_type": "image",
+    "filename": "screenshot_2025-07-15T10-06-40.334Z.png",
+    "user_id": "100245684297742262884",
+    "user_name": "Marek Wylon",
+    "user_email": "marek.wylon@fun-crafters.com",
+    "device_id": "RFCY117VL1M",
+    "device_model": "SM-S931B",
+    "device_manufacturer": "samsung",
+    "android_version": "15",
+    "title": "Flow do Workload",
+    "notes": "",
+    "referers": [],
+    "severity": "Trivial",
+    "category": "Player Interactions",
+    "labels": "test_label, test_variant",
+    "visibility": "private"
+  },
+  "api": [
+    "/api",
+    "/buildData",
+    "/navigationData",
+    "/playerData",
+    "/screenData",
+    "/timeData"
+  ],
+  "buildData": {
+    "Version": "0.3.0",
+    "BuildDate": "2025-06-10 16:26"
+  },
+  "navigationData": {
+    "Data": {
+      "1752573859592": [
+        "Lobby",
+        "pageview",
+        {
+          "page": null,
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573860050": [
+        "LobbyMainUIPresenter",
+        "ui_panel_open",
+        {
+          "page": "LobbyMainUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573884868": [
+        "Champions",
+        "pageview",
+        {
+          "page": "LobbyMainUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573885036": [
+        "LobbyMainUIPresenter",
+        "ui_panel_close",
+        {
+          "page": "LobbyMainUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573885039": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573897274": [
+        "CardPresenter",
+        "button_click",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": "champion.sw1.droideka.name"
+        },
+        null
+      ],
+      "1752573897528": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573897529": [
+        "ChampionMainPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573897537": [
+        "ChampionHeaderPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573897548": [
+        "ChampionEquipmentPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573897549": [
+        "ChampionsQuickAccessListPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573907245": [
+        "ChampionMainPanelPresenter",
+        "button_click",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": "LoreButton"
+        },
+        null
+      ],
+      "1752573907614": [
+        "ChampionHeaderPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573907615": [
+        "ChampionEquipmentPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573907616": [
+        "ChampionsQuickAccessListPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573907617": [
+        "ChampionMainPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573907618": [
+        "ChampionLorePanelPresenter",
+        "ui_panel_open",
+        {
+          "page": null,
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573909284": [
+        "ChampionLorePanelPresenter",
+        "ui_panel_close",
+        {
+          "page": null,
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573909285": [
+        "ChampionMainPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573909292": [
+        "ChampionHeaderPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573909300": [
+        "ChampionEquipmentPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573909301": [
+        "ChampionsQuickAccessListPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573910896": [
+        "StatisticWindowPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": "StatisticWindowPresenter",
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573923134": [
+        "StatisticWindowPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": "StatisticWindowPresenter",
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573924668": [
+        "ChampionHeaderPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573924669": [
+        "ChampionEquipmentPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573924670": [
+        "ChampionsQuickAccessListPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573924671": [
+        "ChampionMainPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573924672": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573926007": [
+        "CardPresenter",
+        "button_click",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": "champion.sw2.B2superbattle.name"
+        },
+        null
+      ],
+      "1752573926129": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573926130": [
+        "ChampionMainPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573926135": [
+        "ChampionHeaderPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573926142": [
+        "ChampionEquipmentPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573926143": [
+        "ChampionsQuickAccessListPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573936097": [
+        "ChampionHeaderPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573936098": [
+        "ChampionEquipmentPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573936099": [
+        "ChampionsQuickAccessListPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573936100": [
+        "ChampionMainPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573936101": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573936803": [
+        "Lobby",
+        "pageview",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573936972": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573937221": [
+        "LobbyMainUIPresenter",
+        "ui_panel_open",
+        {
+          "page": "LobbyMainUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573938545": [
+        "Champions",
+        "pageview",
+        {
+          "page": "LobbyMainUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573938711": [
+        "LobbyMainUIPresenter",
+        "ui_panel_close",
+        {
+          "page": "LobbyMainUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573938715": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573940544": [
+        "CardPresenter",
+        "button_click",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": "champion.sw5.chewbacca.name"
+        },
+        null
+      ],
+      "1752573940971": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573940972": [
+        "ChampionMainPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573940977": [
+        "ChampionHeaderPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573940984": [
+        "ChampionEquipmentPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573940985": [
+        "ChampionsQuickAccessListPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573947999": [
+        "TabBarButtonPresenter",
+        "button_click",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": "champions.buttons.abilities"
+        },
+        null
+      ],
+      "1752573948367": [
+        "ChampionEquipmentPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573948368": [
+        "ChampionAbilitiesPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionAbilitiesPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573960363": [
+        "ChampionAbilitiesPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionAbilitiesPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573960514": [
+        "ChampionHeaderPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573960515": [
+        "ChampionsQuickAccessListPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573960516": [
+        "ChampionMainPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573960517": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573962088": [
+        "CardPresenter",
+        "button_click",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": "champion.sw3.grievous.name"
+        },
+        null
+      ],
+      "1752573962261": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573962262": [
+        "ChampionMainPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573962268": [
+        "ChampionHeaderPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573962275": [
+        "ChampionEquipmentPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573962276": [
+        "ChampionsQuickAccessListPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573973277": [
+        "ChampionHeaderPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573973278": [
+        "ChampionEquipmentPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionEquipmentPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573973279": [
+        "ChampionsQuickAccessListPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573973280": [
+        "ChampionMainPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionMainPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573973281": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_open",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573974208": [
+        "Lobby",
+        "pageview",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573974379": [
+        "ChampionCollectionPanelPresenter",
+        "ui_panel_close",
+        {
+          "page": "ChampionCollectionPanelPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573974601": [
+        "LobbyMainUIPresenter",
+        "ui_panel_open",
+        {
+          "page": "LobbyMainUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573976490": [
+        "BattleHub",
+        "pageview",
+        {
+          "page": "LobbyMainUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573976510": [
+        "LobbyMainUIPresenter",
+        "ui_panel_close",
+        {
+          "page": "LobbyMainUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573976670": [
+        "BattleHubMainPresenter",
+        "ui_panel_open",
+        {
+          "page": "BattleHubMainPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573978332": [
+        "Campaign",
+        "pageview",
+        {
+          "page": "BattleHubMainPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573978355": [
+        "BattleHubMainPresenter",
+        "ui_panel_close",
+        {
+          "page": "BattleHubMainPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573978510": [
+        "CampaignMissionUIPresenter",
+        "ui_panel_open",
+        {
+          "page": "CampaignMissionUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573986640": [
+        "CampaignMissionUIPresenter",
+        "ui_panel_close",
+        {
+          "page": "CampaignMissionUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573986644": [
+        "CampaignBattlesUIPresenter",
+        "ui_panel_open",
+        {
+          "page": "CampaignBattlesUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573996068": [
+        "CampaignBattlesUIPresenter",
+        "ui_panel_close",
+        {
+          "page": "CampaignBattlesUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ],
+      "1752573996079": [
+        "CampaignTeamSelectUIPresenter",
+        "ui_panel_open",
+        {
+          "page": "CampaignTeamSelectUIPresenter",
+          "popup": null,
+          "ui_element": null
+        },
+        null
+      ]
+    }
+  },
+  "playerData": {
+    "PlayerId": 123
+  },
+  "screenData": {
+    "CurrentTimestamp": 1752574000940,
+    "Screen": "CampaignTeamSelectUIPresenter",
+    "Popups": [],
+    "ScreensData": {
+      "CampaignTeamSelectUIPresenter": {
+        "BattleId": "D1_M1_B2",
+        "BattleName": "mission1.battle2.easy.name",
+        "BattleTypeName": "Campaign",
+        "BackNavigatesTo": "CampaignBattlesUIPresenter"
+      },
+      "TeamSelectBaseUIPresenter": {
+        "SelectedChampions": {
+          "0": {
+            "ChampionId": 11,
+            "ChampionConfigId": "champion.ows1.reva",
+            "ChampionStarsInt": 4,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 40,
+            "ChampionPowerInt": 8612,
+            "IsChampionLocked": true,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Purple",
+            "ChampionRarityName": "Epic",
+            "ChampionClassName": "Defender",
+            "ChampionFactionName": "Executors",
+            "ChampionBasicAbilityId": "champion.ows1.reva.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.ows1.reva.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.ows1.reva.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "champion.ows1.reva.leader",
+            "ChampionLeaderLevelInt": 1,
+            "ChampionStats": {
+              "AttackInt": 249,
+              "DefenseInt": 452,
+              "HealthInt": 3934,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 102,
+              "ManaInt": 500
+            }
+          },
+          "1": {
+            "ChampionId": 23,
+            "ChampionConfigId": "champion.owk1.taladurith",
+            "ChampionStarsInt": 3,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 30,
+            "ChampionPowerInt": 5914,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Blue",
+            "ChampionRarityName": "Rare",
+            "ChampionClassName": "Support",
+            "ChampionFactionName": "Stalwarts",
+            "ChampionBasicAbilityId": "champion.owk1.taladurith.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.owk1.taladurith.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.owk1.taladurith.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 202,
+              "DefenseInt": 211,
+              "HealthInt": 2501,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 113,
+              "ManaInt": 700
+            }
+          },
+          "2": {
+            "ChampionId": 27,
+            "ChampionConfigId": "champion.sw7-9.firstorder.megablaster",
+            "ChampionStarsInt": 2,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 20,
+            "ChampionPowerInt": 3507,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Blue",
+            "ChampionRarityName": "Uncommon",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Unyielding",
+            "ChampionBasicAbilityId": "champion.sw7-9.firstorder.megablaster.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw7-9.firstorder.megablaster.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 187,
+              "DefenseInt": 104,
+              "HealthInt": 1226,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 97,
+              "ManaInt": 1200
+            }
+          },
+          "3": {
+            "ChampionId": 25,
+            "ChampionConfigId": "champion.sw7-9.firstorder.infantry",
+            "ChampionStarsInt": 2,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 20,
+            "ChampionPowerInt": 3262,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Uncommon",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Mystics",
+            "ChampionBasicAbilityId": "champion.sw7-9.firstorder.infantry.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw7-9.firstorder.infantry.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 173,
+              "DefenseInt": 93,
+              "HealthInt": 1002,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 101,
+              "ManaInt": 800
+            }
+          },
+          "4": {
+            "ChampionId": 24,
+            "ChampionConfigId": "champion.sw1.droideka",
+            "ChampionStarsInt": 3,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 30,
+            "ChampionPowerInt": 5327,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Rare",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Mystics",
+            "ChampionBasicAbilityId": "champion.sw1.droideka.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw1.droideka.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.sw1.droideka.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 295,
+              "DefenseInt": 170,
+              "HealthInt": 1884,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 114,
+              "ManaInt": 700
+            }
+          }
+        },
+        "Leader": {
+          "ChampionId": 11,
+          "ChampionConfigId": "champion.ows1.reva",
+          "ChampionStarsInt": 4,
+          "ChampionLevelInt": 1,
+          "ChampionMaxLevelInt": 40,
+          "ChampionPowerInt": 8612,
+          "IsChampionLocked": true,
+          "ChampionSelectedPlayerTraitName": null,
+          "ChampionAffinityName": "Purple",
+          "ChampionRarityName": "Epic",
+          "ChampionClassName": "Defender",
+          "ChampionFactionName": "Executors",
+          "ChampionBasicAbilityId": "champion.ows1.reva.basic",
+          "ChampionBasicLevelInt": 1,
+          "ChampionSpecialAbilityId": "champion.ows1.reva.special",
+          "ChampionSpecialLevelInt": 1,
+          "ChampionPassiveAbilityId": "champion.ows1.reva.passive",
+          "ChampionPassiveLevelInt": 1,
+          "ChampionLeaderAbilityId": "champion.ows1.reva.leader",
+          "ChampionLeaderLevelInt": 1,
+          "ChampionStats": {
+            "AttackInt": 249,
+            "DefenseInt": 452,
+            "HealthInt": 3934,
+            "ResistanceInt": 50,
+            "AccuracyInt": 100,
+            "CriticalRateFloat": 0.1,
+            "CriticalDamageFloat": 0.75,
+            "SpeedInt": 102,
+            "ManaInt": 500
+          }
+        },
+        "AvailableChampions": [
+          {
+            "ChampionId": 1,
+            "ChampionConfigId": "champion.sw1.b1droid",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1730,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Red",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Dominators",
+            "ChampionBasicAbilityId": "champion.sw1.b1droid.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw1.b1droid.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 96,
+              "DefenseInt": 53,
+              "HealthInt": 586,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 104,
+              "ManaInt": 700
+            }
+          },
+          {
+            "ChampionId": 2,
+            "ChampionConfigId": "champion.sw1.B1siegedroid",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1772,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Blue",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Unyielding",
+            "ChampionBasicAbilityId": "champion.sw1.B1siegedroid.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw1.B1siegedroid.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 90,
+              "DefenseInt": 50,
+              "HealthInt": 637,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 90,
+              "ManaInt": 1200
+            }
+          },
+          {
+            "ChampionId": 3,
+            "ChampionConfigId": "champion.sw1.B1scoutdroid",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1938,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Support",
+            "ChampionFactionName": "Mystics",
+            "ChampionBasicAbilityId": "champion.sw1.B1scoutdroid.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw1.B1scoutdroid.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 53,
+              "DefenseInt": 64,
+              "HealthInt": 821,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 95,
+              "ManaInt": 800
+            }
+          },
+          {
+            "ChampionId": 4,
+            "ChampionConfigId": "champion.sw1.b1sniperdroid",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1770,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Purple",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Executors",
+            "ChampionBasicAbilityId": "champion.sw1.b1sniperdroid.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw1.B1sniperdroid.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 103,
+              "DefenseInt": 47,
+              "HealthInt": 615,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 97,
+              "ManaInt": 1200
+            }
+          },
+          {
+            "ChampionId": 5,
+            "ChampionConfigId": "champion.sw1.b1analystdroid",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1825,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Green",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Support",
+            "ChampionFactionName": "Strategists",
+            "ChampionBasicAbilityId": "champion.sw1.b1analystdroid.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw1.b1analystdroid.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 70,
+              "DefenseInt": 61,
+              "HealthInt": 694,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 108,
+              "ManaInt": 500
+            }
+          },
+          {
+            "ChampionId": 6,
+            "ChampionConfigId": "champion.sw2.clonetrooper.cannon",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1686,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Illuminates",
+            "ChampionBasicAbilityId": "champion.sw2.clonetrooper.cannon.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw2.clonetrooper.cannon.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 89,
+              "DefenseInt": 48,
+              "HealthInt": 552,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 114,
+              "ManaInt": 1200
+            }
+          },
+          {
+            "ChampionId": 7,
+            "ChampionConfigId": "champion.sw2.clonetrooper.medic",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 2020,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Green",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Support",
+            "ChampionFactionName": "Counselors",
+            "ChampionBasicAbilityId": "champion.sw2.clonetrooper.medic.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw2.clonetrooper.medic.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 55,
+              "DefenseInt": 64,
+              "HealthInt": 901,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 105,
+              "ManaInt": 500
+            }
+          },
+          {
+            "ChampionId": 8,
+            "ChampionConfigId": "champion.sw2.clonetrooper.lighttrooper",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1716,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Purple",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Adepts",
+            "ChampionBasicAbilityId": "champion.sw2.clonetrooper.lighttrooper.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw2.clonetrooper.lighttrooper.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 98,
+              "DefenseInt": 47,
+              "HealthInt": 569,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 110,
+              "ManaInt": 700
+            }
+          },
+          {
+            "ChampionId": 9,
+            "ChampionConfigId": "champion.sw2.clonetrooper.riot",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1951,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Blue",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Defender",
+            "ChampionFactionName": "Stalwarts",
+            "ChampionBasicAbilityId": "champion.sw2.clonetrooper.riot.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw2.clonetrooper.riot.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 50,
+              "DefenseInt": 99,
+              "HealthInt": 802,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 97,
+              "ManaInt": 1000
+            }
+          },
+          {
+            "ChampionId": 10,
+            "ChampionConfigId": "champion.sw2.clonetrooper.EMP",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1826,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Red",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Support",
+            "ChampionFactionName": "Leaders",
+            "ChampionBasicAbilityId": "champion.sw2.clonetrooper.EMP.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw2.clonetrooper.EMP.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 53,
+              "DefenseInt": 76,
+              "HealthInt": 697,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 103,
+              "ManaInt": 800
+            }
+          },
+          {
+            "ChampionId": 11,
+            "ChampionConfigId": "champion.ows1.reva",
+            "ChampionStarsInt": 4,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 40,
+            "ChampionPowerInt": 8612,
+            "IsChampionLocked": true,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Purple",
+            "ChampionRarityName": "Epic",
+            "ChampionClassName": "Defender",
+            "ChampionFactionName": "Executors",
+            "ChampionBasicAbilityId": "champion.ows1.reva.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.ows1.reva.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.ows1.reva.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "champion.ows1.reva.leader",
+            "ChampionLeaderLevelInt": 1,
+            "ChampionStats": {
+              "AttackInt": 249,
+              "DefenseInt": 452,
+              "HealthInt": 3934,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 102,
+              "ManaInt": 500
+            }
+          },
+          {
+            "ChampionId": 12,
+            "ChampionConfigId": "champion.sw2.countdooku",
+            "ChampionStarsInt": 5,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 50,
+            "ChampionPowerInt": 10835,
+            "IsChampionLocked": true,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Green",
+            "ChampionRarityName": "Legendary",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Strategists",
+            "ChampionBasicAbilityId": "champion.sw2.countdooku.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw2.countdooku.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.sw2.countdooku.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "champion.sw2.countdooku.leader",
+            "ChampionLeaderLevelInt": 1,
+            "ChampionStats": {
+              "AttackInt": 667,
+              "DefenseInt": 432,
+              "HealthInt": 4834,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 96,
+              "ManaInt": 1300
+            }
+          },
+          {
+            "ChampionId": 13,
+            "ChampionConfigId": "champion.cws1e5.commandodroid",
+            "ChampionStarsInt": 3,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 30,
+            "ChampionPowerInt": 5549,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Rare",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Mystics",
+            "ChampionBasicAbilityId": "champion.cws1e5.commandodroid.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.cws1e5.commandodroid.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.cws1e5.commandodroid.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 322,
+              "DefenseInt": 185,
+              "HealthInt": 2066,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 85,
+              "ManaInt": 1400
+            }
+          },
+          {
+            "ChampionId": 14,
+            "ChampionConfigId": "champion.sw2.B2superbattle",
+            "ChampionStarsInt": 3,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 30,
+            "ChampionPowerInt": 5945,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Rare",
+            "ChampionClassName": "Defender",
+            "ChampionFactionName": "Mystics",
+            "ChampionBasicAbilityId": "champion.sw2.B2superbattle.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw2.B2superbattle.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.sw2.B2superbattle.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 144,
+              "DefenseInt": 307,
+              "HealthInt": 2484,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 82,
+              "ManaInt": 1000
+            }
+          },
+          {
+            "ChampionId": 15,
+            "ChampionConfigId": "champion.sw4.hansolo",
+            "ChampionStarsInt": 5,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 50,
+            "ChampionPowerInt": 10763,
+            "IsChampionLocked": true,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Purple",
+            "ChampionRarityName": "Legendary",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Adepts",
+            "ChampionBasicAbilityId": "champion.sw4.hansolo.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw4.hansolo.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.sw4.hansolo.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "champion.sw4.hansolo.leader",
+            "ChampionLeaderLevelInt": 1,
+            "ChampionStats": {
+              "AttackInt": 754,
+              "DefenseInt": 370,
+              "HealthInt": 4632,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 110,
+              "ManaInt": 900
+            }
+          },
+          {
+            "ChampionId": 16,
+            "ChampionConfigId": "champion.sw5.chewbacca",
+            "ChampionStarsInt": 5,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 50,
+            "ChampionPowerInt": 10957,
+            "IsChampionLocked": true,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Red",
+            "ChampionRarityName": "Legendary",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Leaders",
+            "ChampionBasicAbilityId": "champion.sw5.chewbacca.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw5.chewbacca.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.sw5.chewbacca.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "champion.sw5.chewbacca.leader",
+            "ChampionLeaderLevelInt": 1,
+            "ChampionStats": {
+              "AttackInt": 672,
+              "DefenseInt": 466,
+              "HealthInt": 4949,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 95,
+              "ManaInt": 700
+            }
+          },
+          {
+            "ChampionId": 17,
+            "ChampionConfigId": "champion.sw4.imperialstormtrooperinfantry",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1694,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Blue",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Unyielding",
+            "ChampionBasicAbilityId": "champion.sw4.imperialstormtrooperinfantry.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw4.imperialstormtrooperinfantry.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 92,
+              "DefenseInt": 55,
+              "HealthInt": 556,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 109,
+              "ManaInt": 600
+            }
+          },
+          {
+            "ChampionId": 18,
+            "ChampionConfigId": "champion.sw4.imperialstormtroopermeleeinfantry",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1886,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Red",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Defender",
+            "ChampionFactionName": "Dominators",
+            "ChampionBasicAbilityId": "champion.sw4.imperialstormtroopermeleeinfantry.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw4.imperialstormtroopermeleeinfantry.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 61,
+              "DefenseInt": 95,
+              "HealthInt": 743,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 100,
+              "ManaInt": 800
+            }
+          },
+          {
+            "ChampionId": 19,
+            "ChampionConfigId": "champion.sw4.imperialstormtrooperheavyinfantry",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1740,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Green",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Strategists",
+            "ChampionBasicAbilityId": "champion.sw4.imperialstormtrooperheavyinfantry.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw4.imperialstormtrooperheavyinfantry.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 102,
+              "DefenseInt": 56,
+              "HealthInt": 587,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 88,
+              "ManaInt": 1200
+            }
+          },
+          {
+            "ChampionId": 20,
+            "ChampionConfigId": "champion.sw4.imperialstormtrooperdisruptorinfantry",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1969,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Purple",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Support",
+            "ChampionFactionName": "Executors",
+            "ChampionBasicAbilityId": "champion.sw4.imperialstormtrooperdisruptorinfantry.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw4.imperialstormtrooperdisruptorinfantry.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 59,
+              "DefenseInt": 73,
+              "HealthInt": 837,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 110,
+              "ManaInt": 700
+            }
+          },
+          {
+            "ChampionId": 21,
+            "ChampionConfigId": "champion.sw4.imperialstormtroopersupportinfantry",
+            "ChampionStarsInt": 1,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 10,
+            "ChampionPowerInt": 1961,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Common",
+            "ChampionClassName": "Support",
+            "ChampionFactionName": "Mystics",
+            "ChampionBasicAbilityId": "champion.sw4.imperialstormtroopersupportinfantry.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw4.imperialstormtroopersupportinfantry.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 59,
+              "DefenseInt": 62,
+              "HealthInt": 840,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 104,
+              "ManaInt": 800
+            }
+          },
+          {
+            "ChampionId": 22,
+            "ChampionConfigId": "champion.sw3.grievous",
+            "ChampionStarsInt": 5,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 50,
+            "ChampionPowerInt": 11219,
+            "IsChampionLocked": true,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Legendary",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Mystics",
+            "ChampionBasicAbilityId": "champion.sw3.grievous.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw3.grievous.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.sw3.grievous.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "champion.sw3.grievous.leader",
+            "ChampionLeaderLevelInt": 1,
+            "ChampionStats": {
+              "AttackInt": 667,
+              "DefenseInt": 427,
+              "HealthInt": 5218,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 103,
+              "ManaInt": 1000
+            }
+          },
+          {
+            "ChampionId": 23,
+            "ChampionConfigId": "champion.owk1.taladurith",
+            "ChampionStarsInt": 3,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 30,
+            "ChampionPowerInt": 5914,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Blue",
+            "ChampionRarityName": "Rare",
+            "ChampionClassName": "Support",
+            "ChampionFactionName": "Stalwarts",
+            "ChampionBasicAbilityId": "champion.owk1.taladurith.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.owk1.taladurith.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.owk1.taladurith.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 202,
+              "DefenseInt": 211,
+              "HealthInt": 2501,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 113,
+              "ManaInt": 700
+            }
+          },
+          {
+            "ChampionId": 24,
+            "ChampionConfigId": "champion.sw1.droideka",
+            "ChampionStarsInt": 3,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 30,
+            "ChampionPowerInt": 5327,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Rare",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Mystics",
+            "ChampionBasicAbilityId": "champion.sw1.droideka.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw1.droideka.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.sw1.droideka.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 295,
+              "DefenseInt": 170,
+              "HealthInt": 1884,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 114,
+              "ManaInt": 700
+            }
+          },
+          {
+            "ChampionId": 25,
+            "ChampionConfigId": "champion.sw7-9.firstorder.infantry",
+            "ChampionStarsInt": 2,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 20,
+            "ChampionPowerInt": 3262,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Uncommon",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Mystics",
+            "ChampionBasicAbilityId": "champion.sw7-9.firstorder.infantry.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw7-9.firstorder.infantry.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 173,
+              "DefenseInt": 93,
+              "HealthInt": 1002,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 101,
+              "ManaInt": 800
+            }
+          },
+          {
+            "ChampionId": 26,
+            "ChampionConfigId": "champion.sw7-9.firstorder.riot",
+            "ChampionStarsInt": 2,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 20,
+            "ChampionPowerInt": 3696,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Purple",
+            "ChampionRarityName": "Uncommon",
+            "ChampionClassName": "Defender",
+            "ChampionFactionName": "Executors",
+            "ChampionBasicAbilityId": "champion.sw7-9.firstorder.riot.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw7-9.firstorder.riot.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 91,
+              "DefenseInt": 165,
+              "HealthInt": 1448,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 110,
+              "ManaInt": 1000
+            }
+          },
+          {
+            "ChampionId": 27,
+            "ChampionConfigId": "champion.sw7-9.firstorder.megablaster",
+            "ChampionStarsInt": 2,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 20,
+            "ChampionPowerInt": 3507,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Blue",
+            "ChampionRarityName": "Uncommon",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Unyielding",
+            "ChampionBasicAbilityId": "champion.sw7-9.firstorder.megablaster.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw7-9.firstorder.megablaster.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 187,
+              "DefenseInt": 104,
+              "HealthInt": 1226,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 97,
+              "ManaInt": 1200
+            }
+          },
+          {
+            "ChampionId": 28,
+            "ChampionConfigId": "champion.sw7-9.firstorder.support",
+            "ChampionStarsInt": 2,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 20,
+            "ChampionPowerInt": 3617,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Yellow",
+            "ChampionRarityName": "Uncommon",
+            "ChampionClassName": "Support",
+            "ChampionFactionName": "Mystics",
+            "ChampionBasicAbilityId": "champion.sw7-9.firstorder.support.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw7-9.firstorder.support.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 107,
+              "DefenseInt": 120,
+              "HealthInt": 1390,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 110,
+              "ManaInt": 800
+            }
+          },
+          {
+            "ChampionId": 29,
+            "ChampionConfigId": "champion.sw7-9.firstorder.melee",
+            "ChampionStarsInt": 2,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 20,
+            "ChampionPowerInt": 3467,
+            "IsChampionLocked": false,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Green",
+            "ChampionRarityName": "Uncommon",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Strategists",
+            "ChampionBasicAbilityId": "champion.sw7-9.firstorder.melee.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw7-9.firstorder.melee.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "None",
+            "ChampionPassiveLevelInt": "None",
+            "ChampionLeaderAbilityId": "None",
+            "ChampionLeaderLevelInt": "None",
+            "ChampionStats": {
+              "AttackInt": 187,
+              "DefenseInt": 102,
+              "HealthInt": 1186,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 96,
+              "ManaInt": 700
+            }
+          },
+          {
+            "ChampionId": 30,
+            "ChampionConfigId": "champion.sw1.darthmaul",
+            "ChampionStarsInt": 5,
+            "ChampionLevelInt": 1,
+            "ChampionMaxLevelInt": 50,
+            "ChampionPowerInt": 10702,
+            "IsChampionLocked": true,
+            "ChampionSelectedPlayerTraitName": null,
+            "ChampionAffinityName": "Red",
+            "ChampionRarityName": "Legendary",
+            "ChampionClassName": "Attacker",
+            "ChampionFactionName": "Dominators",
+            "ChampionBasicAbilityId": "champion.sw1.darthmaul.basic",
+            "ChampionBasicLevelInt": 1,
+            "ChampionSpecialAbilityId": "champion.sw1.darthmaul.special",
+            "ChampionSpecialLevelInt": 1,
+            "ChampionPassiveAbilityId": "champion.sw1.darthmaul.passive",
+            "ChampionPassiveLevelInt": 1,
+            "ChampionLeaderAbilityId": "champion.sw1.darthmaul.leader",
+            "ChampionLeaderLevelInt": 1,
+            "ChampionStats": {
+              "AttackInt": 662,
+              "DefenseInt": 413,
+              "HealthInt": 4709,
+              "ResistanceInt": 50,
+              "AccuracyInt": 100,
+              "CriticalRateFloat": 0.1,
+              "CriticalDamageFloat": 0.75,
+              "SpeedInt": 99,
+              "ManaInt": 800
+            }
+          }
+        ],
+        "PossibleNavigationTo": [
+          "Start Battle",
+          "Choose Leader",
+          "Edit Team"
+        ]
+      },
+      "TeamSelectDefaultEnemiesUIPresenter": {
+        "WavesCountInt": 3,
+        "EnemyWaves": {
+          "0": [
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.infantry.v1.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Green",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.infantry.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.infantry.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 125,
+                "DefenseInt": 96,
+                "HealthInt": 207,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 101,
+                "ManaInt": 800
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.megablaster.v1.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Green",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.megablaster.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.megablaster.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 135,
+                "DefenseInt": 107,
+                "HealthInt": 253,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 126,
+                "ManaInt": 1200
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.infantry.v1.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Green",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.infantry.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.infantry.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 125,
+                "DefenseInt": 96,
+                "HealthInt": 207,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 101,
+                "ManaInt": 800
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.megablaster.v1.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Green",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.megablaster.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.megablaster.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 135,
+                "DefenseInt": 107,
+                "HealthInt": 253,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 126,
+                "ManaInt": 1200
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.infantry.v1.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Green",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.infantry.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.infantry.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 125,
+                "DefenseInt": 96,
+                "HealthInt": 207,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 101,
+                "ManaInt": 800
+              }
+            }
+          ],
+          "1": [
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.infantry.v2.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Blue",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.infantry.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.infantry.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 125,
+                "DefenseInt": 96,
+                "HealthInt": 207,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 101,
+                "ManaInt": 800
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.melee.v1.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Blue",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.melee.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.melee.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 135,
+                "DefenseInt": 106,
+                "HealthInt": 245,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 96,
+                "ManaInt": 700
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.melee.v1.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Blue",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.melee.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.melee.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 135,
+                "DefenseInt": 106,
+                "HealthInt": 245,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 96,
+                "ManaInt": 700
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.melee.v1.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Blue",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.melee.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.melee.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 135,
+                "DefenseInt": 106,
+                "HealthInt": 245,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 96,
+                "ManaInt": 700
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.infantry.v2.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Blue",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.infantry.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.infantry.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 125,
+                "DefenseInt": 96,
+                "HealthInt": 207,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 101,
+                "ManaInt": 800
+              }
+            }
+          ],
+          "2": [
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.megablaster.v2.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Blue",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.megablaster.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.megablaster.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 135,
+                "DefenseInt": 107,
+                "HealthInt": 253,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 97,
+                "ManaInt": 1200
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.melee.v2.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Green",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.melee.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.melee.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 135,
+                "DefenseInt": 106,
+                "HealthInt": 245,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 125,
+                "ManaInt": 700
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.megablaster.v2.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Blue",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.megablaster.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.megablaster.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 135,
+                "DefenseInt": 107,
+                "HealthInt": 253,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 97,
+                "ManaInt": 1200
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.melee.v2.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Green",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.melee.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.melee.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 135,
+                "DefenseInt": 106,
+                "HealthInt": 245,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 125,
+                "ManaInt": 700
+              }
+            },
+            {
+              "EnemyConfigId": "mob.sw7-9.firstorder.megablaster.v2.D1_M1_B2",
+              "EnemyStarsInt": 2,
+              "EnemyLevelInt": 2,
+              "EnemyPowerInt": 1747,
+              "EnemyAffinityName": "Blue",
+              "EnemyRarityName": "Uncommon",
+              "EnemyClassName": "Attacker",
+              "EnemyFactionName": "Dominators",
+              "EnemyBasicAbilityId": "champion.sw7-9.firstorder.megablaster.basic",
+              "EnemyBasicLevelInt": 1,
+              "EnemySpecialAbilityId": "champion.sw7-9.firstorder.megablaster.special",
+              "EnemySpecialLevelInt": 1,
+              "EnemyPassiveAbilityId": null,
+              "EnemyPassiveLevelInt": 0,
+              "EnemyLeaderAbilityId": null,
+              "EnemyLeaderLevelInt": 0,
+              "EnemyStats": {
+                "AttackInt": 135,
+                "DefenseInt": 107,
+                "HealthInt": 253,
+                "ResistanceInt": 50,
+                "AccuracyInt": 100,
+                "CriticalRateFloat": 0.1,
+                "CriticalDamageFloat": 0.75,
+                "SpeedInt": 97,
+                "ManaInt": 1200
+              }
+            }
+          ]
+        }
+      },
+      "TopBarPanelPresenter": {
+        "ShowedResources": {
+          "energy": 479
+        },
+        "PossibleNavigationTo": [
+          "Home",
+          "Info",
+          "energyResourceWindow"
+        ]
+      },
+      "BottomBarPanelPresenter": {
+        "PossibleNavigationTo": [
+          "Back"
+        ]
+      },
+      "ChampionListPanelPresenter": {
+        "ChampionsCollection": [
+          "champion.sw3.grievous",
+          "champion.sw5.chewbacca",
+          "champion.sw2.countdooku",
+          "champion.sw4.hansolo",
+          "champion.sw1.darthmaul",
+          "champion.ows1.reva",
+          "champion.sw2.B2superbattle",
+          "champion.owk1.taladurith",
+          "champion.cws1e5.commandodroid",
+          "champion.sw1.droideka",
+          "champion.sw7-9.firstorder.riot",
+          "champion.sw7-9.firstorder.support",
+          "champion.sw7-9.firstorder.megablaster",
+          "champion.sw7-9.firstorder.melee",
+          "champion.sw7-9.firstorder.infantry",
+          "champion.sw2.clonetrooper.medic",
+          "champion.sw4.imperialstormtrooperdisruptorinfantry",
+          "champion.sw4.imperialstormtroopersupportinfantry",
+          "champion.sw2.clonetrooper.riot",
+          "champion.sw1.B1scoutdroid",
+          "champion.sw4.imperialstormtroopermeleeinfantry",
+          "champion.sw2.clonetrooper.EMP",
+          "champion.sw1.b1analystdroid",
+          "champion.sw1.B1siegedroid",
+          "champion.sw1.b1sniperdroid",
+          "champion.sw4.imperialstormtrooperheavyinfantry",
+          "champion.sw1.b1droid",
+          "champion.sw2.clonetrooper.lighttrooper",
+          "champion.sw4.imperialstormtrooperinfantry",
+          "champion.sw2.clonetrooper.cannon"
+        ]
+      },
+      "ChampionFilteringPanelPresenter": {
+        "PossibleNavigationTo": [
+          "ChampionsSortingWindow",
+          "ChampionsFilteringWindow"
+        ],
+        "SelectedFilters": {},
+        "SelectedSortingName": "POWER",
+        "SortingOrderName": "ascending"
+      }
+    }
+  },
+  "timeData": {
+    "time": 144269,
+    "start_time": "10.04.16.557",
+    "start_timestamp": 1752573856557,
+    "current_time": "10.06.40.975"
+  }
+}

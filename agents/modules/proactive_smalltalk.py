@@ -16,7 +16,6 @@ from workload_config import AGENT_CONFIG
 logger = logging.getLogger("ProactiveSmallTalk")
 
 
-# TODO use short Q&A
 class ProactiveSmalltalk(T3RNModule):
     SECTION = "ProactiveSmalltalk"
 
