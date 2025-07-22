@@ -891,7 +891,7 @@
       "TeamSelectBaseUIPresenter": {
         "SelectedChampions": {
           "0": {
-            "ChampionId": 11,
+            "ChampionId": 11, 
             "ChampionConfigId": "champion.ows1.reva",
             "ChampionStarsInt": 4,
             "ChampionLevelInt": 1,

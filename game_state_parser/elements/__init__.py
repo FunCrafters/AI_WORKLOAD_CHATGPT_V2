@@ -1,23 +1,20 @@
+from translations import t
 from ui_element import UIElement
 
 
 # ROOT SCREEN
 class CampaignTeamSelectUIPresenter(UIElement):
     def build_prompt(self):
-        battleName = self.glom(
-            "CampaignTeamSelectUIPresenter.BattleName", default="Unknown"
-        )
-        leaderSummary = self.glom_summary(
-            "TeamSelectBaseUIPresenter.Leader"
-        ).build_summary()
+        battleName = self.glom("CampaignTeamSelectUIPresenter.BattleName")
+        leaderSummary = self.glom("TeamSelectBaseUIPresenter.Leader.ChampionConfigId")
         selectedChampions = self.glom_summary(
             "TeamSelectBaseUIPresenter.SelectedChampions"
         ).build_summary()
 
         return f"""
-You are on the prebattle team selection screen. Currently selected battle is {battleName}
+You are on the prebattle team selection screen. Currently selected battle is {t(battleName)}
 You can check battle details by using tool: uxHelper("TeamSelectDefaultEnemiesUIPresenter")
-Player has chosen {leaderSummary} as leader and he has selected the following champions: {selectedChampions}.
+Player has chosen {t(leaderSummary)} as leader and he has selected the following champions: {selectedChampions}.
 If you need details on selected champions, use tool: uxHelper("SelectedChampions")
 """
 
@@ -25,6 +22,7 @@ If you need details on selected champions, use tool: uxHelper("SelectedChampions
         return f"""
 You are on the prebattle team selection screen. Currently selected battle is {self.glom("CampaignTeamSelectUIPresenter.BattleName", default="Unknown")}
 """
+
 
 class TeamSelectBaseUIPresenter(UIElement):
     def build_prompt(self):
@@ -37,7 +35,7 @@ class TeamSelectBaseUIPresenter(UIElement):
 class SelectedChampions(UIElement):
     def _format_champion_all(self, item: dict) -> str:
         return (
-            f"Name: {item.get('ChampionConfigId', 'Unknown')}, "
+            f"Name: {t(item.get('ChampionConfigId'), 'name.titlecase')}, "
             f"Stars: {item.get('ChampionStarsInt', 'Unknown')}, "
             f"Level: {item.get('ChampionLevelInt', 'Unknown')}/{item.get('ChampionMaxLevelInt', 'Unknown')}, "
             f"Power: {item.get('ChampionPowerInt', 'Unknown')}, "
@@ -54,10 +52,9 @@ class SelectedChampions(UIElement):
         return f"""
 Selected champions panel, here are detailed information about champions: [{", ".join(champions)}]
 """
-
     def build_summary(self):
         champions = [
-            f"{item.get('ChampionConfigId', 'Unknown')} (Power: {item.get('ChampionPowerInt', 'Unknown')})"
+            f"{t(item.get('ChampionConfigId', 'name.titlecase'))} (Power: {item.get('ChampionPowerInt', 'Unknown')})"
             for item in self.child_tree.values()
         ]
         return f"[{', '.join(champions)}]"
@@ -65,8 +62,8 @@ Selected champions panel, here are detailed information about champions: [{", ".
 
 class Leader(UIElement):
     def build_prompt(self):
-        return "Leader UIPresenter! This is prompt!"
+        return "Leader: " + t(self.glom("ChampionConfigId"), "name.titlecase")
 
     def build_summary(self):
         leaderId = self.glom("ChampionConfigId")
-        return f"{leaderId}"
+        return f"{t(leaderId, 'name.titlecase')}"
