@@ -7,18 +7,46 @@ from glom import glom
 
 
 class UIElement(ABC):
+    """
+    Base class for UI elements in the game state parser.
+    The child classes should match the structure of the game state JSON.
+    """
+
     def __init__(self, tree: Dict[str, Any]):
         self.child_tree = tree
         self.children: Dict[str, "UIElement"] = {}
         pass
 
     def glom(self, path: str, default=None) -> Any | None:
+        """
+        Helper method to extract data from the child tree using glom.
+        You can use this instead of using direcly dict
+        Example
+        ```
+        # glom
+        self.glom("CampaignTeamSelectUIPresenter.BattleName")
+        # equivalent to
+        self.child_tree["CampaignTeamSelectUIPresenter"]["BattleName"]
+        ```
+        """
         return glom(self.child_tree, path, default=default)
 
     def glom_summary(self, path: str) -> "UIElement":
+        """
+        Helper method to extract UIElement from child tree using glom.
+        Example:
+        ```
+        # glom_summary
+        self.glom_summary("TeamSelectBaseUIPresenter.SelectedChampions")
+        # equivalent to
+        self.children["TeamSelectBaseUIPresenter"].children["SelectedChampions"]
+        """
         return glom(self.children, path)
 
     def first(self, name: str) -> Optional["UIElement"]:
+        """
+        Returns first `UIElement` with the given name in children.
+        """
         if name in self.children:
             return self.children[name]
         else:
@@ -40,11 +68,18 @@ class UIElement(ABC):
         )
 
     @abstractmethod
-    def build_prompt(self):
+    def build_prompt(self) -> str:
+        """
+        Returns full description of the UI element with brif overview of the content.
+        It should also guide the LLM to use uxHelper to get more details.
+        """
         pass
 
     @abstractmethod
-    def build_summary(self):
+    def build_summary(self) -> str:
+        """
+        Returns short summary of the UI element.
+        """
         pass
 
 

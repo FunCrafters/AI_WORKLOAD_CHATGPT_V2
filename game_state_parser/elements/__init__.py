@@ -26,7 +26,7 @@ You are on the prebattle team selection screen. Currently selected battle is {se
 
 class TeamSelectBaseUIPresenter(UIElement):
     def build_prompt(self):
-        return "Team Select Base! This is prompt!"
+        return ""
 
     def build_summary(self):
         return ""
