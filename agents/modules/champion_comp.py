@@ -5,7 +5,7 @@ from session import Session
 from tools.db_compare_champions import db_compare_champions
 from tools.db_find_champions_stronger_than import db_find_champions_stronger_than
 from tools.db_find_strongest_champions import db_find_strongest_champions
-from tools_functions import T3RNTool
+from tool import T3RNTool
 
 
 class ChampionCompTools(T3RNModule):

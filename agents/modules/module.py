@@ -8,7 +8,7 @@ from openai.types.chat import (
 from agents.base_agent import chat_completion_to_content_str
 from channel_logger import ChannelLogger
 from session import Session
-from tools_functions import T3RNTool
+from tool import T3RNTool
 
 
 class T3RNModule(ABC):

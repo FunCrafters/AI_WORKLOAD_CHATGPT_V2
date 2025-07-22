@@ -9,6 +9,7 @@ from typing import Any, Dict
 
 from dotenv import dotenv_values, load_dotenv
 
+from game_state_parser.parser import GameStateParser
 from session import Session
 from workload_chat import process_main_channel
 from workload_config import SERVER_HOST, SERVER_PORT, WORKLOAD_CONFIG
@@ -318,11 +319,7 @@ def process_json_data_message(client, session: Session, data: dict):
                 return "data_present"
 
         # Store a small sample and summary
-        session.json_data = {
-            "size": data_size_bytes,
-            "size_kb": data_size_kb,
-            "summary": get_data_summary(json_data),
-        }
+        session.game_state = GameStateParser(json.dumps(json_data))
 
         # Send confirmation response
         response = {

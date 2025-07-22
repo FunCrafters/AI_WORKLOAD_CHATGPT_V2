@@ -10,7 +10,7 @@ from tools.db_rag_get_general_knowledge import db_rag_get_general_knowledge
 from tools.db_rag_get_location_details import db_rag_get_location_details
 from tools.db_rag_get_mechanic_details import db_rag_get_mechanic_details
 from tools.db_rag_get_smalltalk import db_rag_get_smalltalk
-from tools_functions import T3RNTool
+from tool import T3RNTool
 
 
 class BasicTools(T3RNModule):

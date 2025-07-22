@@ -6,7 +6,7 @@ from agents.modules.module import T3RNModule
 from session import Session
 from tools.db_get_screen_context_help import db_get_screen_context_help
 from tools.db_get_ux_details import db_get_ux_details
-from tools_functions import T3RNTool
+from tool import T3RNTool
 
 
 class ScreenContextInjector(T3RNModule):

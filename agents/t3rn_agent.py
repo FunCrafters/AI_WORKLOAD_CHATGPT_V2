@@ -43,7 +43,7 @@ from agents.modules.module import (
 from channel_logger import ChannelLogger
 from session import Session
 from tools.db_get_champions_list import db_get_champions_list_text
-from tools_functions import T3RNTool
+from tool import T3RNTool
 from workload_config import AGENT_CONFIG
 
 

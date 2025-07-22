@@ -7,7 +7,7 @@ from tools.db_get_champion_details import db_get_champion_details
 from tools.db_get_champions_list import db_get_champions_list_text
 from tools.db_rag_get_boss_details import db_rag_get_boss_details
 from tools.db_rag_get_champion_details import db_rag_get_champion_details
-from tools_functions import T3RNTool
+from tool import T3RNTool
 
 
 def getChampionsDetails(champion_name: str, prefer_lore: bool = False, session: Session | None = None) -> str:
