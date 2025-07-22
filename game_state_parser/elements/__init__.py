@@ -9,7 +9,7 @@ class CampaignTeamSelectUIPresenter(UIElement):
         leaderSummary = self.glom("TeamSelectBaseUIPresenter.Leader.ChampionConfigId")
         selectedChampions = self.glom_summary(
             "TeamSelectBaseUIPresenter.SelectedChampions"
-        ).build_summary()
+        )
 
         return f"""
 You are on the prebattle team selection screen. Currently selected battle is {t(battleName)}
@@ -20,7 +20,7 @@ If you need details on selected champions, use tool: uxHelper("SelectedChampions
 
     def build_summary(self, data, parser):
         return f"""
-You are on the prebattle team selection screen. Currently selected battle is {self.glom("CampaignTeamSelectUIPresenter.BattleName", default="Unknown")}
+You are on the prebattle team selection screen. Currently selected battle is {self.glom("CampaignTeamSelectUIPresenter.BattleName")}
 """
 
 
@@ -52,6 +52,7 @@ class SelectedChampions(UIElement):
         return f"""
 Selected champions panel, here are detailed information about champions: [{", ".join(champions)}]
 """
+
     def build_summary(self):
         champions = [
             f"{t(item.get('ChampionConfigId', 'name.titlecase'))} (Power: {item.get('ChampionPowerInt', 'Unknown')})"

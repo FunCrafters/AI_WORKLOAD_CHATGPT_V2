@@ -1,9 +1,10 @@
-import json
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
-import elements
 from glom import glom
+
+logger = logging.getLogger("GameStateParser")
 
 
 class UIElement(ABC):
@@ -17,7 +18,7 @@ class UIElement(ABC):
         self.children: Dict[str, "UIElement"] = {}
         pass
 
-    def glom(self, path: str, default=None) -> Any | None:
+    def glom(self, path: str) -> Any:
         """
         Helper method to extract data from the child tree using glom.
         You can use this instead of using direcly dict
@@ -29,9 +30,15 @@ class UIElement(ABC):
         self.child_tree["CampaignTeamSelectUIPresenter"]["BattleName"]
         ```
         """
-        return glom(self.child_tree, path, default=default)
+        try:
+            return glom(self.child_tree, path)
+        except KeyError as e:
+            logger.error(
+                f"KeyError in {self.__class__.__name__} glom for path '{path}': {e}"
+            )
+            return f"{path}"
 
-    def glom_summary(self, path: str) -> "UIElement":
+    def glom_summary(self, path: str) -> str:
         """
         Helper method to extract UIElement from child tree using glom.
         Example:
@@ -39,9 +46,33 @@ class UIElement(ABC):
         # glom_summary
         self.glom_summary("TeamSelectBaseUIPresenter.SelectedChampions")
         # equivalent to
-        self.children["TeamSelectBaseUIPresenter"].children["SelectedChampions"]
+        self.children["TeamSelectBaseUIPresenter"].children["SelectedChampions"].build_summary()
         """
-        return glom(self.children, path)
+        try:
+            return glom(self.children, path).build_summary()
+        except KeyError as e:
+            logger.error(
+                f"KeyError in {self.__class__.__name__} glom_summary for path '{path}': {e}"
+            )
+            return path
+
+    def glom_prompt(self, path: str) -> str:
+        """
+        Helper method to extract UIElement from child tree using glom.
+        Example:
+        ```
+        # glom_prompt
+        self.glom_prompt("TeamSelectBaseUIPresenter.SelectedChampions")
+        # equivalent to
+        self.children["TeamSelectBaseUIPresenter"].children["SelectedChampions"].build_prompt()
+        """
+        try:
+            return glom(self.children, path).build_prompt()
+        except KeyError as e:
+            logger.error(
+                f"KeyError in {self.__class__.__name__} glom_prompt for path '{path}': {e}"
+            )
+            return path
 
     def first(self, name: str) -> Optional["UIElement"]:
         """
@@ -81,57 +112,3 @@ class UIElement(ABC):
         Returns short summary of the UI element.
         """
         pass
-
-
-def get_class_by_name(class_name: str):
-    try:
-        return getattr(elements, class_name)
-    except (ImportError, AttributeError) as e:
-        print(f"Error retrieving class '{class_name}': {e}")
-        return None
-
-
-def parse_screen_data(screenData: dict):
-    Screen = screenData["Screen"]
-
-    ScreenData = screenData["ScreensData"]
-
-    rootClass = get_class_by_name(Screen)
-    if not rootClass:
-        raise ValueError(f"Unknown screen class: {Screen}")
-
-    rootElement = rootClass(ScreenData)
-
-    def parse_recursive(data: dict, parent: UIElement):
-        for key, value in data.items():
-            if isinstance(value, dict):
-                childClass = get_class_by_name(key)
-
-                if childClass:
-                    childElement = childClass(value)
-                    parent.children[key] = childElement
-                    parse_recursive(value, childElement)
-
-    parse_recursive(ScreenData, rootElement)
-
-    return rootElement
-
-
-def parse_ui_tree(json_raw: str) -> UIElement:
-    data = json.loads(json_raw)
-
-    screenData = data["screenData"]
-
-    return parse_screen_data(screenData)
-
-
-if __name__ == "__main__":
-    path = "game_state_parser/20250715_100642_6310eb1e.json"
-    with open(path, "r") as file:
-        json_data = file.read()
-
-    ui_tree = parse_ui_tree(json_data)
-    print(ui_tree.build_prompt())
-    champs = ui_tree.first("SelectedChampions")
-    if champs:
-        print(champs.build_prompt())
