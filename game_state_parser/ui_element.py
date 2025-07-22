@@ -81,6 +81,15 @@ class UIElement(ABC):
                     return result
         return None
 
+    def get_keys(self) -> list:
+        """
+        Returns a list of keys in children and all its descendants.
+        """
+        keys = list(self.children.keys())
+        for child in self.children.values():
+            keys.extend(child.get_keys())
+        return keys
+
     def __getitem__(self, item: str):
         return self.children.get(item)
 

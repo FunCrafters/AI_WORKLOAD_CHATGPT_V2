@@ -60,8 +60,19 @@ class GameStateParser:
             logger.error(f"Error building prompt: {e}")
             return f"You are on the {self.ui_tree.__class__.__name__} screen. No further details available."
 
-    def first(self, name: str) -> str:
-        return ""
+    def get_details(self, name: str) -> str:
+        try:
+            element = self.ui_tree.first(name)
+            if element:
+                return element.build_prompt()
+            else:
+                return f"No UIElement found with name '{name}'"
+        except Exception as e:
+            logger.error(f"Error retrieving details for '{name}': {e}")
+            return f"Error retrieving details for '{name}': {e}"
+
+    def get_keys(self) -> list:
+        return self.ui_tree.get_keys()
 
 
 if __name__ == "__main__":
@@ -74,3 +85,6 @@ if __name__ == "__main__":
     champs = ui_tree.first("SelectedChampions")
     if champs:
         print(champs.build_prompt())
+
+    keys = ui_tree.get_keys()
+    print(f"Keys in UI tree: {keys}")
