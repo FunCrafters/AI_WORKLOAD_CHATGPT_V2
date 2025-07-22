@@ -16,9 +16,7 @@ class ContextAdapter(logging.LoggerAdapter):
 
     def process(self, msg, kwargs):
         extra = kwargs.pop("extra", {})
-        preserved_kwargs = {
-            k: kwargs[k] for k in ContextAdapter.LOG_KWARGS if k in kwargs
-        }
+        preserved_kwargs = {k: kwargs[k] for k in ContextAdapter.LOG_KWARGS if k in kwargs}
 
         msg_vars = ", ".join(f"{k}={v}" for k, v in extra.items())
 
@@ -61,9 +59,7 @@ def is_host_reachable(host, port=11434, timeout=2):
         return False
 
 
-def create_response(
-    channel, result="", session_id=None, message_id=None, extra_data=None
-):
+def create_response(channel, result="", session_id=None, message_id=None, extra_data=None):
     """Create a standardized response object"""
     response = {"type": "response", "channel": channel, "result": result}
 

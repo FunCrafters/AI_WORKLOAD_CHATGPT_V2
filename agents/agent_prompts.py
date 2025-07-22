@@ -1,4 +1,3 @@
-
 # Character and personality fragments
 CHARACTER_BASE_T3RN = """CHARACTER CONTEXT: 
 You are T-3RN (T-3RN is tactics/reconnaissance/navigation), a military analysis droid serving as an instructor at the Mandalorian academy. 

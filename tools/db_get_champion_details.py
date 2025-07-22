@@ -38,12 +38,7 @@ def db_get_champion_details(champion_name: str) -> dict:
         )
 
         if not results:
-            return {
-                "status": "error",
-                "message": f"No champions found matching '{champion_name}'",
-                "champion_name": champion_name,
-                "champions": []
-            }
+            return {"status": "error", "message": f"No champions found matching '{champion_name}'", "champion_name": champion_name, "champions": []}
 
         if len(results) == 1:
             # Single champion found - return full details
@@ -54,9 +49,7 @@ def db_get_champion_details(champion_name: str) -> dict:
                 "champion_id": champion["champion_id"],
                 "champion_name": champion["champion_name"],
                 "summary_text": champion["summary_text"] or "No summary available",
-                "summary_json": champion["summary_json"]
-                if champion["summary_json"]
-                else {},
+                "summary_json": champion["summary_json"] if champion["summary_json"] else {},
             }
 
             return {

@@ -30,17 +30,13 @@ def analyze_screen_context(json_data: Dict[str, Any]) -> Optional[Dict[str, Any]
                 for field_name, field_value in presenter_data.items():
                     if isinstance(field_value, (str, int, float)):
                         # Use a unique key to avoid conflicts
-                        screen_context["data_fields"][
-                            f"{presenter_name}.{field_name}"
-                        ] = field_value
+                        screen_context["data_fields"][f"{presenter_name}.{field_name}"] = field_value
                         # Also add without prefix for backward compatibility
                         if field_name not in screen_context["data_fields"]:
                             screen_context["data_fields"][field_name] = field_value
 
         logger.info(f"✅ Screen context found: {screen_context['screen_name']}")
-        logger.info(
-            f"✅ Data fields available: {list(screen_context['data_fields'].keys())}"
-        )
+        logger.info(f"✅ Data fields available: {list(screen_context['data_fields'].keys())}")
         return screen_context
 
     # TODO: Add support for other JSON structures if needed

@@ -77,9 +77,7 @@ def db_find_strongest_champions(
             if class_type:
                 trait_filters.append(f"class_type={class_type}")
 
-            filter_text = (
-                f" matching {', '.join(trait_filters)}" if trait_filters else ""
-            )
+            filter_text = f" matching {', '.join(trait_filters)}" if trait_filters else ""
             no_results_message = f"No champions found{filter_text}"
 
             return {
@@ -122,21 +120,15 @@ def db_find_strongest_champions(
         for champion in champions:
             # Count by affinity
             affinity_val = champion.get("affinity", "unknown")
-            distribution["by_affinity"][affinity_val] = (
-                distribution["by_affinity"].get(affinity_val, 0) + 1
-            )
+            distribution["by_affinity"][affinity_val] = distribution["by_affinity"].get(affinity_val, 0) + 1
 
             # Count by class
             class_val = champion.get("class", "unknown")
-            distribution["by_class"][class_val] = (
-                distribution["by_class"].get(class_val, 0) + 1
-            )
+            distribution["by_class"][class_val] = distribution["by_class"].get(class_val, 0) + 1
 
             # Count by rarity
             rarity_val = champion.get("rarity", "unknown")
-            distribution["by_rarity"][rarity_val] = (
-                distribution["by_rarity"].get(rarity_val, 0) + 1
-            )
+            distribution["by_rarity"][rarity_val] = distribution["by_rarity"].get(rarity_val, 0) + 1
 
         # Get top champion details
         top_champion = champions[0] if champions else None
@@ -155,9 +147,7 @@ def db_find_strongest_champions(
         # Create summary
         summary_parts = [f"Top {len(champions)} strongest champions{filter_text}"]
         if top_champion:
-            summary_parts.append(
-                f"{top_champion['champion_name']} leads with {top_champion['total_power']} power"
-            )
+            summary_parts.append(f"{top_champion['champion_name']} leads with {top_champion['total_power']} power")
         summary_parts.append(f"Average power: {average_power:.1f}")
         summary = ". ".join(summary_parts)
 

@@ -33,9 +33,7 @@ class UIElement(ABC):
         try:
             return glom(self.child_tree, path)
         except KeyError as e:
-            logger.error(
-                f"KeyError in {self.__class__.__name__} glom for path '{path}': {e}"
-            )
+            logger.error(f"KeyError in {self.__class__.__name__} glom for path '{path}': {e}")
             return f"{path}"
 
     def glom_summary(self, path: str) -> str:
@@ -51,9 +49,7 @@ class UIElement(ABC):
         try:
             return glom(self.children, path).build_summary()
         except KeyError as e:
-            logger.error(
-                f"KeyError in {self.__class__.__name__} glom_summary for path '{path}': {e}"
-            )
+            logger.error(f"KeyError in {self.__class__.__name__} glom_summary for path '{path}': {e}")
             return path
 
     def glom_prompt(self, path: str) -> str:
@@ -69,9 +65,7 @@ class UIElement(ABC):
         try:
             return glom(self.children, path).build_prompt()
         except KeyError as e:
-            logger.error(
-                f"KeyError in {self.__class__.__name__} glom_prompt for path '{path}': {e}"
-            )
+            logger.error(f"KeyError in {self.__class__.__name__} glom_prompt for path '{path}': {e}")
             return path
 
     def first(self, name: str) -> Optional["UIElement"]:
@@ -94,9 +88,7 @@ class UIElement(ABC):
         if item in self.children:
             return self.children[item]
 
-        raise AttributeError(
-            f"'{self.__class__.__name__}' object has no attribute '{item}'"
-        )
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
 
     @abstractmethod
     def build_prompt(self) -> str:

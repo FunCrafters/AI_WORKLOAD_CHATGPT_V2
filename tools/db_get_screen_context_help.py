@@ -18,9 +18,7 @@ def db_get_screen_context_help(user_question: str) -> dict:
         # Import here to get current values
         from workload_game_cache import CURRENT_JSON_DATA, HAS_SCREEN_DATA
 
-        logger.info(
-            f"🔍 db_get_screen_context_help called with question: '{user_question}'"
-        )
+        logger.info(f"🔍 db_get_screen_context_help called with question: '{user_question}'")
 
         # Single error check point
         if not HAS_SCREEN_DATA or not CURRENT_JSON_DATA:
@@ -33,9 +31,7 @@ def db_get_screen_context_help(user_question: str) -> dict:
         screen_name = screen_data.get("Screen", "")
 
         if not screen_name:
-            return _create_error_response(
-                "No Screen field found in screenData", user_question
-            )
+            return _create_error_response("No Screen field found in screenData", user_question)
 
         logger.info(f"✅ Found screen: {screen_name}")
 
@@ -82,9 +78,7 @@ def db_get_screen_context_help(user_question: str) -> dict:
 
     except Exception as e:
         logger.error(f"Error in screen context help: {str(e)}")
-        return _create_error_response(
-            f"Error retrieving screen context help: {str(e)}", user_question
-        )
+        return _create_error_response(f"Error retrieving screen context help: {str(e)}", user_question)
 
 
 def _create_error_response(message: str, user_question: str) -> dict:
@@ -107,9 +101,7 @@ def _extract_ux_content(result_data: dict) -> str:
     if result_data.get("status") == "success" and "content" in result_data:
         if "results" in result_data["content"]:
             results = result_data["content"]["results"]
-            return "\n\n".join(
-                [f"**{r['ux_name']}**\n{r['ux_content']}" for r in results]
-            )
+            return "\n\n".join([f"**{r['ux_name']}**\n{r['ux_content']}" for r in results])
         else:
             return str(result_data["content"])
     return ""

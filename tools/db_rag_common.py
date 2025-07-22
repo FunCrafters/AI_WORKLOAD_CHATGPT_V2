@@ -161,9 +161,7 @@ def execute_rag_search(
         return []
 
 
-def process_rag_results(
-    results: List[Dict[str, Any]], is_qa: bool = False, random_selection: bool = False
-) -> str:
+def process_rag_results(results: List[Dict[str, Any]], is_qa: bool = False, random_selection: bool = False) -> str:
     """
     Process RAG search results into formatted content
 
@@ -199,11 +197,7 @@ def process_rag_results(
     if random_selection:
         # Single random result (for smalltalk)
         selected_result = random.choice(processed_results)
-        name = (
-            selected_result["metadata"].get("entity_name", "unknown")
-            if selected_result["metadata"]
-            else "unknown"
-        )
+        name = selected_result["metadata"].get("entity_name", "unknown") if selected_result["metadata"] else "unknown"
 
         if is_qa:
             return f"### Q&A: {name}\n{selected_result['content']}"
@@ -323,9 +317,7 @@ def execute_universal_rag(
             limit=limit,
         )
 
-        similarity_content = process_rag_results(
-            similarity_results, is_qa=False, random_selection=False
-        )
+        similarity_content = process_rag_results(similarity_results, is_qa=False, random_selection=False)
 
         # Search for QA results if requested
         qa_content = ""
@@ -337,9 +329,7 @@ def execute_universal_rag(
                 threshold=threshold,
                 limit=limit,
             )
-            qa_content = process_rag_results(
-                qa_results, is_qa=True, random_selection=False
-            )
+            qa_content = process_rag_results(qa_results, is_qa=True, random_selection=False)
 
         # Create and return response
         return create_rag_response(
@@ -395,9 +385,7 @@ def search_qa_similarity(
                 "id": r["id"],
                 "similarity": float(r["similarity"]),
                 "content": r["chunk_text"],
-                "embedding": np.array(
-                    [float(x) for x in r["embedding"].strip("[]").split(",")]
-                ),
+                "embedding": np.array([float(x) for x in r["embedding"].strip("[]").split(",")]),
             }
             for r in results
         ]

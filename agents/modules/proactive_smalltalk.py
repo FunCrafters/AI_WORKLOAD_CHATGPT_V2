@@ -44,9 +44,7 @@ class ProactiveSmalltalk(T3RNModule):
 
         return simmilarity_scores
 
-    def _remove_duplicate(
-        self, smalltalks: List[dict], simmilarity_scores: np.ndarray
-    ) -> List[dict]:
+    def _remove_duplicate(self, smalltalks: List[dict], simmilarity_scores: np.ndarray) -> List[dict]:
         to_remove = set()
         for i in range(len(smalltalks)):
             for j in range(len(smalltalks)):
@@ -61,9 +59,7 @@ class ProactiveSmalltalk(T3RNModule):
         return [s for i, s in enumerate(smalltalks) if i not in to_remove]
 
     def _apply_treshold(self, smalltalks: List[dict]) -> List[dict]:
-        smalltalks_clean = [
-            s for s in smalltalks if s["similarity"] >= self.SIMILLARITY_THRESHOLD
-        ]
+        smalltalks_clean = [s for s in smalltalks if s["similarity"] >= self.SIMILLARITY_THRESHOLD]
         return smalltalks_clean
 
     def _appy_cooldown(self, smalltalks: List[dict]) -> List[dict]:
@@ -74,9 +70,7 @@ class ProactiveSmalltalk(T3RNModule):
         for smalltalk in smalltalks:
             if smalltalk["id"] in self.injection_cooldowns:
                 if self.injection_cooldowns[smalltalk["id"]] > 0:
-                    logger.info(
-                        f"Skipping smalltalk {smalltalk['id']} due to cooldown: {self.injection_cooldowns[smalltalk['id']]}"
-                    )
+                    logger.info(f"Skipping smalltalk {smalltalk['id']} due to cooldown: {self.injection_cooldowns[smalltalk['id']]}")
                     continue
                 else:
                     logger.info(f"Resetting cooldown for {smalltalk['id']}")
@@ -106,14 +100,10 @@ class ProactiveSmalltalk(T3RNModule):
 
         smalltalks_clean = self._appy_cooldown(smalltalks_clean)
 
-        logger.info(
-            f"Removed {len(smalltalks) - len(smalltalks_clean)} duplicates, remaining: {len(smalltalks_clean)}"
-        )
+        logger.info(f"Removed {len(smalltalks) - len(smalltalks_clean)} duplicates, remaining: {len(smalltalks_clean)}")
         return smalltalks_clean
 
-    def inject_after_user_message(
-        self, session: Session
-    ) -> List[ChatCompletionMessageParam]:
+    def inject_after_user_message(self, session: Session) -> List[ChatCompletionMessageParam]:
         memory = session.get_memory()
 
         last_exchange = memory.last_exchange()
@@ -121,12 +111,8 @@ class ProactiveSmalltalk(T3RNModule):
         embedding = generate_embedding_from_conv(last_exchange)
 
         if embedding is None:
-            self.channel_logger.log_to_logs(
-                "Failed to generate embedding, returning empty injection"
-            )
-            self.channel_logger.log_to_tools(
-                "Embedding generation failed, aborting smalltalk retrieval"
-            )
+            self.channel_logger.log_to_logs("Failed to generate embedding, returning empty injection")
+            self.channel_logger.log_to_tools("Embedding generation failed, aborting smalltalk retrieval")
             return []
 
         if self.USE_SMALLTALK:
@@ -165,9 +151,7 @@ class ProactiveSmalltalk(T3RNModule):
             for qa in questions_answers
         ]
 
-        logger.info(
-            f"Retrieved smalltalks with similarity: {smalltalks_log} and questions/answers: {qa_log}"
-        )
+        logger.info(f"Retrieved smalltalks with similarity: {smalltalks_log} and questions/answers: {qa_log}")
 
         smalltalks.extend(questions_answers)
         smalltalks = sorted(smalltalks, key=lambda x: x["similarity"], reverse=True)
@@ -186,17 +170,8 @@ class ProactiveSmalltalk(T3RNModule):
             f"ProactiveSmallTalk injection (Injecting top {self.INJECT_MAX}): {json.dumps(smalltalks_clean_log, indent=2)}"
         )
 
-        smalltalks_clean = (
-            smalltalks_clean[: self.INJECT_MAX]
-            if len(smalltalks_clean) > self.INJECT_MAX
-            else smalltalks_clean
-        )
-        summaries = "\n".join(
-            [
-                f"{s['content']} (similarity: {s['similarity']:.2f})"
-                for s in smalltalks_clean
-            ]
-        )
+        smalltalks_clean = smalltalks_clean[: self.INJECT_MAX] if len(smalltalks_clean) > self.INJECT_MAX else smalltalks_clean
+        summaries = "\n".join([f"{s['content']} (similarity: {s['similarity']:.2f})" for s in smalltalks_clean])
         if len(summaries) > self.INJECT_MAX_SIZE:
             summaries = textwrap.shorten(summaries, width=self.INJECT_MAX_SIZE)
         response = f"""

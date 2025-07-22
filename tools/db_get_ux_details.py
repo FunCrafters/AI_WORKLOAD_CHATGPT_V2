@@ -13,9 +13,7 @@ from db_postgres import execute_query
 logger = logging.getLogger("UXDetails")
 
 
-def _create_error_response(
-    action: str, message: str, error_details: str, query: str
-) -> dict:
+def _create_error_response(action: str, message: str, error_details: str, query: str) -> dict:
     """Helper function to create consistent error responses"""
     return {
         "status": "error",

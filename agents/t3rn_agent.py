@@ -72,15 +72,11 @@ class T3RNAgent(Agent):
         module_name = module.__class__.__name__
 
         if module_name not in AGENT_CONFIG:
-            self.channel_logger.log_to_logs(
-                f"⚠️ Module {module_name} not defined in AGENT_CONFIG, disabling it"
-            )
+            self.channel_logger.log_to_logs(f"⚠️ Module {module_name} not defined in AGENT_CONFIG, disabling it")
             return
 
         if not AGENT_CONFIG.getboolean(module_name, "enabled", fallback=True):
-            self.channel_logger.log_to_logs(
-                f"⚠️ Module {module_name} is disabled in AGENT_CONFIG"
-            )
+            self.channel_logger.log_to_logs(f"⚠️ Module {module_name} is disabled in AGENT_CONFIG")
             return
 
         for key, value in AGENT_CONFIG[module_name].items():
@@ -96,9 +92,7 @@ class T3RNAgent(Agent):
         return tools
 
     def _get_character(self):
-        t3rn_weight = AGENT_CONFIG.getfloat(
-            "T3RNAgent", "t3rn_character_weight", fallback=0.5
-        )
+        t3rn_weight = AGENT_CONFIG.getfloat("T3RNAgent", "t3rn_character_weight", fallback=0.5)
         t4rn_weight = 1.0 - t3rn_weight
 
         character_prompt = random.choices(
@@ -115,9 +109,7 @@ class T3RNAgent(Agent):
         character_prompt = self._get_character()
 
         if hasattr(self, "channel_logger") and self.channel_logger:
-            self.channel_logger.log_to_logs(
-                f"🎲 Selected character: {character_prompt}"
-            )
+            self.channel_logger.log_to_logs(f"🎲 Selected character: {character_prompt}")
 
         return self.build_prompt(
             character_prompt,
@@ -146,9 +138,7 @@ class T3RNAgent(Agent):
                     model="gpt-4o-mini",
                     messages=messages,
                     temperature=AGENT_CONFIG.getfloat("T3RNAgent", "agent_temperature"),
-                    max_completion_tokens=AGENT_CONFIG.getint(
-                        "T3RNAgent", "max_completion_tokens"
-                    ),
+                    max_completion_tokens=AGENT_CONFIG.getint("T3RNAgent", "max_completion_tokens"),
                     tools=[tool.get_function_schema() for tool in tools],
                     tool_choice="auto" if use_tools else "none",
                     response_format={"type": "json_object"} if use_json else NOT_GIVEN,
@@ -157,9 +147,7 @@ class T3RNAgent(Agent):
                 elapsed_time = time.time() - start_time
 
                 prompt_tokens = response.usage.prompt_tokens if response.usage else 0
-                completion_tokens = (
-                    response.usage.completion_tokens if response.usage else 0
-                )
+                completion_tokens = response.usage.completion_tokens if response.usage else 0
                 total_tokens = response.usage.total_tokens if response.usage else 0
 
                 self.channel_logger.log_to_logs(
@@ -184,15 +172,9 @@ class T3RNAgent(Agent):
 
         try:
             result_json = json.loads(result_str)
-            return (
-                isinstance(result_json, dict) and result_json.get("status") == "error"
-            )
+            return isinstance(result_json, dict) and result_json.get("status") == "error"
         except (json.JSONDecodeError, TypeError):
-            return (
-                result_str.strip()
-                .lower()
-                .startswith(("error:", "tool execution error:"))
-            )
+            return result_str.strip().lower().startswith(("error:", "tool execution error:"))
 
     def process_and_execute_tools(
         self,
@@ -204,9 +186,7 @@ class T3RNAgent(Agent):
             self.channel_logger.log_to_logs("⚠️ No tool calls provided")
             return []
 
-        self.channel_logger.log_to_logs(
-            f"🔧 Will execute {len(tool_calls)} tools total (including complementary)"
-        )
+        self.channel_logger.log_to_logs(f"🔧 Will execute {len(tool_calls)} tools total (including complementary)")
 
         for idx, tool_call in enumerate(tool_calls):
             function_name = tool_call.function.name
@@ -237,12 +217,8 @@ class T3RNAgent(Agent):
 
                 elapsed_time = time.time() - start_time
 
-                self.channel_logger.log_to_logs(
-                    f"🔧 {function_name} executed in {elapsed_time:.3f}s ({len(str(result))} chars)"
-                )
-                self.channel_logger.log_tool_call(
-                    function_name, function_args, result, idx + 1
-                )
+                self.channel_logger.log_to_logs(f"🔧 {function_name} executed in {elapsed_time:.3f}s ({len(str(result))} chars)")
+                self.channel_logger.log_tool_call(function_name, function_args, result, idx + 1)
 
                 result_messages.append(
                     {
@@ -259,9 +235,7 @@ class T3RNAgent(Agent):
                     {
                         "role": "function",
                         "name": function_name,
-                        "content": str(json.dumps(result))
-                        if isinstance(result, dict)
-                        else str(result),
+                        "content": str(json.dumps(result)) if isinstance(result, dict) else str(result),
                     }
                 )
 
@@ -300,20 +274,14 @@ class T3RNAgent(Agent):
             system_messages.extend(module.inject_start_and_log(self.session_data))
 
         for module in self.MODULES:
-            memory_messages.extend(
-                module.inject_before_user_message_and_log(self.session_data)
-            )
+            memory_messages.extend(module.inject_before_user_message_and_log(self.session_data))
 
         memory_messages.append({"role": "user", "content": user_message})
 
         for module in self.MODULES:
-            memory_messages.extend(
-                module.inject_after_user_message_and_log(self.session_data)
-            )
+            memory_messages.extend(module.inject_after_user_message_and_log(self.session_data))
 
-        self.channel_logger.log_to_logs(
-            f"🧠 Memory: {len(memory_messages)} context messages loaded"
-        )
+        self.channel_logger.log_to_logs(f"🧠 Memory: {len(memory_messages)} context messages loaded")
 
         MAX_ITERATIONS = AGENT_CONFIG.getint("T3RNAgent", "max_iterations")
         iteration = 0
@@ -345,13 +313,9 @@ class T3RNAgent(Agent):
                     tool_calls = chat_response_toolcalls(response)
 
                     if iteration < MAX_ITERATIONS and len(tool_calls) > 0:
-                        self.channel_logger.log_to_logs(
-                            f"🔧 T3RNAgent requested {len(tool_calls)} tools"
-                        )
+                        self.channel_logger.log_to_logs(f"🔧 T3RNAgent requested {len(tool_calls)} tools")
 
-                        tools_executed = self.process_and_execute_tools(
-                            tool_calls, tools
-                        )
+                        tools_executed = self.process_and_execute_tools(tool_calls, tools)
 
                         current_messages.extend(tools_executed)
 
@@ -359,13 +323,9 @@ class T3RNAgent(Agent):
 
                     response_content = chat_response_to_str(response, content_only=True)
 
-                    current_messages.append(
-                        {"role": "assistant", "content": response_content}
-                    )
+                    current_messages.append({"role": "assistant", "content": response_content})
 
-                    self.channel_logger.log_to_logs(
-                        f"✅ T3RNAgent completed after {iteration} iterations"
-                    )
+                    self.channel_logger.log_to_logs(f"✅ T3RNAgent completed after {iteration} iterations")
 
                     messages = memory_messages + current_messages
                     result = AgentResult(messages)
@@ -378,9 +338,7 @@ class T3RNAgent(Agent):
                     return result
 
                 except Exception as llm_error:
-                    self.channel_logger.log_to_logs(
-                        f"❌ T3RNAgent error in iteration {iteration}: {str(llm_error)}"
-                    )
+                    self.channel_logger.log_to_logs(f"❌ T3RNAgent error in iteration {iteration}: {str(llm_error)}")
                     raise llm_error
 
             # This should never be reached now
@@ -391,8 +349,6 @@ class T3RNAgent(Agent):
             self.channel_logger.log_to_logs(f"🚨 T3RNAgent failed: {str(main_error)}")
 
             result = AgentResult(messages)
-            result.error_content = (
-                f"T3RN AGENT ERROR: Failed in iteration {iteration} - {str(main_error)}"
-            )
+            result.error_content = f"T3RN AGENT ERROR: Failed in iteration {iteration} - {str(main_error)}"
 
             return result

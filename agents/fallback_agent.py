@@ -62,9 +62,7 @@ class FallbackAgent(Agent):
 
             # Log call info
             prompt_tokens = response.usage.prompt_tokens if response.usage else 0
-            completion_tokens = (
-                response.usage.completion_tokens if response.usage else 0
-            )
+            completion_tokens = response.usage.completion_tokens if response.usage else 0
             total_tokens = response.usage.total_tokens if response.usage else 0
 
             self.channel_logger.log_to_logs(
@@ -83,15 +81,11 @@ class FallbackAgent(Agent):
         try:
             # Pre-load RAG data
             general_knowledge = db_rag_get_general_knowledge(user_message)
-            self.channel_logger.log_to_logs(
-                f"🔍 FallbackAgent pre-loaded RAG data for: '{user_message}'"
-            )
+            self.channel_logger.log_to_logs(f"🔍 FallbackAgent pre-loaded RAG data for: '{user_message}'")
 
             # Prepare simple messages
             messages: List[ChatCompletionMessageParam] = []
-            system_messages: List[ChatCompletionMessageParam] = [
-                {"role": "system", "content": self.get_system_prompt()}
-            ]
+            system_messages: List[ChatCompletionMessageParam] = [{"role": "system", "content": self.get_system_prompt()}]
 
             if general_knowledge:
                 system_messages.append(
@@ -103,14 +97,10 @@ class FallbackAgent(Agent):
 
             messages.append({"role": "user", "content": user_message})
 
-            self.channel_logger.log_to_logs(
-                "🤖 FallbackAgent calling ChatGPT-4o-mini without tools"
-            )
+            self.channel_logger.log_to_logs("🤖 FallbackAgent calling ChatGPT-4o-mini without tools")
             response = self.call_llm(system_messages + messages)
 
-            response_content = (
-                response.choices[0].message.content or "No response generated"
-            )
+            response_content = response.choices[0].message.content or "No response generated"
 
             self.channel_logger.log_to_logs("✅ FallbackAgent completed successfully")
 

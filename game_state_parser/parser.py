@@ -2,8 +2,7 @@ import json
 import logging
 
 import elements
-
-from game_state_parser.ui_element import UIElement
+from ui_element import UIElement
 
 logger = logging.getLogger("GameStateParser")
 

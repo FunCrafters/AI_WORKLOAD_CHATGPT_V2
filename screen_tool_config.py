@@ -135,9 +135,7 @@ SCREEN_TOOL_RULES = {
 DEFAULT_SCREEN_RULES = {
     "context_tool": {
         "tool": "db_get_ux_details",
-        "parameters": {
-            "query": "{screen_name}"
-        },  # Will be replaced with actual screen name
+        "parameters": {"query": "{screen_name}"},  # Will be replaced with actual screen name
     },
     "data_tools": [],
     "prompt_injection": {
@@ -169,9 +167,7 @@ def get_screen_tool_rules(screen_name: str) -> dict:
     if "context_tool" in default_rules:
         context_tool = default_rules["context_tool"].copy()
         if "parameters" in context_tool and "query" in context_tool["parameters"]:
-            context_tool["parameters"]["query"] = context_tool["parameters"][
-                "query"
-            ].replace("{screen_name}", screen_name)
+            context_tool["parameters"]["query"] = context_tool["parameters"]["query"].replace("{screen_name}", screen_name)
         default_rules["context_tool"] = context_tool
 
     return default_rules
@@ -225,9 +221,7 @@ def build_prompt_injection(screen_name: str, data_fields: dict) -> str:
     # Check if all required fields are available
     missing_fields = [field for field in required_fields if field not in data_fields]
     if missing_fields:
-        logger.warning(
-            f"⚠️ Missing required fields for prompt injection: {missing_fields}"
-        )
+        logger.warning(f"⚠️ Missing required fields for prompt injection: {missing_fields}")
         return ""
 
     # Build substitution dictionary
@@ -240,28 +234,20 @@ def build_prompt_injection(screen_name: str, data_fields: dict) -> str:
             if lookup_key == "champion_name":
                 champion_name = get_champion_name_by_id(data_fields[source_key])
                 substitutions[lookup_key] = champion_name
-                logger.info(
-                    f"🔄 Looked up {source_key}='{data_fields[source_key]}' -> {lookup_key}='{champion_name}'"
-                )
+                logger.info(f"🔄 Looked up {source_key}='{data_fields[source_key]}' -> {lookup_key}='{champion_name}'")
             elif lookup_key == "battle_name":
                 battle_name = get_battle_name_by_id(data_fields[source_key])
                 substitutions[lookup_key] = battle_name
-                logger.info(
-                    f"🔄 Looked up {source_key}='{data_fields[source_key]}' -> {lookup_key}='{battle_name}'"
-                )
+                logger.info(f"🔄 Looked up {source_key}='{data_fields[source_key]}' -> {lookup_key}='{battle_name}'")
 
     try:
         # Perform template substitution
         prompt_injection = template.format(**substitutions)
-        logger.info(
-            f"✅ Built prompt injection for {screen_name}: {len(prompt_injection)} chars"
-        )
+        logger.info(f"✅ Built prompt injection for {screen_name}: {len(prompt_injection)} chars")
         return prompt_injection
 
     except KeyError as e:
-        logger.error(
-            f"❌ Template substitution failed for {screen_name}: missing key {e}"
-        )
+        logger.error(f"❌ Template substitution failed for {screen_name}: missing key {e}")
         return ""
     except Exception as e:
         logger.error(f"❌ Error building prompt injection for {screen_name}: {str(e)}")

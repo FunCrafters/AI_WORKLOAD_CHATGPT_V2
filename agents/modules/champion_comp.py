@@ -13,9 +13,7 @@ class ChampionCompTools(T3RNModule):
         return [
             T3RNTool(
                 name="compareChampions",
-                function=lambda champion_names, detailed=True: db_compare_champions(
-                    champion_names=champion_names, detailed=detailed
-                ),
+                function=lambda champion_names, detailed=True: db_compare_champions(champion_names=champion_names, detailed=detailed),
                 description="Compare two or more champions side by side with comprehensive analysis of stats, traits, roles, and recommendations.",
                 system_prompt="""
 Tool compareChampions allows the droid to compare multiple champions side by side with comprehensive analysis.
@@ -51,10 +49,7 @@ Examples:
             ),
             T3RNTool(
                 name="findStrongestChampions",
-                function=lambda limit=10,
-                rarity=None,
-                affinity=None,
-                class_type=None: db_find_strongest_champions(
+                function=lambda limit=10, rarity=None, affinity=None, class_type=None: db_find_strongest_champions(
                     limit=limit, rarity=rarity, affinity=affinity, class_type=class_type
                 ),
                 description="Find the strongest champions based on total power with optional trait filtering.",
@@ -104,11 +99,7 @@ Examples:
             ),
             T3RNTool(
                 name="findChampionsStrongerThan",
-                function=lambda character_name,
-                limit=20,
-                rarity=None,
-                affinity=None,
-                class_type=None: db_find_champions_stronger_than(
+                function=lambda character_name, limit=20, rarity=None, affinity=None, class_type=None: db_find_champions_stronger_than(
                     character_name=character_name,
                     limit=limit,
                     rarity=rarity,

@@ -47,11 +47,7 @@ class T3RNModule(ABC):
     def inject_start_and_log(self, session: "Session"):
         injected_messages = self.inject_start(session)
         if len(injected_messages) > 0:
-            total_characters = sum(
-                len(chat_completion_to_content_str(msg))
-                for msg in injected_messages
-                if "content" in msg
-            )
+            total_characters = sum(len(chat_completion_to_content_str(msg)) for msg in injected_messages if "content" in msg)
             self.channel_logger.log_to_logs(
                 f"Module {self.__class__.__name__} injected {len(injected_messages)}  ({total_characters} chars) messages on begining"
             )
@@ -60,11 +56,7 @@ class T3RNModule(ABC):
     def inject_before_user_message_and_log(self, session: "Session"):
         injected_messages = self.inject_before_user_message(session)
         if len(injected_messages) > 0:
-            total_characters = sum(
-                len(chat_completion_to_content_str(msg))
-                for msg in injected_messages
-                if "content" in msg
-            )
+            total_characters = sum(len(chat_completion_to_content_str(msg)) for msg in injected_messages if "content" in msg)
             self.channel_logger.log_to_logs(
                 f"Module {self.__class__.__name__} injected {len(injected_messages)}  ({total_characters} chars) messages before user"
             )
@@ -73,11 +65,7 @@ class T3RNModule(ABC):
     def inject_after_user_message_and_log(self, session: "Session"):
         injected_messages = self.inject_after_user_message(session)
         if len(injected_messages) > 0:
-            total_characters = sum(
-                len(chat_completion_to_content_str(msg))
-                for msg in injected_messages
-                if "content" in msg
-            )
+            total_characters = sum(len(chat_completion_to_content_str(msg)) for msg in injected_messages if "content" in msg)
             self.channel_logger.log_to_logs(
                 f"Module {self.__class__.__name__} injected {len(injected_messages)} ({total_characters} chars) messages after user"
             )
