@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Workload Chat Functions
-Chat processing functionality for the workload
-"""
-
 import logging
 import time
 
@@ -73,3 +67,5 @@ def process_main_channel(client, session: "Session"):
         channel_logger.log_exception(e, error_traceback)
 
         channel_logger.log_to_chat(f"Error processing your question: {str(e)}")
+    finally:
+        channel_logger.flush_all_buffers()

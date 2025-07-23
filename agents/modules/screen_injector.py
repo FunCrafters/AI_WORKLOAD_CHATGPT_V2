@@ -10,7 +10,11 @@ from tools.db_get_ux_details import db_get_screen_details
 
 class ScreenContextInjector(T3RNModule):
     def inject_start(self, session: Session) -> List[ChatCompletionMessageParam]:
-        gamestate = session.gamestate()
+        gamestate = session.game_state
+
+        if gamestate is None:
+            return []
+
         try:
             screen_details = gamestate.build_prompt()
             injection_message = f"""

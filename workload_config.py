@@ -51,7 +51,7 @@ WORKLOAD_CONFIG = {
         "5": {
             "name": "Memory",
             "data_type": "text",
-            "history_mode": "append",
+            "history_mode": "replace",
         },
         "6": {
             "name": "Tool Calls",

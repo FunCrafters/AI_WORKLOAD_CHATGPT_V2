@@ -372,6 +372,7 @@ def process_text_message(client, session: Session):
         response = create_response(channel, f"Received on channel {channel}: {text}", session_id, message_id)
         send_response(client, response, session_id, session.channel or 0, session.message_id)
 
+    
 
 def receive_full_message(client, delimiter=b"\n"):
     """

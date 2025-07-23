@@ -25,9 +25,3 @@ class Session:
             raise Exception("Memory must be initalized")
 
         return self.memory_manager
-
-    def gamestate(self):
-        if self.game_state is None:
-            raise Exception("Game state must be initialized")
-
-        return self.game_state
