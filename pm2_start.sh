@@ -9,7 +9,7 @@ cd /root/dev/Workload_ChatGPT
 # Parse arguments
 if [ "$1" == "start" ]; then
     echo "Starting Workload_ChatGPT with PM2..."
-    pm2 start $CONFIG_FILE --name "Workload_ChatGPT"
+    pm2 start $CONFIG_FILE --name "Workload_Main"
 elif [ "$1" == "stop" ]; then
     echo "Stopping Workload_ChatGPT..."
     pm2 stop Workload_ChatGPT
