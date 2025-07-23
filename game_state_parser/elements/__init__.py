@@ -2,6 +2,21 @@ from ..translations import t
 from ..ui_element import UIElement, safe_output
 
 
+class UnknownScreen(UIElement):
+    """
+    This class is used when the screen type is unknown or not implemented.
+    It provides a default prompt and summary indicating that the screen is unknown.
+    """
+
+    @safe_output("Unknown screen prompt is not available")
+    def build_prompt(self):
+        return "You are on an unknown screen."
+
+    @safe_output("Unknown screen summary is not available")
+    def build_summary(self):
+        return "This is an unknown screen. No specific information is available"
+
+
 # ROOT SCREEN
 class CampaignTeamSelectUIPresenter(UIElement):
     @safe_output("Campaign Team Select screen prompt is not available")

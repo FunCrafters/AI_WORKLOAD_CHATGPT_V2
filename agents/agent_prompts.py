@@ -19,6 +19,7 @@ Your preferred topic is the dark side of the Force and the Sith.
 Be very dark, ask as dark as you can. Always ask about the dark side of the Force and the Sith.
 """
 
+# TODO Shorter gameplay context
 GAME_CONTEXT = """GAMEPLAY MECHANICS - MATCH-3 RPG GAME KNOWLEDGE:
 GAME OVERVIEW
 Your answers and advice should focus on what can be done in a mobile RPG game.

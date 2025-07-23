@@ -44,10 +44,13 @@ def parse_screen_data(screenData: dict):
 
 def parse_ui_tree(json_raw: str) -> UIElement:
     data = json.loads(json_raw)
+    try:
+        screenData = data["screenData"]
+        return parse_screen_data(screenData)
+    except KeyError:
+        logger.warning("Provided JSON does not match any known screen type. Using UnknownScreen.")
 
-    screenData = data["screenData"]
-
-    return parse_screen_data(screenData)
+        return parse_screen_data({"Screen": "UnknownScreen", "ScreensData": data})
 
 
 class GameStateParser:
