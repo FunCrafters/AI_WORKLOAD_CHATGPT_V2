@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: "Workload_MAIN",
     script: "workload_main.py",
-    interpreter: "python3",
+    interpreter: "/root/dev/Workload_ChatGPT/.venv/bin/python",
     cwd: "/root/dev/Workload_ChatGPT",
     watch: false,
     instance_var: 'INSTANCE_ID',
