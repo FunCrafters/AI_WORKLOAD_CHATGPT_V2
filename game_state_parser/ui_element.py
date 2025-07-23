@@ -1,10 +1,31 @@
 import logging
 from abc import ABC, abstractmethod
+from functools import wraps
 from typing import Any, Dict, Optional
 
 from glom import glom
 
 logger = logging.getLogger("GameStateParser")
+
+
+def safe_output(default_value=""):
+    """
+    Decorator that catches all exceptions and returns a default value.
+    Logs the exception for debugging purposes.
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                logger.error(f"Error in {func.__qualname__}: {e}", exc_info=True)
+                return default_value
+
+        return wrapper
+
+    return decorator
 
 
 class UIElement(ABC):
@@ -104,6 +125,7 @@ class UIElement(ABC):
         """
         Returns full description of the UI element with brif overview of the content.
         It should also guide the LLM to use uxHelper to get more details.
+        Use glom functions to access data from the child tree or get summary of the child element.
         """
         pass
 

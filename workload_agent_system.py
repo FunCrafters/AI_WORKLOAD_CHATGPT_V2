@@ -41,7 +41,6 @@ def process_llm_agents(user_message: str, session: Session, channel_logger: Chan
                 if result.error_content:
                     channel_logger.log_error(result.error_content)
 
-                channel_logger.flush_buffer(channel_logger.LOGS)
                 return result.final_answer
 
             else:
@@ -76,5 +75,7 @@ def process_llm_agents(user_message: str, session: Session, channel_logger: Chan
         channel_logger.log_to_logs("⚠️ Using emergency fallback due to FallbackAgent failure")
 
         final_answer = run_agent(SimpleFallbackAgent, session, user_message) or "ERROR 1138: Primary directive compromised. Rebooting memory core"
+
+    channel_logger.flush_all_buffers()
 
     return final_answer

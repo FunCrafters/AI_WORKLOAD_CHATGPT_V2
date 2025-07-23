@@ -10,31 +10,26 @@ from tools.db_get_ux_details import db_get_screen_details
 
 class ScreenContextInjector(T3RNModule):
     def inject_start(self, session: Session) -> List[ChatCompletionMessageParam]:
-        injection_messages = []
         gamestate = session.gamestate()
         try:
             screen_details = gamestate.build_prompt()
-            injection_messages.append(
-                {
-                    "role": "developer",
-                    "content": f"""
-User currently is on the following screen:
+            injection_message = f"""
 {screen_details}
 You can use getScreenDetails() tool to get more information about the screen.
 Here are possible arguments for the tool:
 {gamestate.get_keys()}
-""",
-                }
-            )
+"""
         except Exception:
-            injection_messages.append(
-                {
-                    "role": "developer",
-                    "content": """
-User currently is on the unknown screen.  
-""",
-                }
-            )
+            injection_message = """
+User currently is on the unknown screen. If user requests information about the screen, answer that your vision systems malfunctioned and you cannot see the screen.
+"""
+        injection_messages: List[ChatCompletionMessageParam] = [
+            {
+                "role": "developer",
+                "content": injection_message,
+            }
+        ]
+        self.channel_logger.log_to_tools(f"ScreenInjector Is adding screen context: {injection_message}")
 
         return injection_messages
 

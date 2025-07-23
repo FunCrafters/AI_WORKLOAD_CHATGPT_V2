@@ -39,9 +39,9 @@ WORKLOAD_CONFIG = {
             "history_mode": "replace",
         },
         "3": {
-            "name": "Tools",
+            "name": "Modules",
             "data_type": "text",
-            "history_mode": "replace",
+            "history_mode": "append",
         },
         "4": {
             "name": "Prompts",

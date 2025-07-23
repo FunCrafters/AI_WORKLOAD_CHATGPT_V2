@@ -1,13 +1,14 @@
 import json
 import logging
+from typing import Optional, Type
 
-import elements
-from ui_element import UIElement
+from . import elements
+from .ui_element import UIElement
 
 logger = logging.getLogger("GameStateParser")
 
 
-def get_class_by_name(class_name: str):
+def get_class_by_name(class_name: str) -> Optional[Type[UIElement]]:
     try:
         return getattr(elements, class_name)
     except (ImportError, AttributeError) as e:
@@ -18,10 +19,10 @@ def get_class_by_name(class_name: str):
 def parse_recursive(data: dict, parent: UIElement):
     for key, value in data.items():
         if isinstance(value, dict):
-            childClass = get_class_by_name(key)
+            ChildClass = get_class_by_name(key)
 
-            if childClass:
-                childElement = childClass(value)
+            if ChildClass:
+                childElement = ChildClass(value)
                 parent.children[key] = childElement
                 parse_recursive(value, childElement)
 
@@ -66,13 +67,21 @@ class GameStateParser:
             if element:
                 return element.build_prompt()
             else:
-                return f"No UIElement found with name '{name}'"
+                return f"No UI Element found for '{name}'"
         except Exception as e:
             logger.error(f"Error retrieving details for '{name}': {e}")
-            return f"Error retrieving details for '{name}': {e}"
+            return f"Error retrieving details for '{name}'"
 
     def get_keys(self) -> list:
         return self.ui_tree.get_keys()
+
+    def get_context_heros(self, querry: str) -> str | None:
+        # TODO
+        # if there is given hero / character in context of the screen
+        # this function should return info about it.
+        # if there is multiple, it should return all of them.
+        # and notice that there is multiple and why there is multiple.
+        return None
 
 
 if __name__ == "__main__":
