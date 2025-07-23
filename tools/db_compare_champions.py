@@ -120,9 +120,7 @@ def db_compare_champions(champion_names: list, detailed: bool = True) -> dict:
         comparison_analysis = _perform_comparison_analysis(champions)
 
         # Create formatted comparison for LLM presentation
-        formatted_comparison = _format_comparison_for_llm(
-            champions, comparison_analysis
-        )
+        formatted_comparison = _format_comparison_for_llm(champions, comparison_analysis)
 
         # Generate recommendations
         recommendations = _generate_recommendations(champions, comparison_analysis)
@@ -289,12 +287,8 @@ def _format_comparison_for_llm(champions: list, analysis: dict) -> str:
     lines.append("CHAMPION STATS:")
     for i, char in enumerate(champions, 1):
         lines.append(f"{i}. {char['champion_name']}")
-        lines.append(
-            f"   Power: {char['total_power']} (Attack: {char['attack']}, Defense: {char['defense']}, Health: {char['health']})"
-        )
-        lines.append(
-            f"   Speed: {char['speed']} | {char['rarity']} {char['affinity']} {char['class']}"
-        )
+        lines.append(f"   Power: {char['total_power']} (Attack: {char['attack']}, Defense: {char['defense']}, Health: {char['health']})")
+        lines.append(f"   Speed: {char['speed']} | {char['rarity']} {char['affinity']} {char['class']}")
         lines.append(f"   Style: {char['fighting_style']} | Faction: {char['faction']}")
         lines.append("")
 
@@ -307,9 +301,7 @@ def _format_comparison_for_llm(champions: list, analysis: dict) -> str:
             prev_power = power_ranking[i - 2]["total_power"]
             diff = prev_power - char["total_power"]
             power_diff = f" (-{diff})"
-        lines.append(
-            f"{i}. {char['champion_name']}: {char['total_power']} power{power_diff}"
-        )
+        lines.append(f"{i}. {char['champion_name']}: {char['total_power']} power{power_diff}")
 
     lines.append("")
 
@@ -320,16 +312,10 @@ def _format_comparison_for_llm(champions: list, analysis: dict) -> str:
     highest_attack = max(champions, key=lambda x: x["attack"])
     tankiest = max(champions, key=lambda x: x["health"])
 
-    lines.append(
-        f"• Strongest: {strongest['champion_name']} ({strongest['total_power']} power)"
-    )
+    lines.append(f"• Strongest: {strongest['champion_name']} ({strongest['total_power']} power)")
     lines.append(f"• Fastest: {fastest['champion_name']} ({fastest['speed']} speed)")
-    lines.append(
-        f"• Highest Attack: {highest_attack['champion_name']} ({highest_attack['attack']} attack)"
-    )
-    lines.append(
-        f"• Most Health: {tankiest['champion_name']} ({tankiest['health']} health)"
-    )
+    lines.append(f"• Highest Attack: {highest_attack['champion_name']} ({highest_attack['attack']} attack)")
+    lines.append(f"• Most Health: {tankiest['champion_name']} ({tankiest['health']} health)")
 
     return "\n".join(lines)
 
@@ -373,9 +359,7 @@ def _generate_recommendations(champions: list, analysis: dict) -> dict:
 
     for affinity, chars in affinities.items():
         if len(chars) > 1:
-            recommendations["synergies"].append(
-                f"{affinity} synergy: {', '.join(chars)}"
-            )
+            recommendations["synergies"].append(f"{affinity} synergy: {', '.join(chars)}")
 
     # Usage scenarios
     fastest = max(champions, key=lambda x: x["speed"])

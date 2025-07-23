@@ -16,7 +16,9 @@ class RandomGreetings(T3RNModule):
 
         random_greetings = db_get_random_greetings_text()
 
-        response = f"Droid, the conversation is about to start. You can use the following greetings to start the conversation once: \n {random_greetings}"
+        response = (
+            f"Droid, the conversation is about to start. You can use the following greetings to start the conversation once: \n {random_greetings}"
+        )
 
         injection_messages: List[ChatCompletionMessageParam] = [
             {

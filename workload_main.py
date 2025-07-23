@@ -9,6 +9,7 @@ from typing import Any, Dict
 
 from dotenv import dotenv_values, load_dotenv
 
+from game_state_parser.parser import GameStateParser
 from session import Session
 from workload_chat import process_main_channel
 from workload_config import SERVER_HOST, SERVER_PORT, WORKLOAD_CONFIG
@@ -20,9 +21,7 @@ load_dotenv()
 config = dotenv_values(".env")
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("LLM Workload")
 logger = logging.LoggerAdapter(logger)
 
@@ -38,12 +37,12 @@ def connect_to_server():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
-        logger.info(f"<< CONNECTING: host={SERVER_HOST}, port={socket_port}")
+        logger.info(f"CONNECTING: host={SERVER_HOST}, port={socket_port}")
         client.connect((SERVER_HOST, socket_port))
-        logger.info("   SUCCESS: connected to RathTAR server")
+        logger.info("SUCCESS: connected to RathTAR server")
         return client
     except Exception as e:
-        logger.error(f"!!  ERROR: error={e}")
+        logger.error(f"ERROR: error={e}")
         return None
 
 
@@ -60,9 +59,7 @@ def register_workload(client):
 
     try:
         # Send registration data
-        logger.info(
-            f"<< REGISTERING: title={registration['title']}, hash_id={registration['hash_id']}"
-        )
+        logger.info(f"REGISTERING: title={registration['title']}, hash_id={registration['hash_id']}")
         reg_data = json.dumps(registration).encode("utf-8")
         client.sendall(reg_data)
 
@@ -85,7 +82,6 @@ def register_workload(client):
         return None
 
 
-# TODO Session handling?
 def create_or_update_session(data: dict):
     session_id = data["session_id"]
     message_type = data["type"]
@@ -138,9 +134,7 @@ def process_message(client, message):
         session = create_or_update_session(data)
 
         if not session:
-            logger.error(
-                "!! ERROR_SESSION_CREATION", extra=dict(raw_message=raw_message)
-            )
+            logger.error("!! ERROR_SESSION_CREATION", extra=dict(raw_message=raw_message))
             return
 
         # Log standardized message receipt info
@@ -154,16 +148,16 @@ def process_message(client, message):
         logger.info("PREVIEW", extra=dict(preview=preview_text))
 
         # Handle message based on its type
-        #  DEBUG - {'type': 'initialization', 'text': '', 'channel': 0, 'session_id': '5YG83K'}
+        #   - {'type': 'initialization', 'text': '', 'channel': 0, 'session_id': '5YG83K'}
         if message_type == "initialization":
             process_initialization_message(client, session)
         elif message_type == "process":
-            # DEBUG - {'type': 'process', 'text': 'Hello friend', 'channel': 0, 'session_id': '5YG83K', 'message_id': 1752050086246}
+            #  - {'type': 'process', 'text': 'Hello friend', 'channel': 0, 'session_id': '5YG83K', 'message_id': 1752050086246}
             process_text_message(client, session)
         elif message_type == "settings":
             process_settings_message(client, session, data)
         elif message_type == "data":
-            # DEBUG - {'type': 'data', 'data':
+            #  - {'type': 'data', 'data':
             # {'main': {'media_id': 'screenshot_1752049288153',
             # 'media_type': 'image', 'filename': 'screenshot_2025-07-09T08-21-25.506Z.png',
             # 'user_id': '108336033121275716906', 'user_name': 'Maciej Kołodziejczyk',
@@ -191,12 +185,8 @@ def process_initialization_message(client, session: Session):
         extra=dict(session_id=session.session_id, channel=session.channel),
     )
 
-    response = create_response(
-        session.channel, "", session.session_id, session.message_id
-    )
-    send_response(
-        client, response, session.session_id, session.channel or 0, session.message_id
-    )
+    response = create_response(session.channel, "", session.session_id, session.message_id)
+    send_response(client, response, session.session_id, session.channel or 0, session.message_id)
 
     # Immediately after initialization, send a separate message to request JSON data
     # This is a separate message to ensure proper socket communication
@@ -210,7 +200,11 @@ def process_settings_message(client, session: Session, data: dict):
     # Extract settings
     settings_data = data.get("settings", {})
     if settings_data:
-        # TODO
+        # TODO THAT IS UNSAFE, WHat is going on here? Check what it is doing
+        logger.info(
+            "   PROCESS_SETTINGS",
+            extra=dict(session_id=session.session_id, keys=list(settings_data.keys())),
+        )
         # Store settings directly in session
         for key, value in settings_data.items():
             session.__dict__[key] = value
@@ -220,9 +214,7 @@ def process_settings_message(client, session: Session, data: dict):
             extra=dict(session_id=session.session_id, keys=list(settings_data.keys())),
         )
 
-        logger.info(
-            "   SETTINGS_CONFIRMATION", extra=dict(session_id=session.session_id)
-        )
+        logger.info("   SETTINGS_CONFIRMATION", extra=dict(session_id=session.session_id))
         response = {
             "type": "settings_response",
             "success": True,
@@ -233,9 +225,7 @@ def process_settings_message(client, session: Session, data: dict):
         # Send settings response confirmation
         send_message(client, response)
     else:
-        logger.info(
-            "!! PROCESS_SETTINGS_EMPTY", extra=dict(session_id=session.session_id)
-        )
+        logger.info("!! PROCESS_SETTINGS_EMPTY", extra=dict(session_id=session.session_id))
 
 
 def request_json_data(client, session_id):
@@ -284,9 +274,7 @@ def process_json_data_message(client, session: Session, data: dict):
         elif isinstance(json_data, list):
             logger.info(
                 "   JSON STRUCTURE",
-                extra=dict(
-                    session_id=session.session_id, type="list", length=len(json_data)
-                ),
+                extra=dict(session_id=session.session_id, type="list", length=len(json_data)),
             )
             if len(json_data) > 0:
                 sample_type = type(json_data[0]).__name__
@@ -297,11 +285,8 @@ def process_json_data_message(client, session: Session, data: dict):
 
         # IMPORTANT: Set current JSON data in game cache for screen context tool
         try:
-            from workload_game_cache import set_current_json_data
-
             # Only set if json_data is a dictionary (required for screen context)
             if isinstance(json_data, dict):
-                set_current_json_data(json_data)
                 logger.info(
                     "   JSON DATA SET IN CACHE",
                     extra=dict(session_id=session.session_id, success=True),
@@ -325,27 +310,16 @@ def process_json_data_message(client, session: Session, data: dict):
         def get_data_summary(data):
             if isinstance(data, dict):
                 return {
-                    k: get_data_summary(v)
-                    if isinstance(v, (dict, list)) and k != "small_value"
-                    else "data_present"
+                    k: get_data_summary(v) if isinstance(v, (dict, list)) and k != "small_value" else "data_present"
                     for k, v in list(data.items())[:10]
                 }
             elif isinstance(data, list):
-                return [
-                    get_data_summary(item)
-                    if isinstance(item, (dict, list))
-                    else "data_present"
-                    for item in data[:5]
-                ]
+                return [get_data_summary(item) if isinstance(item, (dict, list)) else "data_present" for item in data[:5]]
             else:
                 return "data_present"
 
         # Store a small sample and summary
-        session.json_data = {
-            "size": data_size_bytes,
-            "size_kb": data_size_kb,
-            "summary": get_data_summary(json_data),
-        }
+        session.game_state = GameStateParser(json.dumps(json_data))
 
         # Send confirmation response
         response = {
@@ -359,15 +333,11 @@ def process_json_data_message(client, session: Session, data: dict):
 
         logger.info(
             "   DATA RECEIVED CONFIRMATION",
-            extra=dict(
-                session_id=session.session_id, channel=2, message_id=session.message_id
-            ),
+            extra=dict(session_id=session.session_id, channel=2, message_id=session.message_id),
         )
     else:
         # Log error and send error response
-        logger.info(
-            "ERROR_JSON_DATA_MISSING", extra=dict(session_id=session.session_id)
-        )
+        logger.info("ERROR_JSON_DATA_MISSING", extra=dict(session_id=session.session_id))
 
         # Create error response
         response = {
@@ -389,9 +359,7 @@ def process_text_message(client, session: Session):
     session_id = session.session_id
     message_id = session.message_id
 
-    logger.info(
-        f'   TEXT PROCESSING: session={session_id}, channel={channel}, message_id={message_id}, text="{text}"'
-    )
+    logger.info(f'   TEXT PROCESSING: session={session_id}, channel={channel}, message_id={message_id}, text="{text}"')
 
     # Process text based on channel
     if channel == 0:  # Main channel
@@ -401,12 +369,8 @@ def process_text_message(client, session: Session):
         )
     else:
         # For other channels, just echo back the text
-        response = create_response(
-            channel, f"Received on channel {channel}: {text}", session_id, message_id
-        )
-        send_response(
-            client, response, session_id, session.channel or 0, session.message_id
-        )
+        response = create_response(channel, f"Received on channel {channel}: {text}", session_id, message_id)
+        send_response(client, response, session_id, session.channel or 0, session.message_id)
 
 
 def receive_full_message(client, delimiter=b"\n"):
@@ -441,17 +405,13 @@ def receive_full_message(client, delimiter=b"\n"):
                 # If remainder is not empty, it would need to be handled
                 # but current protocol seems to send one message at a time
                 if remainder:
-                    logger.warning(
-                        f"RECEIVE_REMAINDER: {len(remainder)} bytes remaining after delimiter"
-                    )
+                    logger.warning(f"RECEIVE_REMAINDER: {len(remainder)} bytes remaining after delimiter")
 
                 return message
 
             # Prevent infinite buffer growth
             if len(buffer) > 1024 * 1024:  # 1MB limit
-                logger.error(
-                    f"RECEIVE_BUFFER_OVERFLOW: buffer size {len(buffer)} bytes"
-                )
+                logger.error(f"RECEIVE_BUFFER_OVERFLOW: buffer size {len(buffer)} bytes")
                 return None
 
     except socket.timeout:
@@ -473,9 +433,7 @@ def reconnect_loop():
         if not client:
             logger.error(f"CONNECTION_FAILED: retry in {retry_interval} seconds")
             time.sleep(retry_interval)
-            retry_interval = min(
-                retry_interval * 2, max_retry_interval
-            )  # Exponential backoff
+            retry_interval = min(retry_interval * 2, max_retry_interval)  # Exponential backoff
             continue
 
         # Reset retry interval on successful connection
@@ -503,9 +461,7 @@ def reconnect_loop():
                     # Log message size for debugging
                     message_size = len(message)
                     if message_size > 50000:  # Log large messages
-                        logger.info(
-                            f"LARGE_MESSAGE: size={message_size} bytes ({message_size / 1024:.1f}KB)"
-                        )
+                        logger.info(f"LARGE_MESSAGE: size={message_size} bytes ({message_size / 1024:.1f}KB)")
 
                     # Process complete message
                     process_message(client, message)
@@ -547,29 +503,21 @@ def reconnect_loop():
 
 def main():
     """Main workload function"""
-    logger.info(
-        f"WORKLOAD_STARTING: name={WORKLOAD_CONFIG['title']}, hash={WORKLOAD_CONFIG['hash_id']}"
-    )
+    logger.info(f"WORKLOAD_STARTING: name={WORKLOAD_CONFIG['title']}, hash={WORKLOAD_CONFIG['hash_id']}")
 
     try:
         # Initialize embeddings and vectorstore for agent system
         ollama_host = config.get("OLLAMA_HOST") or "100.83.28.7"
         ollama_port = config.get("OLLAMA_PORT") or "11434"
 
-        logger.info(
-            f"Initializing agent system with Ollama at {ollama_host}:{ollama_port}"
-        )
+        logger.info(f"Initializing agent system with Ollama at {ollama_host}:{ollama_port}")
 
-        vectorstore_ollama = initialize_embeddings_and_vectorstore(
-            config, ollama_host, ollama_port
-        )
+        vectorstore_ollama = initialize_embeddings_and_vectorstore(config, ollama_host, ollama_port)
 
         if vectorstore_ollama:
             logger.info("Agent system initialized successfully")
         else:
-            logger.warning(
-                "Agent system initialized with warnings - check vectorstore logs"
-            )
+            logger.warning("Agent system initialized with warnings - check vectorstore logs")
 
         # Start reconnection loop
         reconnect_loop()

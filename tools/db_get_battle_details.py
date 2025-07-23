@@ -58,9 +58,7 @@ def db_get_battle_details(battle_name: str) -> dict:
                 "battle_id": battle["battle_id"],
                 "battle_name": battle["battle_name"],
                 "summary_text": battle["summary_text"] or "No summary available",
-                "summary_json": battle["summary_json"]
-                if battle["summary_json"]
-                else {},
+                "summary_json": battle["summary_json"] if battle["summary_json"] else {},
             }
 
             return {

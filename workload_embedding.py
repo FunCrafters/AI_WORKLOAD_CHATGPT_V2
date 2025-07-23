@@ -56,9 +56,7 @@ class OllamaEmbeddings:
 #######################
 
 
-def initialize_embeddings_and_vectorstore(
-    config: dict, ollama_host: str, ollama_port: str
-) -> OllamaEmbeddings:
+def initialize_embeddings_and_vectorstore(config: dict, ollama_host: str, ollama_port: str) -> OllamaEmbeddings:
     """Initialize embeddings configurations and vectorstore using Ollama and PostgreSQL"""
     global embedding_ollama, embedding_log, embedding_model_name
 
@@ -68,9 +66,7 @@ def initialize_embeddings_and_vectorstore(
     # Store embedding model name
     embedding_model_name = config.get("EMBEDDING_MODEL_ID", "nomic-embed-text")
 
-    embedding_ollama = OllamaEmbeddings(
-        host=ollama_host, port=ollama_port, model=embedding_model_name
-    )
+    embedding_ollama = OllamaEmbeddings(host=ollama_host, port=ollama_port, model=embedding_model_name)
 
     # Add PostgreSQL database information
     try:

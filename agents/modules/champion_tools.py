@@ -7,12 +7,10 @@ from tools.db_get_champion_details import db_get_champion_details
 from tools.db_get_champions_list import db_get_champions_list_text
 from tools.db_rag_get_boss_details import db_rag_get_boss_details
 from tools.db_rag_get_champion_details import db_rag_get_champion_details
-from tools_functions import T3RNTool
+from tool import T3RNTool
 
 
-def getChampionsDetails(
-    champion_name: str, prefer_lore: bool = False, session: Session | None = None
-) -> str:
+def getChampionsDetails(champion_name: str, prefer_lore: bool = False, session: Session | None = None) -> str:
     champion = db_get_champion_details(champion_name)
     boss = db_rag_get_boss_details(champion_name)
     champ_rag = db_rag_get_champion_details(champion_name)
@@ -50,9 +48,7 @@ class ChampionTools(T3RNModule):
         return [
             T3RNTool(
                 name="getChampionsDetails",
-                function=lambda champion_name, prefer_lore=False: getChampionsDetails(
-                    champion_name, prefer_lore, session
-                ),
+                function=lambda champion_name, prefer_lore=False: getChampionsDetails(champion_name, prefer_lore, session),
                 description="Get details about a specific champion from the game. ",
                 system_prompt="""
 Tool getChampionsDetails allows the droid to retrieve information about a specific champion in the game.
@@ -89,9 +85,7 @@ Examples:
             ),
             T3RNTool(
                 name="getRAGCharacterDetails",
-                function=lambda champion_name: db_rag_get_champion_details(
-                    champion_name
-                ),
+                function=lambda champion_name: db_rag_get_champion_details(champion_name),
                 description="Get lore details about a specific champion from the game using natural language (Questions)",
                 system_prompt="""
 Tool getRAGCharacterDetails allows the droid to retrieve information about a specific champion in the game using natural language.

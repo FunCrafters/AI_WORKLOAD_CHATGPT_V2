@@ -25,12 +25,8 @@ class MemoryManager:
     def __init__(self, channel_logger: "ChannelLogger"):
         self.max_exchanges = AGENT_CONFIG.getint("MemoryManager", "max_exchanges")
         self.max_summary_size = AGENT_CONFIG.getint("MemoryManager", "max_summary_size")
-        self.summary_target_after_llm = AGENT_CONFIG.getint(
-            "MemoryManager", "summary_target_after_llm"
-        )
-        self.summary_temperature = AGENT_CONFIG.getfloat(
-            "MemoryManager", "summary_temperature"
-        )
+        self.summary_target_after_llm = AGENT_CONFIG.getint("MemoryManager", "summary_target_after_llm")
+        self.summary_temperature = AGENT_CONFIG.getfloat("MemoryManager", "summary_temperature")
 
         self.llm_summarization_count = 0
 
@@ -45,9 +41,7 @@ class MemoryManager:
             except Exception:
                 self.openai_client = None
         else:
-            logger.warning(
-                "Memory Menager will not use openAI for summarization (No API KEY)"
-            )
+            logger.warning("Memory Menager will not use openAI for summarization (No API KEY)")
 
         self.channal_logger: ChannelLogger = channel_logger
 
@@ -104,9 +98,7 @@ class MemoryManager:
 
         return []
 
-    def finalize_current_cycle(
-        self, messages: List["ChatCompletionMessageParam"]
-    ) -> None:
+    def finalize_current_cycle(self, messages: List["ChatCompletionMessageParam"]) -> None:
         # Update running messages with current state
         self.memory["running_messages"] = messages
 
@@ -125,9 +117,7 @@ class MemoryManager:
             if self.memory["summary"]:
                 summary_text = f"{self.memory['summary']}\n\n{summary_text}"
 
-            compressed_summary = self._summarize_text(
-                summary_text, self.summary_target_after_llm
-            )
+            compressed_summary = self._summarize_text(summary_text, self.summary_target_after_llm)
             self.memory["summary"] = compressed_summary
 
             self.memory["running_messages"] = remaining_messages
@@ -148,7 +138,9 @@ class MemoryManager:
             target_chars = int(target_size * 0.8)  # Conservative estimate
 
             # Use OpenAI for intelligent summarization
-            prompt = f"Summarize the following text to approximately {target_chars} characters while preserving key information. Be concise:\n\n{text}"
+            prompt = (
+                f"Summarize the following text to approximately {target_chars} characters while preserving key information. Be concise:\n\n{text}"
+            )
 
             response = self.openai_client.chat.completions.create(
                 model="gpt-4o-mini",

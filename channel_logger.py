@@ -46,12 +46,7 @@ class ChannelLogFormatter(logging.Formatter):
         message_id = getattr(record, "message_id", "-")
 
         # Customize format
-        log_format = (
-            f"[{channel_name}] "
-            f"[Session: {session_id}] "
-            f"[Message: {message_id}] "
-            f"- {record.getMessage()}"
-        )
+        log_format = f"[{channel_name}] [Session: {session_id}] [Message: {message_id}] - {record.getMessage()}"
 
         return log_format
 
@@ -107,36 +102,36 @@ class ChannelLogger:
         self.action_id = action_id
 
     def log_to_chat(self, content: str):
-        """Log to Chat channel (0)"""
-        self._send_to_channel(self.CHAT, content)
+        """Log to Chat channel (0) - buffered for better organization"""
+        self.buffer_log(self.CHAT, content)
 
     def log_to_databases(self, content: str):
-        """Log to Databases channel (1)"""
-        self._send_to_channel(self.DATABASES, content)
+        """Log to Databases channel (1) - buffered for better organization"""
+        self.buffer_log(self.DATABASES, content)
 
     def log_to_caches(self, content: str):
-        """Log to Caches channel (2)"""
-        self._send_to_channel(self.CACHES, content)
+        """Log to Caches channel (2) - buffered for better organization"""
+        self.buffer_log(self.CACHES, content)
 
     def log_to_tools(self, content: str):
-        """Log to Tools channel (3)"""
-        self._send_to_channel(self.TOOLS, content)
+        """Log to Tools channel (3) - buffered for better organization"""
+        self.buffer_log(self.TOOLS, content)
 
     def log_to_prompts(self, content: str):
-        """Log to Prompts channel (4)"""
+        """Log to Prompts channel (4) - buffered for better organization"""
         if self.action_id:
             content = f"[Action {self.action_id}] {content}"
-        self._send_to_channel(self.PROMPTS, content)
+        self.buffer_log(self.PROMPTS, content)
 
     def log_to_memory(self, content: str):
-        """Log to Memory channel (5)"""
-        self._send_to_channel(self.MEMORY, content)
+        """Log to Memory channel (5) - buffered for better organization"""
+        self.buffer_log(self.MEMORY, content)
 
     def log_to_tool_calls(self, content: str):
-        """Log to Tool Calls channel (6, previously LLM Tools)"""
+        """Log to Tool Calls channel (6, previously LLM Tools) - buffered for better organization"""
         if self.action_id:
             content = f"[Action {self.action_id}] {content}"
-        self._send_to_channel(self.TOOL_CALLS, content)
+        self.buffer_log(self.TOOL_CALLS, content)
 
     def log_to_logs(self, content: str):
         """Log to Logs channel (8) - buffered for better organization"""
@@ -219,12 +214,8 @@ class ChannelLogger:
             # Create unique sub-message ID for this channel
             sub_message_id = f"{self.message_id}_{channel}_{int(time.time() * 1000)}"
 
-            response = create_response(
-                channel, content, self.session_id, sub_message_id
-            )
-            send_response(
-                self.client, response, self.session_id, channel, sub_message_id
-            )
+            response = create_response(channel, content, self.session_id, sub_message_id)
+            send_response(self.client, response, self.session_id, channel, sub_message_id)
         except Exception as e:
             # If we can't log, print to console as fallback
             print(f"Failed to log to channel {channel}: {str(e)}")

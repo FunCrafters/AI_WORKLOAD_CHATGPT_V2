@@ -122,7 +122,7 @@ class Agent(ABC):
     def __init__(self, session: "Session", channel_logger: "ChannelLogger"):
         self.session_data: "Session" = session
         self.channel_logger: "ChannelLogger" = channel_logger
-        # TODO is this correct? Trace back to session_data if it can be guaranteed to have memory manager
+
         if self.session_data.memory_manager is None:
             raise ValueError("Session must have a memory manager initialized")
 
@@ -179,7 +179,7 @@ class Agent(ABC):
                 if mm
                 else "No memory manager",
                 "messages": messages,
-                "json_data_keys": session.json_data,
+                "json_data_keys": None, # TODO GAME STATE PARSER
                 "response": response,
             }
 
@@ -198,7 +198,6 @@ Text Snippet: {state_log["text_snippet"]}
 === LLM Response ===
 {state_log["response"] if state_log["response"] else "No response generated"}
 === JSON DATA ===
-{textwrap.shorten(json.dumps(session.json_data, indent=2), width=300)}
 """.strip()
 
             self.channel_logger.log_to_prompts(pretty_log)

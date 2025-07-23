@@ -53,9 +53,7 @@ def process_main_channel(client, session: "Session"):
         final_answer = process_llm_agents(text, session, channel_logger)
         process_time = time.time() - start_time
 
-        channel_logger.log_to_logs(
-            f"✅ Agent processing completed in {process_time:.2f} seconds"
-        )
+        channel_logger.log_to_logs(f"✅ Agent processing completed in {process_time:.2f} seconds")
         channel_logger.log_to_logs(f"📝 Answer length: {len(final_answer)} characters")
         session.memory_manager.log_memory()
 
@@ -63,9 +61,7 @@ def process_main_channel(client, session: "Session"):
         send_response(client, chat_response, session_id, channel or 0, message_id)
 
     except Exception as e:
-        logger.info(
-            "!! AGENT PROCESSING ERROR", extra=dict(session_id=session_id, error=str(e))
-        )
+        logger.info("!! AGENT PROCESSING ERROR", extra=dict(session_id=session_id, error=str(e)))
 
         import traceback
 

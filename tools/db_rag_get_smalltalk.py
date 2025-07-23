@@ -83,9 +83,7 @@ def db_rag_get_smalltalk(query: str = "") -> dict:
                     "message": "Selected random smalltalk topic",
                     "search_query": search_query,
                     "content": {"smltk_results": content},
-                    "llm_instruction": SMALLTALK_SPECIALIST_EMBEDDING.format(
-                        "\n".join(random_subset)
-                    ),
+                    "llm_instruction": SMALLTALK_SPECIALIST_EMBEDDING.format("\n".join(random_subset)),
                     "internal_info": {
                         "function_name": "db_rag_get_smalltalk",
                         "parameters": {"query": query},
@@ -142,9 +140,7 @@ def db_rag_get_smalltalk(query: str = "") -> dict:
                 if results:
                     # Randomly select one from the top similar results for variety
                     result = random.choice(results)
-                    logger.info(
-                        f"Selected random result from {len(results)} similar topics"
-                    )
+                    logger.info(f"Selected random result from {len(results)} similar topics")
                     topic = result["topic"]
                     category = result["category"]
                     knowledge_text = result["knowledge_text"]
@@ -168,17 +164,13 @@ def db_rag_get_smalltalk(query: str = "") -> dict:
                         },
                     }
 
-                logger.info(
-                    f"No embedding match above threshold {SIMILARITY_THRESHOLD}, falling back to random"
-                )
+                logger.info(f"No embedding match above threshold {SIMILARITY_THRESHOLD}, falling back to random")
 
             else:
                 logger.info("Embedding generation failed, falling back to random")
 
             # No good match found - get random topic instead
-            logger.info(
-                f"No good smalltalk match for query '{query}', selecting random topic"
-            )
+            logger.info(f"No good smalltalk match for query '{query}', selecting random topic")
 
             random_sql = """
             SELECT topic, category, knowledge_text
@@ -289,9 +281,7 @@ def db_rag_get_smalltalk_from_embedding(
             "similarity": float(r["similarity"]),
             "long_content": f"### {r['topic']} ({r['category']})\n{r['knowledge_text']}",
             "content": f"### {r['topic']}\n{r['short_knowledge_text']}",
-            "embedding": np.array(
-                [float(x) for x in r["embedding"].strip("[]").split(",")]
-            ),
+            "embedding": np.array([float(x) for x in r["embedding"].strip("[]").split(",")]),
             "search_type": r["search_type"],
         }
         for r in results
