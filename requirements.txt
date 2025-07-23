@@ -9,5 +9,5 @@ beautifulsoup4
 markdown
 cachetools
 scikit-learn
-glum
+glom
 icecream
