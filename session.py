@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
-from game_state_parser.parser import GameStateParser
-
 if TYPE_CHECKING:
     from agents.memory_manager import MemoryManager
+    from game_state_parser.parser import GameStateParser
 
 
 @dataclass
@@ -18,7 +17,7 @@ class Session:
     message_id: Optional[int] = None
     user_message: Optional[str] = None
     memory_manager: Optional["MemoryManager"] = None
-    game_state: Optional[GameStateParser] = None
+    game_state: Optional["GameStateParser"] = None
 
     def get_memory(self):
         if self.memory_manager is None:

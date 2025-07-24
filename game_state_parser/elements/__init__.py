@@ -165,13 +165,18 @@ There are three buttons on the bottom:
 class ChampionEquipmentPanelPresenter(UIElement):
     @safe_output("Champion Equipment screen prompt is not available")
     def build_prompt(self):
+        statisticPopup = self.first("StatisticWindowPresenter")
         champSummary = self.glom_summary("ChampionMainPanelPresenter")
+
+        statisticPopupPrompt = statisticPopup.build_prompt() if statisticPopup else ""
+
         return f"""
 You are on the Champion Equipment screen. Here you can manage your champion's equipment.
 User currently is looking at:
 {champSummary}
 You can use uxHelper("ChampionEquipmentPanelPresenter") to get more details this champion.
 If user asks about mechanics, stats, abilities System recommends to use databases and tools.
+{statisticPopupPrompt}
 """
 
     @safe_output("Champion Equipment screen summary is not available")
@@ -231,3 +236,26 @@ Stats:
         return (
             f"""Champion: {champName} (Power {champPower}, Stars {champStars}, Level {champLevel}/{champMaxLevel}) {"(Locked)" if isLocked else ""}"""
         )
+
+
+class StatisticWindowPresenter(UIElement):
+    @safe_output("Statistic Popup is shown")
+    def build_prompt(self):
+        champion = t(self.glom("ChampionMainPanelPresenter.ChampionConfigId"), "name.titlecase")
+
+        return f"""
+User has opened Statistic Popup and it is convering whole screen. It shows detailed statistics about the {champion}. Including:
+"HP, ATK, DEF, SPD, CR, CD, ACC, RES, EN". User can read about the champion and check total stats. Close button is on the top right corner.
+"""
+
+    @safe_output("Statistic Popup summary is not available")
+    def build_summary(self):
+        return ""
+
+
+class CampaignMissionUIPresenter(UIElement):
+    @safe_output("Campaign Mission screen it shows what missions are available")
+    def build_prompt(self):
+        return """
+You are on the Campaign Mission screen. Here you can see available missions and their details.
+"""

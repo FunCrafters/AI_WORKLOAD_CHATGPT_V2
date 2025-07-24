@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Database tool: Get boss details from PostgreSQL
-Get boss information from PostgreSQL rag_vectors table
-"""
-
 from tools.db_rag_common import execute_universal_rag
 
 
