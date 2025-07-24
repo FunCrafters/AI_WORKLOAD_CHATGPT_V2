@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-T3rn Agent
-Main agent with internal tool loop using ChatGPT-4o-mini
-Replaces QuestionAnalyzer with direct tool execution and response generation
-"""
-
 import json
 import os
 import random
