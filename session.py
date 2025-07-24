@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 class Session:
     created_at: float
     last_activity: float
-    message_count: int
     session_id: int
     action_id: int = 1
     channel: Optional[int] = None

@@ -99,7 +99,6 @@ def create_or_update_session(data: dict):
         active_sessions[session_id] = Session(
             created_at=time.time(),
             last_activity=time.time(),
-            message_count=0,
             session_id=session_id,
             channel=channel,
             message_id=message_id,
@@ -108,7 +107,6 @@ def create_or_update_session(data: dict):
 
     if not is_initialization:
         active_sessions[session_id].last_activity = time.time()
-        active_sessions[session_id].message_count += 1
         if channel is not None:
             active_sessions[session_id].channel = channel
         if text is not None:
@@ -372,7 +370,6 @@ def process_text_message(client, session: Session):
         response = create_response(channel, f"Received on channel {channel}: {text}", session_id, message_id)
         send_response(client, response, session_id, session.channel or 0, session.message_id)
 
-    
 
 def receive_full_message(client, delimiter=b"\n"):
     """

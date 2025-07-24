@@ -153,9 +153,7 @@ class Agent(ABC):
             short_messages = [
                 {
                     **message,
-                    "content": textwrap.shorten(
-                        chat_completion_to_content_str(message), width=500
-                    ),
+                    "content": textwrap.shorten(chat_completion_to_content_str(message), width=500),
                 }
                 for message in messages
             ]
@@ -165,20 +163,15 @@ class Agent(ABC):
                 "session_id": session.session_id,
                 "created_at": session.created_at,
                 "last_activity": session.last_activity,
-                "message_count": session.message_count,
                 "channel": session.channel,
                 "message_id": session.message_id,
                 "action_id": session.action_id,
                 "text_snippet": (session.user_message[:100] + "...")
                 if session.user_message and len(session.user_message) > 100
                 else session.user_message,
-                "memory_summary": {
-                    "llm_summarization_count": mm.llm_summarization_count
-                }
-                if mm
-                else "No memory manager",
+                "memory_summary": {"llm_summarization_count": mm.llm_summarization_count} if mm else "No memory manager",
                 "messages": messages,
-                "json_data_keys": None, # TODO GAME STATE PARSER
+                "json_data_keys": None,  # TODO GAME STATE PARSER
                 "response": response,
             }
 
@@ -188,7 +181,7 @@ Agent: {agent_name}
 Session ID: {state_log["session_id"]}
 Created At: {state_log["created_at"]}
 Last Activity: {state_log["last_activity"]}
-Msg Count: {state_log["message_count"]} | Action ID: {state_log["action_id"]}
+Action ID: {state_log["action_id"]}
 Channel: {state_log["channel"]} | Msg ID: {state_log["message_id"]}
 Text Snippet: {state_log["text_snippet"]}
 
