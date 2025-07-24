@@ -174,6 +174,11 @@ class ProactiveSmalltalk(T3RNModule):
         summaries = "\n".join([f"{s['content']} (similarity: {s['similarity']:.2f})" for s in smalltalks_clean])
         if len(summaries) > self.INJECT_MAX_SIZE:
             summaries = textwrap.shorten(summaries, width=self.INJECT_MAX_SIZE)
+
+        if len(smalltalks_clean) == 0:
+            self.channel_logger.log_to_logs("No smalltalks found, returning empty injection")
+            return []
+
         response = f"""
 System found some interesting information in your memory banks that might be relevant to this conversation:
 {summaries}
