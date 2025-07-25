@@ -190,8 +190,9 @@ def process_initialization_message(client, session: Session):
     request_json_data(client, session.session_id)
 
     # if session is initialized, we can send previous messages to the agent.
-    # chat_response = create_response(0, "Rawrrr", session.session_id, session.message_id)
-    # send_response(client, chat_response, session.session_id, session.channel or 0, session.message_id)
+
+    chat_response = create_response(0, "Rawrrr", session.session_id, session.message_id)
+    send_response(client, chat_response, session.session_id, session.channel or 0, session.message_id)
 
 
 def process_settings_message(client, session: Session, data: dict):
@@ -248,76 +249,19 @@ def request_json_data(client, session_id):
 def process_json_data_message(client, session: Session, data: dict):
     """Process a JSON data message from the server"""
 
-    # Store JSON data in session
-    if "data" in data:
+    try:
         json_data = data["data"]
         data_size_bytes = len(json.dumps(json_data))
         data_size_kb = data_size_bytes / 1024
 
-        # Log detailed information about received JSON
         logger.info(
-            "   JSON DATA",
+            "JSON DATA",
             extra=dict(
                 session_id=session.session_id,
                 size_bytes=data_size_bytes,
                 size_kb=f"{data_size_kb:.2f}",
             ),
         )
-
-        # Log top-level keys in the JSON
-        if isinstance(json_data, dict):
-            top_keys = list(json_data.keys())
-            logger.info(
-                "   JSON STRUCTURE",
-                extra=dict(session_id=session.session_id, top_keys=top_keys),
-            )
-
-        elif isinstance(json_data, list):
-            logger.info(
-                "   JSON STRUCTURE",
-                extra=dict(session_id=session.session_id, type="list", length=len(json_data)),
-            )
-            if len(json_data) > 0:
-                sample_type = type(json_data[0]).__name__
-                logger.info(
-                    "   JSON LIST SAMPLE",
-                    extra=dict(session_id=session.session_id, sample_type=sample_type),
-                )
-
-        # IMPORTANT: Set current JSON data in game cache for screen context tool
-        try:
-            # Only set if json_data is a dictionary (required for screen context)
-            if isinstance(json_data, dict):
-                logger.info(
-                    "   JSON DATA SET IN CACHE",
-                    extra=dict(session_id=session.session_id, success=True),
-                )
-            else:
-                logger.info(
-                    "   JSON DATA SKIP CACHE",
-                    extra=dict(
-                        session_id=session.session_id,
-                        reason="not_dict",
-                        type=type(json_data).__name__,
-                    ),
-                )
-        except Exception as e:
-            logger.info(
-                "   JSON DATA CACHE ERROR",
-                extra=dict(session_id=session.session_id, error=str(e)),
-            )
-
-        # Store a summary of the data structure
-        def get_data_summary(data):
-            if isinstance(data, dict):
-                return {
-                    k: get_data_summary(v) if isinstance(v, (dict, list)) and k != "small_value" else "data_present"
-                    for k, v in list(data.items())[:10]
-                }
-            elif isinstance(data, list):
-                return [get_data_summary(item) if isinstance(item, (dict, list)) else "data_present" for item in data[:5]]
-            else:
-                return "data_present"
 
         # Store a small sample and summary
         session.game_state = GameStateParser(json.dumps(json_data))
@@ -333,14 +277,12 @@ def process_json_data_message(client, session: Session, data: dict):
         }
 
         logger.info(
-            "   DATA RECEIVED CONFIRMATION",
+            "JSON DATA RECEIVED",
             extra=dict(session_id=session.session_id, channel=2, message_id=session.message_id),
         )
-    else:
-        # Log error and send error response
-        logger.info("ERROR_JSON_DATA_MISSING", extra=dict(session_id=session.session_id))
 
-        # Create error response
+        logger.info("ERROR_JSON_DATA_MISSING", extra=dict(session_id=session.session_id))
+    except KeyError:
         response = {
             "type": "data_received",
             "status": "error",
@@ -349,27 +291,32 @@ def process_json_data_message(client, session: Session, data: dict):
             "message_id": session.message_id,
         }
 
-        # Send the response
         send_message(client, response)
+    except Exception:
+        logger.error("!! ERROR_PROCESSING_JSON_DATA", extra=dict(session_id=session.session_id))
+        response = {
+            "type": "data_received",
+            "status": "error",
+            "error": "Failed to process JSON data",
+            "session_id": session.session_id,
+            "message_id": session.message_id,
+        }
 
 
 def process_text_message(client, session: Session):
-    """Process a text message on a specific channel"""
     text = session.user_message or ""
     channel = session.channel
     session_id = session.session_id
     message_id = session.message_id
 
-    logger.info(f'   TEXT PROCESSING: session={session_id}, channel={channel}, message_id={message_id}, text="{text}"')
+    logger.info(f'TEXT PROCESSING: session={session_id}, channel={channel}, message_id={message_id}, text="{text}"')
 
-    # Process text based on channel
-    if channel == 0:  # Main channel
+    if channel == 0:
         process_main_channel(
             client,
             session,
         )
     else:
-        # For other channels, just echo back the text
         response = create_response(channel, f"Received on channel {channel}: {text}", session_id, message_id)
         send_response(client, response, session_id, session.channel or 0, session.message_id)
 
