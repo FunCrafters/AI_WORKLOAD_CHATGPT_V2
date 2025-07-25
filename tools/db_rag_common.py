@@ -7,7 +7,7 @@ from cachetools import LRUCache, cached
 from openai.types.chat import ChatCompletionMessageParam
 
 from db_postgres import execute_query
-from workload_embedding import get_embedding_function
+from embedder import embd
 
 # Constants
 DEFAULT_RAG_SIMILARITY_THRESHOLD = 0.4
@@ -22,12 +22,7 @@ query_embedding_cache = LRUCache(maxsize=1024)
 @cached(cache=query_embedding_cache)
 def generate_query_embedding(query: str) -> Optional[List[float]]:
     try:
-        embedding_function = get_embedding_function()
-        if not embedding_function:
-            logger.error("Failed to get embedding function")
-            return None
-
-        embedding = embedding_function.embed_query(query)
+        embedding = embd(query)
         return embedding
     except Exception as e:
         logger.error(f"Error generating embedding: {str(e)}")
@@ -37,11 +32,6 @@ def generate_query_embedding(query: str) -> Optional[List[float]]:
 def generate_embedding_from_conv(
     conversation: List["ChatCompletionMessageParam"],
 ) -> Optional[List[float]]:
-    embedding_function = get_embedding_function()
-    if not embedding_function:
-        logger.error("Failed to get embedding function")
-        return None
-
     messages = []
     for message in conversation:
         if message["role"] in ["user", "assistant"]:
@@ -52,7 +42,7 @@ def generate_embedding_from_conv(
 
     combined_text = "\n".join(f"{msg['role']}: {msg['content']}" for msg in messages)
 
-    return embedding_function.embed_query(combined_text)
+    return embd(combined_text)
 
 
 rag_search_cache = LRUCache(maxsize=512)

@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 
 from db_postgres import execute_query
-from workload_embedding import get_embedding_function
+from embedder import embd
 
 # Logger
 logger = logging.getLogger("DBSmalltalk")
@@ -35,15 +35,8 @@ Then naturally transit into the topic using the knowledge provided. Incorporate 
 
 
 def _generate_query_embedding(query_text: str) -> list | None:
-    """Generate embedding for query text using Ollama"""
     try:
-        embedding_function = get_embedding_function()
-        if not embedding_function:
-            logger.error("Embedding function not available")
-            return None
-
-        # Generate embedding using Ollama
-        embedding = embedding_function.embed_query(query_text)
+        embedding = embd(query_text)
         return embedding
 
     except Exception as e:
