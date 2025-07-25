@@ -13,7 +13,6 @@ from game_state_parser.parser import GameStateParser
 from session import Session
 from workload_chat import process_main_channel
 from workload_config import SERVER_HOST, SERVER_PORT, WORKLOAD_CONFIG
-from workload_embedding import initialize_embeddings_and_vectorstore
 from workload_tools import create_response, send_message, send_response
 
 # Load environment variables from .env file
@@ -191,6 +190,10 @@ def process_initialization_message(client, session: Session):
     # Immediately after initialization, send a separate message to request JSON data
     # This is a separate message to ensure proper socket communication
     request_json_data(client, session.session_id)
+
+    # if session is initialized, we can send previous messages to the agent.
+    chat_response = create_response(0, "Rawrrr", session.session_id, session.message_id)
+    send_response(client, chat_response, session.session_id, session.channel or 0, session.message_id)
 
 
 def process_settings_message(client, session: Session, data: dict):
@@ -502,24 +505,9 @@ def reconnect_loop():
 
 
 def main():
-    """Main workload function"""
     logger.info(f"WORKLOAD_STARTING: name={WORKLOAD_CONFIG['title']}, hash={WORKLOAD_CONFIG['hash_id']}")
 
     try:
-        # Initialize embeddings and vectorstore for agent system
-        ollama_host = config.get("OLLAMA_HOST") or "100.83.28.7"
-        ollama_port = config.get("OLLAMA_PORT") or "11434"
-
-        logger.info(f"Initializing agent system with Ollama at {ollama_host}:{ollama_port}")
-
-        vectorstore_ollama = initialize_embeddings_and_vectorstore(config, ollama_host, ollama_port)
-
-        if vectorstore_ollama:
-            logger.info("Agent system initialized successfully")
-        else:
-            logger.warning("Agent system initialized with warnings - check vectorstore logs")
-
-        # Start reconnection loop
         reconnect_loop()
     except KeyboardInterrupt:
         logger.info("SHUTDOWN: received interrupt signal")
