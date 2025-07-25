@@ -20,6 +20,4 @@ class SummaryInjector(T3RNModule):
                 }
             )
 
-            self.channel_logger.log_to_memory("🎯 Injected Summary of the conversation")
-
         return injection_messages

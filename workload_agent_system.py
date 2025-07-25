@@ -76,6 +76,4 @@ def process_llm_agents(user_message: str, session: Session, channel_logger: Chan
 
         final_answer = run_agent(SimpleFallbackAgent, session, user_message) or "ERROR 1138: Primary directive compromised. Rebooting memory core"
 
-    channel_logger.flush_all_buffers()
-
     return final_answer

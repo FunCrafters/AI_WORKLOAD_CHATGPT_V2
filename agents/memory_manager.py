@@ -189,3 +189,6 @@ class MemoryManager:
             )
         except Exception as e:
             self.channal_logger.log_to_logs(f"❌ Failed to log memory: {str(e)}")
+
+    def __dict__(self) -> ConversationMemory:
+        return self.memory

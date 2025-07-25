@@ -13,7 +13,13 @@ logger = logging.getLogger("UXDetails")
 
 
 def db_get_screen_details(query: str, session: Session) -> dict:
-    gamestate = session.gamestate()
+    gamestate = session.game_state
+
+    if gamestate is None:
+        return {
+            "status": "error",
+            "message": "Game state is not available",
+        }
 
     try:
         result = gamestate.get_details(query)

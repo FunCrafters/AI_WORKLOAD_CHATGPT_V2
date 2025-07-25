@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Database tool: Get champion details from PostgreSQL
-Get champion information from PostgreSQL rag_vectors table
-"""
-
 from tools.db_rag_common import execute_universal_rag
 
 

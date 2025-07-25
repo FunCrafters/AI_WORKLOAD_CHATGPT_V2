@@ -98,7 +98,6 @@ def create_or_update_session(data: dict):
         active_sessions[session_id] = Session(
             created_at=time.time(),
             last_activity=time.time(),
-            message_count=0,
             session_id=session_id,
             channel=channel,
             message_id=message_id,
@@ -107,7 +106,6 @@ def create_or_update_session(data: dict):
 
     if not is_initialization:
         active_sessions[session_id].last_activity = time.time()
-        active_sessions[session_id].message_count += 1
         if channel is not None:
             active_sessions[session_id].channel = channel
         if text is not None:

@@ -32,6 +32,9 @@ class UIElement(ABC):
     """
     Base class for UI elements in the game state parser.
     The child classes should match the structure of the game state JSON.
+
+    * Avalible popups are attached as children to the root UIElement.
+    * Use safe_output decorator to catch exceptions. It will allow to continue parsing even if some elements are missing or parsing fails.
     """
 
     def __init__(self, tree: Dict[str, Any]):
@@ -39,7 +42,7 @@ class UIElement(ABC):
         self.children: Dict[str, "UIElement"] = {}
         pass
 
-    def glom(self, path: str) -> Any:
+    def glom(self, path: str, **kwargs) -> Any:
         """
         Helper method to extract data from the child tree using glom.
         You can use this instead of using direcly dict
@@ -52,7 +55,7 @@ class UIElement(ABC):
         ```
         """
         try:
-            return glom(self.child_tree, path)
+            return glom(self.child_tree, path, **kwargs)
         except KeyError as e:
             logger.error(f"KeyError in {self.__class__.__name__} glom for path '{path}': {e}")
             return f"{path}"

@@ -27,9 +27,20 @@ def parse_recursive(data: dict, parent: UIElement):
                 parse_recursive(value, childElement)
 
 
+def parse_popups(popups: list[str], root: UIElement):
+    for popup in popups:
+        ChildClass = get_class_by_name(popup)
+
+        if ChildClass:
+            childElement = ChildClass({})
+            root.children[popup] = childElement
+            root.child_tree = root.child_tree
+
+
 def parse_screen_data(screenData: dict):
     Screen = screenData["Screen"]
     ScreenData = screenData["ScreensData"]
+    Popups = screenData.get("Popups", [])
 
     rootClass = get_class_by_name(Screen)
     if not rootClass:
@@ -39,15 +50,20 @@ def parse_screen_data(screenData: dict):
 
     parse_recursive(ScreenData, rootElement)
 
+    parse_popups(Popups, rootElement)
+
     return rootElement
 
 
 def parse_ui_tree(json_raw: str) -> UIElement:
     data = json.loads(json_raw)
+    try:
+        screenData = data["screenData"]
+        return parse_screen_data(screenData)
+    except KeyError:
+        logger.warning("Provided JSON does not match any known screen type. Using UnknownScreen.")
 
-    screenData = data["screenData"]
-
-    return parse_screen_data(screenData)
+        return parse_screen_data({"Screen": "UnknownScreen", "ScreensData": data})
 
 
 class GameStateParser:
@@ -82,6 +98,8 @@ class GameStateParser:
         # if there is multiple, it should return all of them.
         # and notice that there is multiple and why there is multiple.
         return None
+
+    # TODO more context methods
 
 
 if __name__ == "__main__":
