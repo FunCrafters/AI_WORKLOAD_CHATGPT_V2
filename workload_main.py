@@ -190,8 +190,8 @@ def process_initialization_message(client, session: Session):
     request_json_data(client, session.session_id)
 
     # if session is initialized, we can send previous messages to the agent.
-    # chat_response = create_response(0, "Rawrrr", session.session_id, session.message_id)
-    # send_response(client, chat_response, session.session_id, session.channel or 0, session.message_id)
+    chat_response = create_response(0, "Rawrrr", session.session_id, session.message_id)
+    send_response(client, chat_response, session.session_id, session.channel or 0, session.message_id)
 
 
 def process_settings_message(client, session: Session, data: dict):
@@ -203,7 +203,7 @@ def process_settings_message(client, session: Session, data: dict):
     if settings_data:
         # TODO THAT IS UNSAFE, WHat is going on here? Check what it is doing
         logger.info(
-            "   PROCESS_SETTINGS",
+            "PROCESS_SETTINGS",
             extra=dict(session_id=session.session_id, keys=list(settings_data.keys())),
         )
         # Store settings directly in session
@@ -211,11 +211,11 @@ def process_settings_message(client, session: Session, data: dict):
             session.__dict__[key] = value
 
         logger.info(
-            "   PROCESS_SETTINGS_STORED",
+            "PROCESS_SETTINGS_STORED",
             extra=dict(session_id=session.session_id, keys=list(settings_data.keys())),
         )
 
-        logger.info("   SETTINGS_CONFIRMATION", extra=dict(session_id=session.session_id))
+        logger.info("SETTINGS_CONFIRMATION", extra=dict(session_id=session.session_id))
         response = {
             "type": "settings_response",
             "success": True,
@@ -231,7 +231,7 @@ def process_settings_message(client, session: Session, data: dict):
 
 def request_json_data(client, session_id):
     """Send request for JSON data"""
-    logger.info("   REQUEST JSON DATA", extra=dict(session_id=session_id))
+    logger.info("REQUEST JSON DATA", extra=dict(session_id=session_id))
 
     # Create JSON request message
     json_request = {
@@ -351,6 +351,15 @@ def process_json_data_message(client, session: Session, data: dict):
 
         # Send the response
         send_message(client, response)
+    except Exception:
+        logger.error("ERROR_PROCESSING_JSON_DATA", extra=dict(session_id=session.session_id))
+        response = {
+            "type": "data_received",
+            "status": "error",
+            "error": "Failed to process JSON data",
+            "session_id": session.session_id,
+            "message_id": session.message_id,
+        }
 
 
 def process_text_message(client, session: Session):
