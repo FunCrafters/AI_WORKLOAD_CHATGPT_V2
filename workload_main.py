@@ -9,6 +9,7 @@ from typing import Any, Dict
 
 from dotenv import dotenv_values, load_dotenv
 
+from db_postgres import initialize_postgres_db
 from game_state_parser.parser import GameStateParser
 from session import Session
 from workload_chat import process_main_channel
@@ -65,19 +66,19 @@ def register_workload(client):
         response = client.recv(4096)
 
         if not response:
-            logger.error("!! ERROR: no response from server")
+            logger.error("ERROR: no response from server")
             return None
 
         data = json.loads(response.decode("utf-8"))
         if data.get("status") == "connected":
             workload_id = data.get("id")
-            logger.info(f"   SUCCESS: workload_id={workload_id}")
+            logger.info(f"SUCCESS: workload_id={workload_id}")
             return workload_id
         else:
-            logger.error(f"!! ERROR: status={data.get('status')}, response={data}")
+            logger.error(f"ERROR: status={data.get('status')}, response={data}")
             return None
     except Exception as e:
-        logger.error(f"!! ERROR: error={e}")
+        logger.error(f"ERROR: error={e}")
         return None
 
 
@@ -131,7 +132,7 @@ def process_message(client, message):
         session = create_or_update_session(data)
 
         if not session:
-            logger.error("!! ERROR_SESSION_CREATION", extra=dict(raw_message=raw_message))
+            logger.error("ERROR_SESSION_CREATION", extra=dict(raw_message=raw_message))
             return
 
         # Log standardized message receipt info
@@ -169,7 +170,7 @@ def process_message(client, message):
             logger.error(f"Recive unknown message type: {message_type}")
 
     except Exception as e:
-        logger.error("!! ERROR_PROCESSING", extra=dict(error=str(e)))
+        logger.error("ERROR_PROCESSING", extra=dict(error=str(e)))
         import traceback
 
         logger.error(traceback.format_exc())
@@ -178,7 +179,7 @@ def process_message(client, message):
 def process_initialization_message(client, session: Session):
     """Process an initialization message"""
     logger.info(
-        "   PROCESSING",
+        "PROCESSING",
         extra=dict(session_id=session.session_id, channel=session.channel),
     )
 
@@ -190,7 +191,6 @@ def process_initialization_message(client, session: Session):
     request_json_data(client, session.session_id)
 
     # if session is initialized, we can send previous messages to the agent.
-
     chat_response = create_response(0, "Rawrrr", session.session_id, session.message_id)
     send_response(client, chat_response, session.session_id, session.channel or 0, session.message_id)
 
@@ -199,24 +199,22 @@ def process_settings_message(client, session: Session, data: dict):
     """Process a settings message (all settings at once)"""
     logger.info("-- PROCESS_SETTINGS", extra=dict(session_id=session.session_id))
 
-    # Extract settings
     settings_data = data.get("settings", {})
     if settings_data:
         # TODO THAT IS UNSAFE, WHat is going on here? Check what it is doing
         logger.info(
-            "   PROCESS_SETTINGS",
+            "PROCESS_SETTINGS",
             extra=dict(session_id=session.session_id, keys=list(settings_data.keys())),
         )
-        # Store settings directly in session
         for key, value in settings_data.items():
             session.__dict__[key] = value
 
         logger.info(
-            "   PROCESS_SETTINGS_STORED",
+            "PROCESS_SETTINGS_STORED",
             extra=dict(session_id=session.session_id, keys=list(settings_data.keys())),
         )
 
-        logger.info("   SETTINGS_CONFIRMATION", extra=dict(session_id=session.session_id))
+        logger.info("SETTINGS_CONFIRMATION", extra=dict(session_id=session.session_id))
         response = {
             "type": "settings_response",
             "success": True,
@@ -224,17 +222,14 @@ def process_settings_message(client, session: Session, data: dict):
             "message_id": session.message_id,
         }
 
-        # Send settings response confirmation
         send_message(client, response)
     else:
-        logger.info("!! PROCESS_SETTINGS_EMPTY", extra=dict(session_id=session.session_id))
+        logger.info("PROCESS_SETTINGS_EMPTY", extra=dict(session_id=session.session_id))
 
 
 def request_json_data(client, session_id):
-    """Send request for JSON data"""
-    logger.info("   REQUEST JSON DATA", extra=dict(session_id=session_id))
+    logger.info("REQUEST JSON DATA", extra=dict(session_id=session_id))
 
-    # Create JSON request message
     json_request = {
         "type": "request_data",
         "data_type": "json",
@@ -242,13 +237,10 @@ def request_json_data(client, session_id):
         "message_id": f"json_req_{int(time.time())}",
     }
 
-    # Send JSON request to server - send_message function handles the logging
     send_message(client, json_request)
 
 
 def process_json_data_message(client, session: Session, data: dict):
-    """Process a JSON data message from the server"""
-
     try:
         json_data = data["data"]
         data_size_bytes = len(json.dumps(json_data))
@@ -263,10 +255,8 @@ def process_json_data_message(client, session: Session, data: dict):
             ),
         )
 
-        # Store a small sample and summary
         session.game_state = GameStateParser(json.dumps(json_data))
 
-        # Send confirmation response
         response = {
             "type": "data_received",
             "status": "success",
@@ -277,12 +267,11 @@ def process_json_data_message(client, session: Session, data: dict):
         }
 
         logger.info(
-            "JSON DATA RECEIVED",
+            "DATA RECEIVED CONFIRMATION",
             extra=dict(session_id=session.session_id, channel=2, message_id=session.message_id),
         )
-
-        logger.info("ERROR_JSON_DATA_MISSING", extra=dict(session_id=session.session_id))
     except KeyError:
+        logger.info("ERROR_JSON_DATA_MISSING", extra=dict(session_id=session.session_id))
         response = {
             "type": "data_received",
             "status": "error",
@@ -293,7 +282,7 @@ def process_json_data_message(client, session: Session, data: dict):
 
         send_message(client, response)
     except Exception:
-        logger.error("!! ERROR_PROCESSING_JSON_DATA", extra=dict(session_id=session.session_id))
+        logger.error("ERROR_PROCESSING_JSON_DATA", extra=dict(session_id=session.session_id))
         response = {
             "type": "data_received",
             "status": "error",
@@ -376,6 +365,8 @@ def reconnect_loop():
 
         # Reset retry interval on successful connection
         retry_interval = 1
+
+        initialize_postgres_db()
 
         try:
             # Register workload
