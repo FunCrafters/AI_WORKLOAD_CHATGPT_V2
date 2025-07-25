@@ -356,6 +356,7 @@ def search_qa_similarity(
     Returns:
         List of dictionaries with similarity score and QA content
     """
+    embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
     try:
         query = """
             SELECT 
@@ -367,7 +368,7 @@ def search_qa_similarity(
             ORDER BY similarity DESC
             LIMIT %s
         """
-        params = (query_embedding, limit)
+        params = (embedding_str, limit)
 
         results = execute_query(query, params)
         return [
