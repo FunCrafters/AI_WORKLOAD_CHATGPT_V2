@@ -191,8 +191,8 @@ def process_initialization_message(client, session: Session):
     request_json_data(client, session.session_id)
 
     # if session is initialized, we can send previous messages to the agent.
-    chat_response = create_response(0, "Rawrrr", session.session_id, session.message_id)
-    send_response(client, chat_response, session.session_id, session.channel or 0, session.message_id)
+    # chat_response = create_response(0, "Rawrrr", session.session_id, session.message_id)
+    # send_response(client, chat_response, session.session_id, session.channel or 0, session.message_id)
 
 
 def process_settings_message(client, session: Session, data: dict):
