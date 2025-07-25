@@ -322,16 +322,6 @@ def process_text_message(client, session: Session):
 
 
 def receive_full_message(client, delimiter=b"\n"):
-    """
-    Receive a complete message from socket until delimiter is found
-
-    Args:
-        client: Socket client
-        delimiter: Message delimiter (default: newline)
-
-    Returns:
-        Complete message as bytes or None if connection closed
-    """
     buffer = b""
     chunk_size = 4096
 
