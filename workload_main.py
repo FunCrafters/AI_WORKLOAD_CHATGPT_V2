@@ -9,6 +9,7 @@ from typing import Any, Dict
 
 from dotenv import dotenv_values, load_dotenv
 
+from db_postgres import initialize_postgres_db
 from game_state_parser.parser import GameStateParser
 from session import Session
 from workload_chat import process_main_channel
@@ -65,19 +66,19 @@ def register_workload(client):
         response = client.recv(4096)
 
         if not response:
-            logger.error("!! ERROR: no response from server")
+            logger.error("ERROR: no response from server")
             return None
 
         data = json.loads(response.decode("utf-8"))
         if data.get("status") == "connected":
             workload_id = data.get("id")
-            logger.info(f"   SUCCESS: workload_id={workload_id}")
+            logger.info(f"SUCCESS: workload_id={workload_id}")
             return workload_id
         else:
-            logger.error(f"!! ERROR: status={data.get('status')}, response={data}")
+            logger.error(f"ERROR: status={data.get('status')}, response={data}")
             return None
     except Exception as e:
-        logger.error(f"!! ERROR: error={e}")
+        logger.error(f"ERROR: error={e}")
         return None
 
 
@@ -131,7 +132,7 @@ def process_message(client, message):
         session = create_or_update_session(data)
 
         if not session:
-            logger.error("!! ERROR_SESSION_CREATION", extra=dict(raw_message=raw_message))
+            logger.error("ERROR_SESSION_CREATION", extra=dict(raw_message=raw_message))
             return
 
         # Log standardized message receipt info
@@ -169,7 +170,7 @@ def process_message(client, message):
             logger.error(f"Recive unknown message type: {message_type}")
 
     except Exception as e:
-        logger.error("!! ERROR_PROCESSING", extra=dict(error=str(e)))
+        logger.error("ERROR_PROCESSING", extra=dict(error=str(e)))
         import traceback
 
         logger.error(traceback.format_exc())
@@ -178,7 +179,7 @@ def process_message(client, message):
 def process_initialization_message(client, session: Session):
     """Process an initialization message"""
     logger.info(
-        "   PROCESSING",
+        "PROCESSING",
         extra=dict(session_id=session.session_id, channel=session.channel),
     )
 
@@ -198,7 +199,6 @@ def process_settings_message(client, session: Session, data: dict):
     """Process a settings message (all settings at once)"""
     logger.info("-- PROCESS_SETTINGS", extra=dict(session_id=session.session_id))
 
-    # Extract settings
     settings_data = data.get("settings", {})
     if settings_data:
         # TODO THAT IS UNSAFE, WHat is going on here? Check what it is doing
@@ -206,7 +206,6 @@ def process_settings_message(client, session: Session, data: dict):
             "PROCESS_SETTINGS",
             extra=dict(session_id=session.session_id, keys=list(settings_data.keys())),
         )
-        # Store settings directly in session
         for key, value in settings_data.items():
             session.__dict__[key] = value
 
@@ -223,17 +222,14 @@ def process_settings_message(client, session: Session, data: dict):
             "message_id": session.message_id,
         }
 
-        # Send settings response confirmation
         send_message(client, response)
     else:
-        logger.info("!! PROCESS_SETTINGS_EMPTY", extra=dict(session_id=session.session_id))
+        logger.info("PROCESS_SETTINGS_EMPTY", extra=dict(session_id=session.session_id))
 
 
 def request_json_data(client, session_id):
-    """Send request for JSON data"""
     logger.info("REQUEST JSON DATA", extra=dict(session_id=session_id))
 
-    # Create JSON request message
     json_request = {
         "type": "request_data",
         "data_type": "json",
@@ -241,22 +237,17 @@ def request_json_data(client, session_id):
         "message_id": f"json_req_{int(time.time())}",
     }
 
-    # Send JSON request to server - send_message function handles the logging
     send_message(client, json_request)
 
 
 def process_json_data_message(client, session: Session, data: dict):
-    """Process a JSON data message from the server"""
-
-    # Store JSON data in session
-    if "data" in data:
+    try:
         json_data = data["data"]
         data_size_bytes = len(json.dumps(json_data))
         data_size_kb = data_size_bytes / 1024
 
-        # Log detailed information about received JSON
         logger.info(
-            "   JSON DATA",
+            "JSON DATA",
             extra=dict(
                 session_id=session.session_id,
                 size_bytes=data_size_bytes,
@@ -264,65 +255,8 @@ def process_json_data_message(client, session: Session, data: dict):
             ),
         )
 
-        # Log top-level keys in the JSON
-        if isinstance(json_data, dict):
-            top_keys = list(json_data.keys())
-            logger.info(
-                "   JSON STRUCTURE",
-                extra=dict(session_id=session.session_id, top_keys=top_keys),
-            )
-
-        elif isinstance(json_data, list):
-            logger.info(
-                "   JSON STRUCTURE",
-                extra=dict(session_id=session.session_id, type="list", length=len(json_data)),
-            )
-            if len(json_data) > 0:
-                sample_type = type(json_data[0]).__name__
-                logger.info(
-                    "   JSON LIST SAMPLE",
-                    extra=dict(session_id=session.session_id, sample_type=sample_type),
-                )
-
-        # IMPORTANT: Set current JSON data in game cache for screen context tool
-        try:
-            # Only set if json_data is a dictionary (required for screen context)
-            if isinstance(json_data, dict):
-                logger.info(
-                    "   JSON DATA SET IN CACHE",
-                    extra=dict(session_id=session.session_id, success=True),
-                )
-            else:
-                logger.info(
-                    "   JSON DATA SKIP CACHE",
-                    extra=dict(
-                        session_id=session.session_id,
-                        reason="not_dict",
-                        type=type(json_data).__name__,
-                    ),
-                )
-        except Exception as e:
-            logger.info(
-                "   JSON DATA CACHE ERROR",
-                extra=dict(session_id=session.session_id, error=str(e)),
-            )
-
-        # Store a summary of the data structure
-        def get_data_summary(data):
-            if isinstance(data, dict):
-                return {
-                    k: get_data_summary(v) if isinstance(v, (dict, list)) and k != "small_value" else "data_present"
-                    for k, v in list(data.items())[:10]
-                }
-            elif isinstance(data, list):
-                return [get_data_summary(item) if isinstance(item, (dict, list)) else "data_present" for item in data[:5]]
-            else:
-                return "data_present"
-
-        # Store a small sample and summary
         session.game_state = GameStateParser(json.dumps(json_data))
 
-        # Send confirmation response
         response = {
             "type": "data_received",
             "status": "success",
@@ -333,10 +267,10 @@ def process_json_data_message(client, session: Session, data: dict):
         }
 
         logger.info(
-            "   DATA RECEIVED CONFIRMATION",
+            "DATA RECEIVED CONFIRMATION",
             extra=dict(session_id=session.session_id, channel=2, message_id=session.message_id),
         )
-    else:
+    except KeyError:
         # Log error and send error response
         logger.info("ERROR_JSON_DATA_MISSING", extra=dict(session_id=session.session_id))
 
@@ -448,6 +382,8 @@ def reconnect_loop():
 
         # Reset retry interval on successful connection
         retry_interval = 1
+
+        initialize_postgres_db()
 
         try:
             # Register workload

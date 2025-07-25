@@ -39,7 +39,7 @@ def process_main_channel(client, session: "Session"):
     channel_logger.log_to_logs(f'🚀 Processing with Agent-Based System: "{text}"')
     channel_logger.log_to_logs(f"💬 Session ID: {session_id}")
 
-    logger.info("   AGENT-BASED PROCESSING", extra=dict(session_id=session_id))
+    logger.info("AGENT-BASED PROCESSING", extra=dict(session_id=session_id))
 
     try:
         # Process with agent-based function calling
@@ -55,7 +55,7 @@ def process_main_channel(client, session: "Session"):
         send_response(client, chat_response, session_id, channel or 0, message_id)
 
     except Exception as e:
-        logger.info("!! AGENT PROCESSING ERROR", extra=dict(session_id=session_id, error=str(e)))
+        logger.info("AGENT PROCESSING ERROR", extra=dict(session_id=session_id, error=str(e)))
 
         import traceback
 

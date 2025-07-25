@@ -33,9 +33,7 @@ def initialize_postgres_db():
         logger.info(f"Opening PostgreSQL database connection: {host}:{port}/{database}")
 
         # Connect to database
-        POSTGRES_CONNECTION = psycopg2.connect(
-            host=host, port=port, user=user, password=password, database=database
-        )
+        POSTGRES_CONNECTION = psycopg2.connect(host=host, port=port, user=user, password=password, database=database)
 
         # Test connection
         cursor = POSTGRES_CONNECTION.cursor()
@@ -56,9 +54,7 @@ def initialize_postgres_db():
         return False
 
 
-def execute_query(
-    query: str, params: tuple | list | None = None
-) -> List[Dict[str, Any]]:
+def execute_query(query: str, params: tuple | list | None = None) -> List[Dict[str, Any]]:
     """
     Execute a raw SQL query on the PostgreSQL database
 
@@ -71,9 +67,7 @@ def execute_query(
     """
     global POSTGRES_CONNECTION
     if POSTGRES_CONNECTION is None:
-        raise ValueError(
-            "PostgreSQL connection not initialized. Call initialize_postgres_db() first."
-        )
+        raise ValueError("PostgreSQL connection not initialized. Call initialize_postgres_db() first.")
 
     # Make sure connection is established
     if not POSTGRES_CONNECTION or POSTGRES_CONNECTION.closed:
@@ -82,9 +76,7 @@ def execute_query(
             return []
 
     try:
-        cursor = POSTGRES_CONNECTION.cursor(
-            cursor_factory=psycopg2.extras.RealDictCursor
-        )
+        cursor = POSTGRES_CONNECTION.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
         if params:
             cursor.execute(query, params)
@@ -127,9 +119,7 @@ def get_postgres_database_info() -> List[str]:
         info.append(f"🗄️  Database: {db_name}")
 
         # Get all tables with record counts
-        cursor.execute(
-            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name"
-        )
+        cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name")
         tables = cursor.fetchall()
 
         if tables:
@@ -152,19 +142,13 @@ def get_postgres_database_info() -> List[str]:
                     table_info.append((table_name, f"Error: {str(e)}"))
 
             # Sort tables by record count (descending)
-            table_info.sort(
-                key=lambda x: x[1] if isinstance(x[1], int) else 0, reverse=True
-            )
+            table_info.sort(key=lambda x: x[1] if isinstance(x[1], int) else 0, reverse=True)
 
             # Display tables with counts
             for table_name, count in table_info:
                 if isinstance(count, int):
-                    percentage = (
-                        (count / total_records * 100) if total_records > 0 else 0
-                    )
-                    info.append(
-                        f"📄 {table_name:<25} | {count:>8,} records ({percentage:>5.1f}%)"
-                    )
+                    percentage = (count / total_records * 100) if total_records > 0 else 0
+                    info.append(f"📄 {table_name:<25} | {count:>8,} records ({percentage:>5.1f}%)")
                 else:
                     info.append(f"📄 {table_name:<25} | {count}")
 

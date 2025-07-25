@@ -95,7 +95,7 @@ def send_response(client, response, session_id=None, channel=0, message_id=None)
         log_result = str(result)
 
     logger.info(
-        "   RESPONDING",
+        "RESPONDING",
         extra=dict(
             session_id=session_id,
             channel=channel,
@@ -128,8 +128,8 @@ def send_message(client, message_data):
     # Send with explicit error handling
     try:
         client.sendall(encoded_data)
-        logger.info("   SUCCESS: ", extra=dict(session_id=session_id))
+        logger.info("SUCCESS: ", extra=dict(session_id=session_id))
         return True
     except Exception as e:
-        logger.error("!! ERROR: ", extra=dict(session_id=session_id, error=str(e)))
+        logger.error("ERROR: ", extra=dict(session_id=session_id, error=str(e)))
         return False
